@@ -4,7 +4,7 @@ Soap Controller
 
 Connects to a running Liquidsoap_ instance to control its sources while it's playling.
 
-Inspired from Savonet's Liguidsoap_, but using Python3 and GTK3 (via PyGObject_).
+Inspired from Savonet's Liguidsoap_, but using Python3, GTK3 (via PyGObject_) and Glade_.
 
 License: GPL_.
 
@@ -23,3 +23,4 @@ This will install the main program : ``soap_controller``.
 .. _GPL: https://www.gnu.org/licenses/gpl.html
 .. _PyGObject: https://pygobject.readthedocs.io/en/latest/devguide/dev_environ.html
 .. _Poetry: https://python-poetry.org
+.. _Glade: https://glade.gnome.org/

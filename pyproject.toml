@@ -9,6 +9,9 @@ homepage = "https://github.com/martinkirch/soap-controller"
 repository = "https://github.com/martinkirch/soap-controller"
 keywords = ["radio", "liquidsoap", "gtk", "gui"]
 
+[tool.poetry.scripts]
+soap_controller = "soap_controller.main:main"
+
 [tool.poetry.dependencies]
 python = "^3.7"
 PyGObject = "^3.36.1"
