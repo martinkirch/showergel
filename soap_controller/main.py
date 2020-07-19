@@ -4,12 +4,16 @@ import sys
 
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import GLib, Gtk, Gio
+from gi.repository import GLib, Gtk, Gio, GObject
 
 from . import __version__
 
 
 class SoapController(Gtk.Application):
+    __gsignals__ = {
+        'connect': (GObject.SIGNAL_RUN_FIRST, None, ())
+    }
+
     def __init__(self, *args, **kwargs):
         Gtk.Application.__init__(self,
                                  *args,
@@ -67,6 +71,16 @@ class SoapController(Gtk.Application):
             self.window.set_application(self)
             self.window.show_all()
 
+            self.builder.connect_signals({
+                'do_connection_response': self.do_connection_response,
+            })
+
+            if self.host:
+                self.emit("connect")
+            else:
+                dialog = self.builder.get_object("connection_dialog")
+                dialog.run()
+
         self.window.present()
 
     def do_command_line(self, command_line):
@@ -91,6 +105,61 @@ class SoapController(Gtk.Application):
 
         self.activate()
         return 0
+
+    def status_message(self, message):
+        """
+        Prints a message in the main window's status bar
+        """
+        statusbar = self.builder.get_object("statusbar")
+        statusbar.remove_all(0)
+        statusbar.push(0, message)
+
+    def do_connect(self, host=None, port=None):
+        if host:
+            self.host = host
+        if port:
+            self.port = port
+        self.status_message("Let's connect to %s:%d" % (self.host, self.port))
+
+    def do_connection_response(self, target, response=None):
+        """
+        "Connect to" dialog response. target can be the dialog itself,
+        the entry inside, or one of the two buttons
+        """
+        dialog = self.builder.get_object("connection_dialog")
+        entry = self.builder.get_object("connection_entry")
+
+        if response in (Gtk.ResponseType.DELETE_EVENT, Gtk.ResponseType.CANCEL):
+            response = Gtk.ResponseType.CANCEL
+        elif response == Gtk.ResponseType.OK:
+            pass
+        elif target == entry or target.get_label()=='gtk-connect':
+            response = Gtk.ResponseType.OK
+        else:
+            response = Gtk.ResponseType.CANCEL
+
+        if response == Gtk.ResponseType.CANCEL:
+            dialog.destroy()
+            self.quit()
+
+        if response == Gtk.ResponseType.OK:
+            raw = entry.get_text().strip()
+            if raw:
+                splitted = raw.split(":")
+                if len(splitted) == 1:
+                    self.host = splitted[0].strip()
+                elif len(splitted) == 2:
+                    try:
+                        self.port = int(splitted[1])
+                    except ValueError:
+                        logging.warning("%s is not a port number", splitted[1])
+                        return
+                    self.host = splitted[0].strip()
+
+        if self.host:
+            dialog.destroy()
+            self.emit("connect")
+
 
 def main():
     app = SoapController()
