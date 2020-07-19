@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "soap-controller"
 version = "0.1.0"
-description = "Graphical User Interface to control a running Liquidsoap instance"
+description = "Graphical interface to control a running Liquidsoap instance"
 authors = ["Martin Kirchgessner <martin.kirch@gmail.com>"]
 license = "GPL"
 readme = "README.rst"

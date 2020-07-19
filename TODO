@@ -1,0 +1,15 @@
+- Connection wrapper
+    - if connection fails, tries again 30s later
+    - if connection breaks, reconnects
+    - if needed, manage a "keep-alive" message so the server doesn't kick us
+    - all calls firstly lock https://lazka.github.io/pgi-docs/#GLib-2.0/classes/Mutex.html
+
+- create a console panel
+    - with an entry for commands
+    - all output to a https://python-gtk-3-tutorial.readthedocs.io/en/latest/textview.html
+
+- create a schedule panel
+    - listview backed by a model of scheduled commands : (datetime, str)
+    - add one = command entry + datetime picker
+    - then actually unroll the schedule
+    - manage edits ? just deletion ?
