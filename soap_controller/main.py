@@ -8,6 +8,8 @@ from gi.repository import GLib, Gtk, Gio, GObject
 
 from . import __version__
 
+log = logging.getLogger(__name__)
+
 
 class SoapController(Gtk.Application):
     __gsignals__ = {
@@ -96,7 +98,7 @@ class SoapController(Gtk.Application):
         logging.basicConfig(stream=sys.stderr, level=log_level,
             # maybe add %(thread)d ?
             format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s')
-        logging.info("Starting Liguidsoap %s", __version__)
+        log.info("Starting Liguidsoap %s", __version__)
 
         if "host" in options:
             self.host = options["host"]
@@ -152,7 +154,7 @@ class SoapController(Gtk.Application):
                     try:
                         self.port = int(splitted[1])
                     except ValueError:
-                        logging.warning("%s is not a port number", splitted[1])
+                        log.warning("%s is not a port number", splitted[1])
                         return
                     self.host = splitted[0].strip()
 
