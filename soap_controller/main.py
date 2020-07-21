@@ -27,7 +27,7 @@ class SoapController(Gtk.Application):
         self.window = None
         self.host = None
         self.port = 1234
-        self._connection = None
+        self.connection = None
 
         self._command_line_options()
 
@@ -125,8 +125,8 @@ class SoapController(Gtk.Application):
             self.port = port
         self.status_message("Connecting to %s:%d..." % (self.host, self.port))
         try:
-            self._connection = Connector(self.host, self.port)
-            self._connection.send("help")
+            self.connection = Connector(self.host, self.port, self.builder)
+            self.connection.send("help")
             self.status_message("Connected to %s:%d" % (self.host, self.port))
         except Exception as caught:
             self.status_message(str(caught))
@@ -174,8 +174,8 @@ class SoapController(Gtk.Application):
     def do_shutdown(self):
         logging.debug("do_shutdown called")
         Gtk.Application.do_shutdown(self)
-        if self._connection:
-            self._connection.close()
+        if self.connection:
+            self.connection.close()
 
 def main():
     app = SoapController()
