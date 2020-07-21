@@ -7,6 +7,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gtk, Gio, GObject
 
 from . import __version__
+from .connector import Connector
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class SoapController(Gtk.Application):
         self.window = None
         self.host = None
         self.port = 1234
+        self._connection = None
 
         self._command_line_options()
 
@@ -121,7 +123,14 @@ class SoapController(Gtk.Application):
             self.host = host
         if port:
             self.port = port
-        self.status_message("Let's connect to %s:%d" % (self.host, self.port))
+        self.status_message("Connecting to %s:%d..." % (self.host, self.port))
+        try:
+            self._connection = Connector(self.host, self.port)
+            self._connection.send("help")
+            self.status_message("Connected to %s:%d" % (self.host, self.port))
+        except Exception as caught:
+            self.status_message(str(caught))
+            raise
 
     def do_connection_response(self, target, response=None):
         """
@@ -162,6 +171,11 @@ class SoapController(Gtk.Application):
             dialog.destroy()
             self.emit("connect")
 
+    def do_shutdown(self):
+        logging.debug("do_shutdown called")
+        Gtk.Application.do_shutdown(self)
+        if self._connection:
+            self._connection.close()
 
 def main():
     app = SoapController()
