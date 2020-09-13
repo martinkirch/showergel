@@ -15,6 +15,7 @@ soap_controller = "soap_controller.main:main"
 [tool.poetry.dependencies]
 python = "^3.7"
 PyGObject = "^3.36.1"
+systemd-python = "^234"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

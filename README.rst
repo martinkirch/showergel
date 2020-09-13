@@ -11,6 +11,12 @@ License: GPL_.
 Develop
 =======
 
+Because of ``python-systemd`` you should firstly install::
+
+    sudo apt-get install libsystemd-dev gcc python3-dev pkg-config
+
+(See https://github.com/systemd/python-systemd#to-build-from-source)
+
 Depencencies, installation and packing is done by Poetry_.
 Once Poetry is installed,
 create a Python3 environment,
