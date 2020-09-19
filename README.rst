@@ -5,6 +5,8 @@ Soapbox
 Although a single Liquidsoap_ script is able to create a radio stream,
 some features must be implemented externally.
 This project implements such features with Python scripts.
+Those scripts are intended to run on the same machine as Liquidsoap,
+and have only been tested under Linux.
 
 License: GPL_.
 
@@ -15,6 +17,13 @@ Depencencies, installation and packing is done by Poetry_.
 Once Poetry is installed,
 create a Python3 environment,
 activate it, and run ``poetry install`` from the root folder.
+
+Custom authentication for ``ìnput.harbor``
+==========================================
+
+``soapbox/harbor_auth.py``  can back a custom authentication function for ``input.harbor``,
+where each user has her own password.
+See the documentation in the script's docstring.
 
 Soapbox Daemon [still in development]
 =====================================
