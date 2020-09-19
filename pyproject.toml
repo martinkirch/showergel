@@ -1,17 +1,17 @@
 [tool.poetry]
-name = "soap-controller"
+name = "soapbox"
 version = "0.1.0"
-description = "Graphical interface to control a running Liquidsoap instance"
+description = "Companion scripts for a Liquidsoap radio"
 authors = ["Martin Kirchgessner <martin.kirch@gmail.com>"]
 license = "GPL"
 readme = "README.rst"
-homepage = "https://github.com/martinkirch/soap-controller"
-repository = "https://github.com/martinkirch/soap-controller"
+homepage = "https://github.com/martinkirch/soapbox"
+repository = "https://github.com/martinkirch/soapbox"
 keywords = ["radio", "liquidsoap", "gtk", "gui"]
 
 [tool.poetry.scripts]
-soap_controller = "soap_controller.main:main"
-soap_controller_daemon = "soap_controller.daemon:main"
+soapbox_gui = "soapbox.gui:main"
+soapbox_daemon = "soapbox.daemon:main"
 
 [tool.poetry.dependencies]
 python = "^3.7"

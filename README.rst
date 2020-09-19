@@ -1,28 +1,35 @@
-===============
-Soap Controller
-===============
+=======
+Soapbox
+=======
 
-Connects to a running Liquidsoap_ instance to control its sources while it's playling.
-
-Inspired from Savonet's Liguidsoap_, but using Python3, GTK3 (via PyGObject_) and Glade_.
+Although a single Liquidsoap_ script is able to create a radio stream,
+some features must be implemented externally.
+This project implements such features with Python scripts.
 
 License: GPL_.
 
 Develop
 =======
 
-Because of ``python-systemd`` you should firstly install::
-
-    sudo apt-get install libsystemd-dev gcc python3-dev pkg-config
-
-(See https://github.com/systemd/python-systemd#to-build-from-source)
-
 Depencencies, installation and packing is done by Poetry_.
 Once Poetry is installed,
 create a Python3 environment,
 activate it, and run ``poetry install`` from the root folder.
 
-This will install the main program : ``soap_controller``.
+Soapbox Daemon [still in development]
+=====================================
+
+``soapbox_daemon`` is a light program made to run permanently along your Liqudidsoap instance.
+It communicates with Liqudidsoap via its telnet server,
+and with the outside world via HTTP (using a RESTful interface).
+
+
+GUI [still in development]
+==========================
+
+Inspired from Savonet's Liguidsoap_, but using Python3, GTK3 (via PyGObject_) and Glade_.
+
+
 
 .. _Liguidsoap: https://github.com/savonet/liquidsoap/tree/master/gui
 .. _Liquidsoap: https://www.liquidsoap.info/

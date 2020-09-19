@@ -1,18 +1,19 @@
 import logging
 import os
 import sys
+import pkg_resources
 
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import GLib, Gtk, Gio, GObject
 
-from . import __version__
 from .connector import Connector
 
 log = logging.getLogger(__name__)
 
+_version = pkg_resources.get_distribution("soapbox").version
 
-class SoapController(Gtk.Application):
+class SoapboxGUI(Gtk.Application):
     __gsignals__ = {
         'connect': (GObject.SIGNAL_RUN_FIRST, None, ())
     }
@@ -20,7 +21,7 @@ class SoapController(Gtk.Application):
     def __init__(self, *args, **kwargs):
         Gtk.Application.__init__(self,
                                  *args,
-                                 application_id="org.soap-controller",
+                                 application_id="org.soapbox",
                                  flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
                                  **kwargs)
         self.builder = None
@@ -71,7 +72,7 @@ class SoapController(Gtk.Application):
             self.builder.add_from_file(glade_source)
 
             self.window = self.builder.get_object("main_window")
-            self.window.set_title("Soap Controller %s" % __version__)
+            self.window.set_title("Soapbox %s" % _version)
             self.window.set_application(self)
             self.window.show_all()
 
@@ -100,7 +101,7 @@ class SoapController(Gtk.Application):
         logging.basicConfig(stream=sys.stderr, level=log_level,
             # maybe add %(thread)d ?
             format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s')
-        log.info("Starting Liguidsoap %s", __version__)
+        log.info("Starting SoapboxGUI %s", _version)
 
         if "host" in options:
             self.host = options["host"]
@@ -178,5 +179,5 @@ class SoapController(Gtk.Application):
             self.connection.close()
 
 def main():
-    app = SoapController()
+    app = SoapboxGUI()
     app.run(sys.argv)

@@ -1,7 +1,7 @@
 """
 Invoke::
 
-    soap_controller_daemon path_to_daemon.ini
+    soapbox_daemon path_to_daemon.ini
 
 """
 
@@ -17,7 +17,7 @@ _log = logging.getLogger(__name__)
 
 # TODO decorator to try/except Exception and send_reponse_only 500
 
-class SoapHandler(BaseHTTPRequestHandler):
+class SoapboxHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
@@ -35,11 +35,11 @@ class SoapHandler(BaseHTTPRequestHandler):
         _log.info(*args)
 
 
-class SoapServer(HTTPServer):
+class SoapboxServer(HTTPServer):
     allow_reuse_address = True
 
     def server_activate(self):
-        _log.info("SoapServer listening %r", self.server_address)
+        _log.info("SoapboxServer listening %r", self.server_address)
         super().server_activate()
 
 
@@ -52,5 +52,5 @@ def main():
     logging.config.fileConfig(sys.argv[1], disable_existing_loggers=False)
 
     server_conf = (conf['listen']['address'], int(conf['listen']['port']))
-    with SoapServer(server_conf, SoapHandler) as server:
+    with SoapboxServer(server_conf, SoapboxHandler) as server:
         server.serve_forever()

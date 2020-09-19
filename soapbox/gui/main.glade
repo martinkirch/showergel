@@ -3,20 +3,20 @@
 
 Copyright (C) Martin Kirchgessner
 
-This file is part of Soap Controller.
+This file is part of Soapbox.
 
-Soap Controller is free software: you can redistribute it and/or modify
+Soapbox is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Soap Controller is distributed in the hope that it will be useful,
+Soapbox is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Soap Controller.  If not, see <http://www.gnu.org/licenses/>.
+along with Soapbox.  If not, see <http://www.gnu.org/licenses/>.
 
 Author: Martin Kirchgessner
 
@@ -24,8 +24,8 @@ Author: Martin Kirchgessner
 <interface>
   <requires lib="gtk+" version="3.6"/>
   <!-- interface-license-type gplv3 -->
-  <!-- interface-name Soap Controller -->
-  <!-- interface-description Controller for a running LiquidSoap instance -->
+  <!-- interface-name Soapbox -->
+  <!-- interface-description Graphical user interface for a running LiquidSoap instance -->
   <!-- interface-copyright Martin Kirchgessner -->
   <!-- interface-authors Martin Kirchgessner -->
   <object class="GtkDialog" id="connection_dialog">
