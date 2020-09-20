@@ -12,6 +12,7 @@ keywords = ["radio", "liquidsoap", "gtk", "gui"]
 [tool.poetry.scripts]
 soapbox_gui = "soapbox.gui:main"
 soapbox_daemon = "soapbox.daemon:main"
+soapbox_daemon_install = "soapbox.daemon.install:main"
 
 [tool.poetry.dependencies]
 python = "^3.7"

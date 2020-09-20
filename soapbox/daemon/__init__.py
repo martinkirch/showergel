@@ -9,32 +9,11 @@ import sys
 import logging
 import logging.config
 import json
-import sqlite3
-from typing import Type
 
 from configparser import ConfigParser
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
 _log = logging.getLogger(__name__)
-
-
-class MetadataDB(object):
-    """
-    A context manager providing an SQLite connection to the ``metadata_log`` DB.
-    It commits and closes the DB when exiting the context.
-
-    Parameters:
-        conf: as provided by ``ConfigParser``
-    """
-    def __init__(self, config:Type[ConfigParser]):
-        self._connection = sqlite3.connect(config['metadata_log']['db'])
-
-    def __enter__(self) -> Type[sqlite3.Connection]:
-        return self._connection
-
-    def __exit__(self, type, value, traceback):
-        self._connection.commit()
-        self._connection.close()
 
 
 def get_config() -> ConfigParser:

@@ -34,6 +34,8 @@ Soapbox Daemon [still in development]
 It communicates with Liqudidsoap via its telnet server,
 and with the outside world via HTTP (using a RESTful interface).
 
+Set it up with ``soapbox_daemon_install daemon.ini``.
+
 
 GUI [still in development]
 ==========================
