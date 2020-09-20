@@ -9,9 +9,10 @@ import sys
 import logging
 import logging.config
 import json
+import pkg_resources
 
 from configparser import ConfigParser
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 
 _log = logging.getLogger(__name__)
 
@@ -30,28 +31,61 @@ def get_config() -> ConfigParser:
     return conf
 
 
-# TODO decorator to try/except Exception and send_reponse_only 500
+def _handle_exception(f):
+    """
+    decorator for ``SoapboxHandler```methods, catching any Exception.
+    Exceptions are logged, then the handler replies ``500 Internal Error``.
+    """
+    def wrapper(*args):
+        try:
+            f(*args)
+        except Exception as exc:
+            _self = args[0]
+            _log.exception(exc)
+            _self.send_response(500)
+            _self.end_headers()
+    return wrapper
 
 class SoapboxHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
+    server_version = "SoapboxServer/" + pkg_resources.get_distribution("soapbox").version
+
+    def _close(self, code):
+        self.send_response(code)
         self.end_headers()
 
+    @_handle_exception
+    def do_GET(self):
+        self._close(200)
+
+    @_handle_exception
     def do_POST(self):
         length = int(self.headers.get('content-length'))
         data = json.loads(self.rfile.read(length))
         self.rfile.close()
         _log.debug("POST %s got %r", self.path, data)
 
-        self.send_response(200)
-        self.end_headers()
+        if self.path == "/metadata_log":
+            _log.debug("TODO save metadata")
+        else:
+            self._close(404)
+            return
+
+        self._close(200)
     
     def log_message(self, *args):
+        "Override the super method to redirect messages to our own log"
         _log.info(*args)
 
 
-class SoapboxServer(HTTPServer):
+class SoapboxServer(ThreadingHTTPServer):
     allow_reuse_address = True
+
+    def __init__(self, config, handler_class):
+        self.config = config
+        super().__init__(
+            (config['listen']['address'], int(config['listen']['port'])),
+            handler_class
+        )
 
     def server_activate(self):
         _log.info("SoapboxServer listening %r", self.server_address)
@@ -59,7 +93,5 @@ class SoapboxServer(HTTPServer):
 
 
 def main():
-    conf = get_config()
-    server_conf = (conf['listen']['address'], int(conf['listen']['port']))
-    with SoapboxServer(server_conf, SoapboxHandler) as server:
+    with SoapboxServer(get_config(), SoapboxHandler) as server:
         server.serve_forever()
