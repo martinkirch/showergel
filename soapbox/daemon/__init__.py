@@ -60,7 +60,8 @@ class SoapboxHandler(BaseHTTPRequestHandler):
     @_handle_exception
     def do_POST(self):
         length = int(self.headers.get('content-length'))
-        data = json.loads(self.rfile.read(length))
+        raw = self.rfile.read(length).decode('utf8', errors='replace')
+        data = json.loads(raw)
         self.rfile.close()
         _log.debug("POST %s got %r", self.path, data)
 
