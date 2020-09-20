@@ -51,10 +51,10 @@ def get_config() -> ConfigParser:
     if len(sys.argv) < 2:
         print("Missing argument: path to daemon.ini", file=sys.stderr)
         sys.exit(1)
-    conf = ConfigParser()
-    conf.read(sys.argv[1])
+    config = ConfigParser()
+    config.read(sys.argv[1])
     logging.config.fileConfig(sys.argv[1], disable_existing_loggers=False)
-    return conf
+    return config
 
 
 def _handle_exception(f):

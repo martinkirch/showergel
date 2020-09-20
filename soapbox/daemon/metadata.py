@@ -36,8 +36,8 @@ _CREATE_LOG_EXTRA = """CREATE TABLE log_extra(
     value TEXT NOT NULL
 );"""
 
-def install_metadata_db(conf:Type[ConfigParser]):
-    with MetadataDB(conf) as db:
+def install_metadata_db(config:Type[ConfigParser]):
+    with MetadataDB(config) as db:
         columns = db.execute("PRAGMA table_info(log);").fetchall()
         if columns:
             pass # place future updates here
@@ -62,9 +62,6 @@ class MetadataDB(object):
     A context manager providing an SQLite connection to the ``metadata_log`` DB,
     where foreign key constraints are enabled.
     It commits and closes the DB when exiting the context.
-
-    Parameters:
-        conf: as provided by ``ConfigParser``
     """
     def __init__(self, config:Type[ConfigParser]):
         self._connection = sqlite3.connect(config['metadata_log']['db'])
