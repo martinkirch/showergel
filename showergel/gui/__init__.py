@@ -11,9 +11,9 @@ from .connector import Connector
 
 log = logging.getLogger(__name__)
 
-_version = pkg_resources.get_distribution("soapbox").version
+_version = pkg_resources.get_distribution("showergel").version
 
-class SoapboxGUI(Gtk.Application):
+class ShowergelGUI(Gtk.Application):
     __gsignals__ = {
         'connect': (GObject.SIGNAL_RUN_FIRST, None, ())
     }
@@ -21,7 +21,7 @@ class SoapboxGUI(Gtk.Application):
     def __init__(self, *args, **kwargs):
         Gtk.Application.__init__(self,
                                  *args,
-                                 application_id="org.soapbox",
+                                 application_id="org.showergel",
                                  flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
                                  **kwargs)
         self.builder = None
@@ -72,7 +72,7 @@ class SoapboxGUI(Gtk.Application):
             self.builder.add_from_file(glade_source)
 
             self.window = self.builder.get_object("main_window")
-            self.window.set_title("Soapbox %s" % _version)
+            self.window.set_title("Showergel %s" % _version)
             self.window.set_application(self)
             self.window.show_all()
 
@@ -101,7 +101,7 @@ class SoapboxGUI(Gtk.Application):
         logging.basicConfig(stream=sys.stderr, level=log_level,
             # maybe add %(thread)d ?
             format='%(asctime)s %(levelname)s [%(filename)s:%(lineno)d] %(message)s')
-        log.info("Starting SoapboxGUI %s", _version)
+        log.info("Starting ShowergelGUI %s", _version)
 
         if "host" in options:
             self.host = options["host"]
@@ -179,5 +179,5 @@ class SoapboxGUI(Gtk.Application):
             self.connection.close()
 
 def main():
-    app = SoapboxGUI()
+    app = ShowergelGUI()
     app.run(sys.argv)

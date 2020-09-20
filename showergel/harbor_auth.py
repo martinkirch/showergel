@@ -13,8 +13,10 @@ Call it from Liquidsoap as follows::
     def auth_function(user,password) = 
         ret = get_process_output("/path/to/harbor_auth.py #{user} #{password}")
         if string.trim(ret) == "ok" then
+            log("Access granted to #{user}")
             true
         else
+            log("Access denied to #{user}")
             false
         end
     end
@@ -22,14 +24,14 @@ Call it from Liquidsoap as follows::
     harbor = input.harbor(auth=auth_function, ...
 
 Before use, please edit the ``PASSWDFILE`` constant below.
-Note that if something goes wrong during Liqudisoap's call,
+Note that if something goes wrong during Liquidsoap's call,
 this script write to syslog so you can still read error messages.
 
 To add/update a user's password, invoke ``./harbor_auth.py --set USER PASSWORD``.
 Later on, you can edit `PASSWDFILE`` to revoke an user's access:
 just remove the line starting with the user's name.
 
-This script can be copied and used outside soapbox.
+This script can be copied and used outside showergel.
 """
 
 import os, sys, crypt, traceback

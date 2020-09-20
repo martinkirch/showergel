@@ -1,18 +1,18 @@
 [tool.poetry]
-name = "soapbox"
+name = "showergel"
 version = "0.1.0"
-description = "Companion scripts for a Liquidsoap radio"
+description = "Companion applications for a Liquidsoap radio"
 authors = ["Martin Kirchgessner <martin.kirch@gmail.com>"]
 license = "GPL"
 readme = "README.rst"
-homepage = "https://github.com/martinkirch/soapbox"
-repository = "https://github.com/martinkirch/soapbox"
+homepage = "https://github.com/martinkirch/showergel"
+repository = "https://github.com/martinkirch/showergel"
 keywords = ["radio", "liquidsoap", "gtk", "gui"]
 
 [tool.poetry.scripts]
-soapbox_gui = "soapbox.gui:main"
-soapbox_daemon = "soapbox.daemon:main"
-soapbox_daemon_install = "soapbox.daemon.install:main"
+showergel_gui = "showergel.gui:main"
+showergel_daemon = "showergel.daemon:main"
+showergel_daemon_install = "showergel.daemon.install:main"
 
 [tool.poetry.dependencies]
 python = "^3.7"

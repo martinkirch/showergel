@@ -1,13 +1,13 @@
 """
 ==============
-Soapbox Daemon
+Showergel Daemon
 ==============
 
 This is actually a RESTful HTTP server holding SQLite databases.
 
 Launch by invoking::
 
-    soapbox_daemon path_to_daemon.ini
+    showergel_daemon path_to_daemon.ini
 
 POST requests:
 ==============
@@ -59,7 +59,7 @@ def get_config() -> ConfigParser:
 
 def _handle_exception(f):
     """
-    decorator for ``SoapboxHandler```methods, catching any Exception.
+    decorator for ``ShowergelHandler```methods, catching any Exception.
     Exceptions are logged, then the handler replies ``500 Internal Error``.
     """
     def wrapper(*args):
@@ -72,8 +72,8 @@ def _handle_exception(f):
             _self.end_headers()
     return wrapper
 
-class SoapboxHandler(BaseHTTPRequestHandler):
-    server_version = "SoapboxServer/" + pkg_resources.get_distribution("soapbox").version
+class ShowergelHandler(BaseHTTPRequestHandler):
+    server_version = "ShowergelServer/" + pkg_resources.get_distribution("showergel").version
 
     def _close(self, code):
         self.send_response(code)
@@ -104,7 +104,7 @@ class SoapboxHandler(BaseHTTPRequestHandler):
         _log.info(*args)
 
 
-class SoapboxServer(ThreadingHTTPServer):
+class ShowergelServer(ThreadingHTTPServer):
     allow_reuse_address = True
 
     def __init__(self, config:Type[ConfigParser], handler_class):
@@ -115,10 +115,10 @@ class SoapboxServer(ThreadingHTTPServer):
         )
 
     def server_activate(self):
-        _log.info("SoapboxServer listening %r", self.server_address)
+        _log.info("ShowergelServer listening %r", self.server_address)
         super().server_activate()
 
 
 def main():
-    with SoapboxServer(get_config(), SoapboxHandler) as server:
+    with ShowergelServer(get_config(), ShowergelHandler) as server:
         server.serve_forever()

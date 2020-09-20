@@ -3,20 +3,20 @@
 
 Copyright (C) Martin Kirchgessner
 
-This file is part of Soapbox.
+This file is part of Showergel.
 
-Soapbox is free software: you can redistribute it and/or modify
+Showergel is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-Soapbox is distributed in the hope that it will be useful,
+Showergel is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Soapbox.  If not, see <http://www.gnu.org/licenses/>.
+along with Showergel.  If not, see <http://www.gnu.org/licenses/>.
 
 Author: Martin Kirchgessner
 
@@ -24,7 +24,7 @@ Author: Martin Kirchgessner
 <interface>
   <requires lib="gtk+" version="3.6"/>
   <!-- interface-license-type gplv3 -->
-  <!-- interface-name Soapbox -->
+  <!-- interface-name Showergel -->
   <!-- interface-description Graphical user interface for a running LiquidSoap instance -->
   <!-- interface-copyright Martin Kirchgessner -->
   <!-- interface-authors Martin Kirchgessner -->
