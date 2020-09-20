@@ -1,7 +1,30 @@
 """
-Invoke::
+==============
+Soapbox Daemon
+==============
+
+This is actually a RESTful HTTP server holding SQLite databases.
+
+Launch by invoking::
 
     soapbox_daemon path_to_daemon.ini
+
+POST requests:
+==============
+
+All ``POST`` requests should attach their data as JSON.
+
+``/metadata_log``
+-----------------
+
+Save Liquidsoap's metadata, it can be called from Liquidsoap by::
+
+    def post_to_daemon(m)
+        response = http.post("http://localhost:4321/metadata_log", data=json_of(m))
+        log(label="http_posted", string_of(response))
+    end
+
+    radio = on_metadata(post_to_daemon, source)
 
 """
 
@@ -9,10 +32,13 @@ import sys
 import logging
 import logging.config
 import json
+from typing import Type
 import pkg_resources
 
 from configparser import ConfigParser
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
+
+from .metadata import save_metadata
 
 _log = logging.getLogger(__name__)
 
@@ -66,13 +92,13 @@ class SoapboxHandler(BaseHTTPRequestHandler):
         _log.debug("POST %s got %r", self.path, data)
 
         if self.path == "/metadata_log":
-            _log.debug("TODO save metadata")
+            save_metadata(self.server.config, data)
         else:
             self._close(404)
             return
 
         self._close(200)
-    
+
     def log_message(self, *args):
         "Override the super method to redirect messages to our own log"
         _log.info(*args)
@@ -81,7 +107,7 @@ class SoapboxHandler(BaseHTTPRequestHandler):
 class SoapboxServer(ThreadingHTTPServer):
     allow_reuse_address = True
 
-    def __init__(self, config, handler_class):
+    def __init__(self, config:Type[ConfigParser], handler_class):
         self.config = config
         super().__init__(
             (config['listen']['address'], int(config['listen']['port'])),
