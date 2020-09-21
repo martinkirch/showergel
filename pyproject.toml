@@ -10,9 +10,8 @@ repository = "https://github.com/martinkirch/showergel"
 keywords = ["radio", "liquidsoap", "gtk", "gui"]
 
 [tool.poetry.scripts]
-showergel_gui = "showergel.gui:main"
-showergel_daemon = "showergel.daemon:main"
-showergel_daemon_install = "showergel.daemon.install:main"
+showergel = "showergel:main"
+showergel_install = "showergel.install:main"
 
 [tool.poetry.dependencies]
 python = "^3.7"
