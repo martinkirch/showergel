@@ -29,6 +29,7 @@ Save Liquidsoap's metadata, it can be called from Liquidsoap by::
 """
 
 import sys
+import os
 import logging
 import logging.config
 import json
@@ -36,11 +37,12 @@ from typing import Type
 import pkg_resources
 
 from configparser import ConfigParser
-from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
 from .metadata import save_metadata
 
 _log = logging.getLogger(__name__)
+_current_dir = os.path.abspath(os.path.dirname(__file__))
 
 
 def get_config() -> ConfigParser:
@@ -72,8 +74,11 @@ def _handle_exception(f):
             _self.end_headers()
     return wrapper
 
-class ShowergelHandler(BaseHTTPRequestHandler):
+class ShowergelHandler(SimpleHTTPRequestHandler):
     server_version = "ShowergelServer/" + pkg_resources.get_distribution("showergel").version
+
+    def __init__(self, request, client_address, server):
+        super().__init__(request, client_address, server, directory=_current_dir)
 
     def _close(self, code):
         self.send_response(code)
@@ -81,7 +86,7 @@ class ShowergelHandler(BaseHTTPRequestHandler):
 
     @_handle_exception
     def do_GET(self):
-        self._close(200)
+        super().do_GET()
 
     @_handle_exception
     def do_POST(self):
