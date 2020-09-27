@@ -220,4 +220,4 @@ tags
 # End of https://www.toptal.com/developers/gitignore/api/python,visualstudiocode,emacs,vim
 
 ## Showergel files
-metadata_log.db
+showergel.db

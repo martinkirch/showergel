@@ -39,6 +39,7 @@ import pkg_resources
 from configparser import ConfigParser
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 
+from .db import SessionContext
 from .metadata import save_metadata
 
 _log = logging.getLogger(__name__)
@@ -59,16 +60,19 @@ def get_config() -> ConfigParser:
     return config
 
 
-def _handle_exception(f):
+def _showergel_wrapper(f):
     """
-    decorator for ``ShowergelHandler```methods, catching any Exception.
+    decorator for ``ShowergelHandler```methods, providing self.db (a fresh
+    SQLAlchemy session) and catching any Exception.
     Exceptions are logged, then the handler replies ``500 Internal Error``.
     """
     def wrapper(*args):
+        _self = args[0]
         try:
-            f(*args)
+            with SessionContext() as session:
+                _self.db = session
+                f(*args)
         except Exception as exc:
-            _self = args[0]
             _log.exception(exc)
             _self.send_response(500)
             _self.end_headers()
@@ -84,11 +88,11 @@ class ShowergelHandler(SimpleHTTPRequestHandler):
         self.send_response(code)
         self.end_headers()
 
-    @_handle_exception
+    @_showergel_wrapper
     def do_GET(self):
         super().do_GET()
 
-    @_handle_exception
+    @_showergel_wrapper
     def do_POST(self):
         length = int(self.headers.get('content-length'))
         raw = self.rfile.read(length).decode('utf8', errors='replace')
@@ -97,7 +101,7 @@ class ShowergelHandler(SimpleHTTPRequestHandler):
         _log.debug("POST %s got %r", self.path, data)
 
         if self.path == "/metadata_log":
-            save_metadata(self.server.config, data)
+            save_metadata(self.server.config, self.db, data)
         else:
             self._close(404)
             return
@@ -114,6 +118,7 @@ class ShowergelServer(ThreadingHTTPServer):
 
     def __init__(self, config:Type[ConfigParser], handler_class):
         self.config = config
+        SessionContext(config=config)
         super().__init__(
             (config['listen']['address'], int(config['listen']['port'])),
             handler_class

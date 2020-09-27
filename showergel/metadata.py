@@ -13,66 +13,43 @@ import re
 from typing import Type, Dict, List, Tuple
 from configparser import ConfigParser
 
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm.session import Session
+from sqlalchemy.schema import ForeignKey
+from sqlalchemy.orm import relationship
+
+from .db import Base, SessionContext
+
 
 _log = logging.getLogger(__name__)
 
 
-_CREATE_LOG = """CREATE TABLE log(
-    id INTEGER PRIMARY KEY,
-    on_air TEXT NOT NULL,
-    artist TEXT,
-    title TEXT,
-    album TEXT,
-    source TEXT,
-    initial_uri TEXT
-);
-"""
+class Log(Base):
+    __tablename__ = 'log'
 
-_CREATE_IDX_LOG_ON_AIR = "CREATE INDEX idx_log_on_air ON log(on_air);"
+    id = Column(Integer, primary_key=True)
+    on_air = Column(String, nullable=False, index=True)
+    artist = Column(String)
+    title = Column(String)
+    album = Column(String)
+    source = Column(String)
+    initial_uri = Column(String)
 
-_CREATE_LOG_EXTRA = """CREATE TABLE log_extra(
-    log_id INTEGER REFERENCES log(id) ON UPDATE CASCADE ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED,
-    key TEXT NOT NULL,
-    value TEXT NOT NULL
-);"""
-
-def install_metadata_db(config:Type[ConfigParser]):
-    with MetadataDB(config) as db:
-        columns = db.execute("PRAGMA table_info(log);").fetchall()
-        if columns:
-            pass # place future updates here
-        else:
-            db.execute(_CREATE_LOG)
-
-        columns = db.execute("PRAGMA index_info(idx_log_on_air);").fetchall()
-        if columns:
-            pass # place future updates here
-        else:
-            db.execute(_CREATE_IDX_LOG_ON_AIR)
-
-        columns = db.execute("PRAGMA table_info(log_extra);").fetchall()
-        if columns:
-            pass # place future updates here
-        else:
-            db.execute(_CREATE_LOG_EXTRA)
+    extra = relationship("LogExtra", back_populates="log")
 
 
-class MetadataDB(object):
-    """
-    A context manager providing an SQLite connection to the ``metadata_log`` DB,
-    where foreign key constraints are enabled.
-    It commits and closes the DB when exiting the context.
-    """
-    def __init__(self, config:Type[ConfigParser]):
-        self._connection = sqlite3.connect(config['metadata_log']['db'])
+class LogExtra(Base):
+    __tablename__ = 'log_extra'
 
-    def __enter__(self) -> Type[sqlite3.Connection]:
-        self._connection.execute("PRAGMA foreign_keys = ON")
-        return self._connection
+    id = Column(Integer, primary_key=True)
+    log_id = Column(Integer, ForeignKey(
+        'log.id', onupdate='CASCADE', ondelete='CASCADE', deferrable=True, initially='DEFERRED'
+    ))
+    key = Column(String, nullable=False)
+    value = Column(String, nullable=False)
 
-    def __exit__(self, type, value, traceback):
-        self._connection.commit()
-        self._connection.close()
+    log = relationship("Log", back_populates="extra")
+
 
 
 class FieldFilter(object):
@@ -120,12 +97,12 @@ class FieldFilter(object):
                 pass
             elif any(rule.match(k) for rule in cls._wildcards):
                 pass
-            else:
+            elif k and v:
                 result.append((k, v))
         return result
 
 
-def save_metadata(config:Type[ConfigParser], data:Dict):
+def save_metadata(config:Type[ConfigParser], db:Type[Session], data:Dict):
     """
     Save the metadata provided by Liquidsoap.
 
@@ -135,27 +112,19 @@ def save_metadata(config:Type[ConfigParser], data:Dict):
     When ``initial_uri`` is not provided by Liquidsoap, we might use
     ``source_url`` instead (this may happen for example from ``http.input``).
     """
-    with MetadataDB(config) as db:
-        log_fields = ['on_air']
-        try:
-            log_values = (data['on_air'], )
-        except KeyError:
-            raise ValueError("Metadata should at least contain on_air")
+    try:
+        log_entry = Log(on_air=data['on_air'])
+    except KeyError:
+        raise ValueError("Metadata should at least contain on_air")
 
-        for column in ['artist', 'title', 'album', 'source', 'initial_uri']:
-            if data.get(column):
-                log_fields.append(column)
-                log_values += (data[column], )
-        if not data.get('initial_uri') and data.get('source_url'):
-            log_fields.append('initial_uri')
-            log_values += (data['source_url'], )
+    for column in ['artist', 'title', 'album', 'source', 'initial_uri']:
+        if data.get(column):
+            setattr(log_entry, column, data[column])
+    if not data.get('initial_uri') and data.get('source_url'):
+        log_entry.initial_uri = data['source_url']
 
-        query = "INSERT INTO log (%s) VALUES (%s)" % (
-            ', '.join(log_fields), ', '.join(['?'] * len(log_fields))
-        )
-        cursor = db.execute(query, log_values)
-        log_id = cursor.lastrowid
+    db.add(log_entry)
+    db.flush()
 
-        extra = FieldFilter.filter(config, data)
-        query = "INSERT INTO log_extra (log_id, key, value) VALUES (%d, ?, ?)" % log_id
-        db.executemany(query, extra)
+    for couple in FieldFilter.filter(config, data):
+        db.add(LogExtra(log=log_entry, key=couple[0], value=couple[1]))
