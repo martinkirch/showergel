@@ -20,22 +20,22 @@ We provide a few extracts to demonstrate the integration with Showergel.
 Showergel is meant for community and benevolent radios.
 Therefore we'll keep it small and simple:
 
- * Showergel is intended to run on the same machine as Liquidsoap.
- * It relies on Python3's SimpleHTTPRequestHandler_ because it's enough
-   to provide an interface for a single stream,
-   and it allows us to keep everything in a single process.
- * Showergel's data is stored in SQLite_ because a database backing a radio stream
-   usually weights a few dozen megabytes.
- * Scheduling is delegated to APScheduler_ ... who also needs SQLAlchemy_ to
-   access SQLite, so we use SQLAlchemy too.
- * Showergel will not hold your music and shows collection.
-   For that matter we suggest Beets_,
-   you can find examples of its integration with Liquidsoap in
-   `Liquidsoap documentation <https://www.liquidsoap.info/doc-dev/beets.html>`_.
+* Showergel is intended to run on the same machine as Liquidsoap.
+* It relies on Python3's SimpleHTTPRequestHandler_ because it's enough
+  to provide an interface for a single stream,
+  and it allows us to keep everything in a single process.
+* Showergel's data is stored in SQLite_ because a database backing a radio stream
+  usually weights a few dozen megabytes.
+* Scheduling is delegated to APScheduler_ ... who also needs SQLAlchemy_ to
+  access SQLite, so we use SQLAlchemy too.
+* Showergel will not hold your music and shows collection.
+  For that matter we suggest Beets_,
+  you can find examples of its integration with Liquidsoap in
+  `Liquidsoap documentation <https://www.liquidsoap.info/doc-dev/beets.html>`_.
 
 Showergel have only been tested under Linux.
 
-License: GPL_.
+License: GPL3_.
 
 Develop
 =======
@@ -65,7 +65,7 @@ See the documentation in the script's docstring.
 
 
 .. _Liquidsoap: https://www.liquidsoap.info/
-.. _GPL: https://www.gnu.org/licenses/gpl.html
+.. _GPL3: https://www.gnu.org/licenses/gpl-3.0.html
 .. _Poetry: https://python-poetry.org/
 .. _APScheduler: https://apscheduler.readthedocs.io/en/stable/
 .. _SQLite: https://sqlite.org/

@@ -1,13 +1,20 @@
 [tool.poetry]
 name = "showergel"
-version = "0.1.0"
-description = "Companion applications for a Liquidsoap radio"
+version = "0.1.0-alpha1"
+description = "Companion application for a Liquidsoap radio"
 authors = ["Martin Kirchgessner <martin.kirch@gmail.com>"]
-license = "GPL"
+license = "GPL-3.0-only"
 readme = "README.rst"
 homepage = "https://github.com/martinkirch/showergel"
-repository = "https://github.com/martinkirch/showergel"
-keywords = ["radio", "liquidsoap", "gtk", "gui"]
+repository = "https://github.com/martinkirch/showergel.git"
+keywords = ["radio", "liquidsoap"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: POSIX :: Linux",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Multimedia :: Sound/Audio :: Players"
+]
 
 [tool.poetry.scripts]
 showergel = "showergel:main"
