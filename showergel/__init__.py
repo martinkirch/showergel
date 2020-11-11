@@ -29,7 +29,7 @@ Save Liquidsoap's metadata, it can be called from Liquidsoap by::
 """
 
 import sys
-from os import path
+import os.path
 import logging
 import logging.config
 import json
@@ -43,20 +43,22 @@ from .db import SessionContext
 from .metadata import save_metadata
 
 _log = logging.getLogger(__name__)
-WWW_ROOT = path.join(path.abspath(path.dirname(__file__)), "www")
+WWW_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), "www")
 
 
-def get_config() -> ConfigParser:
+def get_config(path=None) -> ConfigParser:
     """
-    Parses ``sys.argv`` to find the config file's path.
+    If provided ``path`` is ``None``, parses ``sys.argv`` to find the config file's path.
     Does some basic configuration, and return a loaded ``ConfigParser``.
     """
-    if len(sys.argv) < 2:
-        print("Missing argument: path to daemon.ini", file=sys.stderr)
-        sys.exit(1)
+    if path is None:
+        if len(sys.argv) < 2:
+            print("Missing argument: path to showergel's .ini", file=sys.stderr)
+            sys.exit(1)
+        path = sys.argv[1]
     config = ConfigParser()
-    config.read(sys.argv[1])
-    logging.config.fileConfig(sys.argv[1], disable_existing_loggers=False)
+    config.read(path)
+    logging.config.fileConfig(path, disable_existing_loggers=False)
     return config
 
 

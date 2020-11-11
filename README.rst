@@ -4,7 +4,7 @@ Showergel
 
 Showergel is made to live aside Liquidsoap_:
 while a Liquidsoap script creates a radio stream,
-Showergel handles externalized features like logging or scheduling
+Showergel handles externalized features like logging or occasional scheduling
 and provides *locally* a Web interface.
 
 **The project is still in its infancy** - we would welcome both contributions
@@ -13,9 +13,17 @@ and comments, feel free to start a disucssion in the Issues tab.
 Design
 ======
 
-The continuity of the radio stream is up to Liquidsoap ;
-in other words you have to write yourself the Liquidsoap script that will fit your radio.
-We provide a few extracts to demonstrate the integration with Showergel.
+Showergel is a light program made to run permanently along your Liqudidsoap instance.
+It communicates with Liqudidsoap via its telnet server,
+and with the outside world via HTTP.
+
+We assume that most of the program time should be handled by your Liquidsoap script,
+typically with the ``random`` operator over a music folder
+or a ``switch`` scheduling regular pre-recorded shows.
+
+In other words you still have to write yourself the Liquidsoap script that will fit your radio.
+We only provides a few examples,
+covering Liquidsoap's basics and Showgel's integration.
 
 Showergel is meant for community and benevolent radios.
 Therefore we'll keep it small and simple:
@@ -37,20 +45,57 @@ Showergel have only been tested under Linux.
 
 License: GPL3_.
 
+Install
+=======
+
+Install the program by the running ``pip install showergel``.
+
+Run the interactive installer by calling ``showergel_install``.
+It will explain on the terminal what is happening and what to do from here.
+If you stick to defaults, the installer will:
+
+* create a database (``showergel.db``)
+  and a configuration file (``showergel.ini``) in the current directory,
+* create a systemd user service called ``showergel`` ;
+  in other words you can ``systemctl --user status|start|stop|restart showergel``.
+* enable the service and systemd's lingering_ so Showergel will start automatically at boot time.
+* after installation Showergel will be available at http://localhost:1234/.
+
+The installer's questions allow you to:
+
+* change the name of the systemd service and the DB/configuration files' names.
+  This is useful if you want to run multiple instances of showergel because you're
+  broadcasting multiple programs from the same machine.
+  For example, responding ``radio`` will create ``radio.db``, ``radio.ini`` and a ``radio`` service.
+* skip the service creation, if you prefer to launch Showergel yourself.
+* create another systemd user service for your Liquidsoap script,
+  so systemd will automatically launch everything (this is recommanded).
+  Note that in that case, the installer creates two systemd services with the
+  same basename: for example,
+  ``radio_gel`` (showergel service associated to ``radio``)
+  and ``radio_soap`` (the Liquidsoap script you provided for ``radio``).
+
+
+Configure
+=========
+
+TODO
+
+
 Develop
 =======
 
 Depencencies, installation and packing is done by Poetry_.
 Once Poetry is installed,
 create a Python3 environment,
-activate it, and run ``poetry install`` from the root folder.
+activate it, and run ``poetry install`` from a clone of this repository.
 
-Showergel is a light program made to run permanently along your Liqudidsoap instance.
-It communicates with Liqudidsoap via its telnet server,
-and with the outside world via HTTP.
-Configure it by editing ``daemon.ini``,
-then set up the DB with ``showergel_install daemon.ini``.
-Finally run ``showergel daemon.ini``.
+When developping, your Liquidsoap script and Showergel should be launched manually.
+Run ``showergel_install --dev`` to create an empty database (``showergel.db``)
+and a basic configuration file (``showergel.ini``)
+in the current folder.
+Read (and edit, maybe) ``showergel.ini``,
+launch Liqudisoap, then run ``showergel showergel.ini``.
 
 
 Custom authentication for ``input.harbor``
@@ -72,3 +117,4 @@ See the documentation in the script's docstring.
 .. _Beets: http://beets.io
 .. _SimpleHTTPRequestHandler: https://docs.python.org/3/library/http.server.html#http.server.SimpleHTTPRequestHandler
 .. _SQLAlchemy: https://www.sqlalchemy.org/
+.. _lingering: https://www.freedesktop.org/software/systemd/man/loginctl.html
