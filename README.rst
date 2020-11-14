@@ -4,8 +4,9 @@ Showergel
 
 Showergel is made to live aside Liquidsoap_:
 while a Liquidsoap script creates a radio stream,
-Showergel handles externalized features like logging or occasional scheduling
-and provides *locally* a Web interface.
+Showergel provides complementary features like logging or occasional scheduling,
+with a (minimalist) Web interface.
+It is made to run on a Linux box (with systemd) dedicated to your radio stream.
 
 **The project is still in its infancy** - we would welcome both contributions
 and comments, feel free to start a disucssion in the Issues tab.
@@ -96,7 +97,8 @@ and a basic configuration file (``showergel.ini``)
 in the current folder.
 Read (and edit, maybe) ``showergel.ini``,
 launch Liqudisoap, then run ``showergel showergel.ini``.
-
+You'll likely want to enable the detailed log by setting ``level=DEBUG``
+in the ``logger_root`` section of the ini file.
 
 Custom authentication for ``input.harbor``
 ==========================================

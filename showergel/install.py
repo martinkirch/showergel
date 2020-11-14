@@ -8,6 +8,7 @@ import logging
 import os
 import os.path
 import shutil
+import socket
 
 import click
 
@@ -34,6 +35,8 @@ ignore_fields = musicbrainz*, comment*, itunes*, lyrics
 
 ############## Server configuration ##########
 [listen]
+# Showergel's interface will be available at http://[address]:[port]/
+# As there is no security check, be careful to keep the address on a private network.
 address = localhost
 port = {port:d}
 
@@ -50,7 +53,7 @@ keys = main
 keys = generic
 
 [logger_root]
-level = DEBUG
+level = INFO
 handlers = main
 
 [handler_main]
@@ -63,7 +66,6 @@ format = %(asctime)s %(levelname)-5.5s [%(threadName)s][%(name)s:%(lineno)s] %(m
 
 """
 
-# borrowed from liquidsoap.systemd.in in savonet's liquidsoap-daemon
 LIQUID_UNIT_TEMPLATE = """
 [Unit]
 Description={basename} Liquidsoap daemon
@@ -77,7 +79,7 @@ ExecStart={liquidsoap_binary} {run_script}
 Restart=always
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 """
 
 LIQUID_TEMPLATE = """
@@ -100,22 +102,20 @@ After=network.target
 Type=simple
 Restart=always
 WorkingDirectory={base_dir}
-ExecStart=showergel {ini_path}
+ExecStart={showergel} {ini_path}
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
 """
 
 
 class Installer(object):
     def __init__(self):
         self.basename = 'showergel'
-        self.port = '1234'
-        click.secho("Welcome to showergel installer !",
-            fg='green', bold=True)
-        click.echo("\nWe will ask for a few parameters.\n\nWhen in doubt, just press Enter and we'll use the default value (shown between square brackets).\nHit Ctlr+C to abort.")
+        self.port = 1234
         self.liquid_service_name = None
         self.service_name = None
+        self.enabled = False
 
         home = os.environ.get('HOME')
         if not home:
@@ -132,12 +132,17 @@ class Installer(object):
 
     @property
     def path_log(self):
-        return os.getcwd() + '/' + self.basename + '.log'
+        if self.liquid_service_name:
+            return os.getcwd() + '/' + self.basename + '_gel.log'
+        else:
+            return os.getcwd() + '/' + self.basename + '.log'
 
     def _potential_paths(self):
         for path in [
             self.path_ini,
             self.path_db,
+            self.path_log,
+            os.getcwd() + '/' + self.basename + '_gel.log',
             os.getcwd() + '/' + self.basename + '_soap.liq',
             self.path_systemd_units + self.basename + '.service',
             self.path_systemd_units + self.basename + '_gel.service',
@@ -150,8 +155,14 @@ class Installer(object):
             if os.path.exists(path):
                 os.unlink(path)
 
+    def hello(self):
+        click.secho("Welcome to showergel installer !",
+            fg='green', bold=True)
+        click.echo("\nWe will ask for a few parameters.\n\nWhen in doubt, just press Enter and we'll use the default value (shown between square brackets).\nHit Ctlr+C to abort.")
+
     def ask_basename(self):
-        click.echo("\nHow should we call the installation ?\nWe need a simple name (use only letters and numbers) for the future files and service.")
+        click.secho("\nHow should we call the installation ?", bold=True)
+        click.echo("We need a simple name (use only letters and numbers) for the future files and service.")
         while True:
             basename = click.prompt("Installation basename", default=self.basename)
             if basename.isalnum():
@@ -162,8 +173,21 @@ class Installer(object):
 
     def ask_port(self):
         click.echo("\nWhich port should we use for Showergel's interface ? Just ensure nothing else is already using it.")
-        port = click.prompt("Showergel port", default=self.port, type=int)
-        self.port = port
+        while True:
+            port = click.prompt("Showergel port", default=self.port, type=int)
+            if self.port_is_open(port):
+                click.secho(f"Port {port} is already held by another application, please pick another one.", fg='red')
+            else:
+                if port < 1024:
+                    click.secho("Warning: showergel will run as a normal user, it will unlikely be able to open a port below 1024", fg='yellow')
+                self.port = port
+                return
+
+    def port_is_open(self, port):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        result = (0 == sock.connect_ex(('localhost', port)))
+        sock.close()
+        return result
 
     def check_no_overwriting(self):
         for path in self._potential_paths():
@@ -172,11 +196,12 @@ class Installer(object):
 
     def create_ini(self, dev=False):
         if dev:
-            handler = "class = logging.handlers.StreamHandler\nargs = (sys.stderr,)"
+            handler = "class = logging.StreamHandler\nargs = (sys.stderr,)"
         else:
             handler = "class = logging.handlers.RotatingFileHandler\nargs=('{}', 'a', 1000000, 10)".format(
                 self.path_log)
         with open(self.path_ini, 'w') as ini:
+            click.echo("Writing configuration file: "+self.path_ini)
             ini.write(INI_TEMPLATE.format(
                 db=self.path_db,
                 port=self.port,
@@ -184,6 +209,7 @@ class Installer(object):
             ))
 
     def create_db(self):
+        click.echo("Initializing database: "+self.path_db)
         config = get_config(path=self.path_ini)
         SessionContext(config=config)
         Base.metadata.create_all(SessionContext.engine)
@@ -216,6 +242,7 @@ class Installer(object):
 
         run_script = os.getcwd() + '/' + self.liquid_service_name + '.liq'
         with open(run_script, 'w') as service:
+            click.echo("Creating Liquidsoap wrapper script: "+run_script)
             service.write(LIQUID_TEMPLATE.format(
                 liquidsoap_binary=liquid_binary,
                 log_path=log_path,
@@ -226,6 +253,7 @@ class Installer(object):
         liquid_service_file = self.path_systemd_units + self.liquid_service_name + '.service'
 
         with open(liquid_service_file, 'w') as service:
+            click.echo("Creating systemd unit for Liquidsoap: "+liquid_service_file)
             service.write(LIQUID_UNIT_TEMPLATE.format(
                 basename=self.basename,
                 pid_path=pid_path,
@@ -244,10 +272,12 @@ class Installer(object):
         service_file = self.path_systemd_units + self.service_name + '.service'
 
         with open(service_file, 'w') as service:
+            click.echo("Creating systemd unit for Showergel: "+service_file)
             service.write(SHOWERGEL_UNIT_TEMPLATE.format(
                 basename=self.basename,
                 base_dir=os.getcwd(),
                 ini_path=self.path_ini,
+                showergel=shutil.which('showergel'),
             ))
 
         os.system("systemctl --user daemon-reload")
@@ -258,19 +288,54 @@ class Installer(object):
         if self.liquid_service_name:
             os.system("systemctl --user enable "+self.liquid_service_name)
         if self.service_name or self.liquid_service_name:
+            click.echo("Enabling lingering (to start services at boot)")
             os.system("loginctl enable-linger")
+        self.enabled = True
 
     def recap(self):
-        click.secho("All done ! Keep all information above for future reference:",
+        click.secho("\nAll done ! Keep information below for future reference:",
             fg='green', bold=True)
+        click.echo("Current folder will contain Showergel and Liquidsoap's log files, with a '.log' extension.")
+
+        if self.liquid_service_name:
+            click.secho("\nThe companion Liquidsoap script has been installed as a system service", bold=True)
+            if self.enabled:
+                click.echo("It will start automatically when rebooting.")
+            click.echo("You can use the following commands:")
+            click.echo(" * systemctl --user start "+self.liquid_service_name)
+            click.echo(" * systemctl --user stop "+self.liquid_service_name)
+            click.echo(" * systemctl --user restart "+self.liquid_service_name)
+            click.echo(" * systemctl --user status "+self.liquid_service_name)
+            click.echo(" * systemctl --user disable "+self.liquid_service_name)
+            click.echo(" * systemctl --user enable "+self.liquid_service_name)
+
+        if self.service_name:
+            click.secho("\nShowergel has been installed as a system service", bold=True)
+            if self.enabled:
+                click.echo("It will start automatically when rebooting.")
+            click.echo("You can use the following commands:")
+            click.echo(" * systemctl --user start "+self.service_name)
+            click.echo(" * systemctl --user stop "+self.service_name)
+            click.echo(" * systemctl --user restart "+self.service_name)
+            click.echo(" * systemctl --user status "+self.service_name)
+            click.echo(" * systemctl --user disable "+self.service_name)
+            click.echo(" * systemctl --user enable "+self.service_name)
+            click.echo("\nOnce started, you can access Showergel's interface at http://localhost:{}/".format(self.port))
+        else:
+            click.echo("You can start showergel by invoking:")
+            click.echo("showergel "+self.path_ini)
+
+        click.echo("\nBe careful to restart Showergel after editing the .ini file")
+
         click.secho("\nWe advise you backup regularly the following files by copying them to an external support:",
             bold=True)
         click.echo(" * "+self.path_db)
         click.echo(" * "+self.path_ini)
+        click.echo("")
 
 @click.command()
-@click.option('--dev', is_flag=True)
-@click.option('--no-revert-on-failure', is_flag=True)
+@click.option('--dev', is_flag=True, help="If you want to develop/debug Showergel")
+@click.option('--no-revert-on-failure', is_flag=True, help="If you want to develop/debug this installer")
 def main(dev, no_revert_on_failure):
     installer = Installer()
     if (dev):
@@ -279,19 +344,22 @@ def main(dev, no_revert_on_failure):
         installer.create_db()
     else:
         try:
+            installer.hello()
             installer.ask_basename()
             installer.ask_port()
             installer.check_no_overwriting()
-            installer.create_ini()
-            installer.create_db()
 
             if click.confirm("\nShould we install {} as a system service ?"
                 .format(installer.basename), default=True):
                 installer.ask_liquid_script()
                 installer.create_systemd_unit()
-                if click.confirm("\nStart the service(s) now and enable it at boot ?"
-                    , default=True):
-                    installer.enable_systemd_unit()
+
+            # do this now because adding Liquidsoap script as a service changes the log path
+            installer.create_ini()
+            installer.create_db()
+            if installer.service_name and click.confirm("\nStart the service(s) at boot ?"
+                , default=True):
+                installer.enable_systemd_unit()
         except Exception:
             if not no_revert_on_failure:
                 installer.revert()
