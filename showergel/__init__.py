@@ -127,7 +127,8 @@ class ShowergelServer(ThreadingHTTPServer):
         )
 
     def server_activate(self):
-        _log.info("ShowergelServer listening %r", self.server_address)
+        _log.info("ShowergelServer listening http://%s:%d/",
+            self.server_address[0], self.server_address[1])
         super().server_activate()
 
 
