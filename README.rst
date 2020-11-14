@@ -79,7 +79,7 @@ The installer's questions allow you to:
 Configure
 =========
 
-TODO
+See comments in the ``.ini`` file created by the installer.
 
 
 Develop

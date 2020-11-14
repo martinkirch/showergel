@@ -7,7 +7,6 @@ see the ``install`` section of the README file.
 import logging
 import os
 import os.path
-import sys
 import shutil
 
 import click
@@ -87,12 +86,24 @@ LIQUID_TEMPLATE = """
 set("log.file",true)
 set("log.file.path","{log_path}")
 set("init.daemon",true)
-set("init.daemon.change_user",true)
-set("init.daemon.change_user.group","{group}")
-set("init.daemon.change_user.user","{user}")
 set("init.daemon.pidfile",true)
 set("init.daemon.pidfile.path","{pid_path}")
 %include "{liq_path}"
+"""
+
+SHOWERGEL_UNIT_TEMPLATE = """
+[Unit]
+Description={basename} Showergel daemon
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+WorkingDirectory={base_dir}
+ExecStart=showergel {ini_path}
+
+[Install]
+WantedBy=multi-user.target
 """
 
 
@@ -205,11 +216,9 @@ class Installer(object):
 
         run_script = os.getcwd() + '/' + self.liquid_service_name + '.liq'
         with open(run_script, 'w') as service:
-            service.write(LIQUID_UNIT_TEMPLATE.format(
+            service.write(LIQUID_TEMPLATE.format(
                 liquidsoap_binary=liquid_binary,
                 log_path=log_path,
-                group=,
-                user=,
                 pid_path=pid_path,
                 liq_path=liq_path,
             ))
@@ -232,12 +241,24 @@ class Installer(object):
         else:
             self.service_name = self.basename
 
-        #systemctl --user daemon-reload
+        service_file = self.path_systemd_units + self.service_name + '.service'
+
+        with open(service_file, 'w') as service:
+            service.write(SHOWERGEL_UNIT_TEMPLATE.format(
+                basename=self.basename,
+                base_dir=os.getcwd(),
+                ini_path=self.path_ini,
+            ))
+
+        os.system("systemctl --user daemon-reload")
 
     def enable_systemd_unit(self):
-        #systemctl --user enable myapp.service
-        #loginctl enable-linger
-        pass
+        if self.service_name:
+            os.system("systemctl --user enable "+self.service_name)
+        if self.liquid_service_name:
+            os.system("systemctl --user enable "+self.liquid_service_name)
+        if self.service_name or self.liquid_service_name:
+            os.system("loginctl enable-linger")
 
     def recap(self):
         click.secho("All done ! Keep all information above for future reference:",
