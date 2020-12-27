@@ -3,11 +3,37 @@
 Showergel Daemon
 ==============
 
-This is actually a RESTful HTTP server holding SQLite databases.
+This is actually a RESTful HTTP server for a SQLite database.
 
 Launch by invoking::
 
-    showergel_daemon path_to_daemon.ini
+    showergel config.ini
+
+This module acts as our Web framework.
+In its main class ``ShowergelHandler``,
+functions ``do_GET`` and ``do_POST`` are our router functions,
+actually implemented in other modules.
+
+GET requests:
+=============
+
+Parameters are expected bundled in a query string (``application/x-www-form-urlencoded``),
+response is JSON.
+
+``/metadata_log``
+-----------------
+
+Return an array of logged metadata.
+Possible parameters:
+
+  * ``chronological`` may be set to anything non-empty (use ``1`` or ``true``),
+    otherwise results are sorted recent first.
+    Doesn't affect the interpretation of ``start`` and ``end``.
+  * log interval, as ``start`` and ``end`` (inclusive).
+    For example ``start=2020-12-01 12:00:00&end=2020-12-01 14:00:00``.
+  * if ``start`` or ``end`` is missing, ``limit`` restricts the number of results (and defaults to 10).
+
+Therefore, ``GET /metadata_log`` returns the 10 most recent metadata items played.
 
 POST requests:
 ==============
@@ -38,9 +64,10 @@ import pkg_resources
 
 from configparser import ConfigParser
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
 
 from .db import SessionContext
-from .metadata import save_metadata
+from .metadata import save_metadata, Log
 
 _log = logging.getLogger(__name__)
 WWW_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), "www")
@@ -65,7 +92,7 @@ def get_config(path=None) -> ConfigParser:
 def _showergel_wrapper(f):
     """
     decorator for ``ShowergelHandler```methods, providing self.db (a fresh
-    SQLAlchemy session) and catching any Exception.
+    SQLAlchemy session), self.query (for GET), cleaned self.path and catching any Exception.
     Exceptions are logged, then the handler replies ``500 Internal Error``.
     """
     def wrapper(*args):
@@ -73,6 +100,13 @@ def _showergel_wrapper(f):
         try:
             with SessionContext() as session:
                 _self.db = session
+                parsed = urlparse(_self.path)
+                _self.path = parsed.path
+
+                _self.query = parse_qs(parsed.query)
+                for k, v in _self.query.items():
+                    _self.query[k] = v[0]
+
                 f(*args)
         except Exception as exc:
             _log.exception(exc)
@@ -86,13 +120,38 @@ class ShowergelHandler(SimpleHTTPRequestHandler):
     def __init__(self, request, client_address, server):
         super().__init__(request, client_address, server, directory=WWW_ROOT)
 
+        # those will be set by _showergel_wrapper later
+        self.db = None
+        self.query = None
+
+    def version_string(self):
+        """
+        Overridden because the default implem also reveals Python version
+        """
+        return self.server_version
+
     def _close(self, code):
         self.send_response(code)
         self.end_headers()
 
+    def _json_response(self, serializable):
+        self.log_request(200)
+        self.send_response_only(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps(serializable).encode('utf8'))
+
     @_showergel_wrapper
     def do_GET(self):
-        super().do_GET()
+        if self.path == "/metadata_log":
+            self._json_response(Log.get(self.db,
+                start=self.query.get('start'),
+                end=self.query.get('end'),
+                limit=self.query.get('limit'),
+                chronological=self.query.get('chronological')
+            ))
+        else:
+            super().do_GET()
 
     @_showergel_wrapper
     def do_POST(self):
