@@ -14,7 +14,6 @@ import click
 
 from . import get_config
 from .db import SessionContext, Base
-from . import metadata # must be there for schema discovery
 
 _log = logging.getLogger(__name__)
 
@@ -194,7 +193,7 @@ class Installer(object):
             if os.path.exists(path):
                 raise click.ClickException(f"{path} already exists, which suggests that Showergel is already installed. Or maybe install with another basename.")
 
-    def create_ini(self, dev=False):
+    def create_ini_and_db(self, dev=False):
         if dev:
             handler = "class = logging.StreamHandler\nargs = (sys.stderr,)"
         else:
@@ -207,10 +206,13 @@ class Installer(object):
                 port=self.port,
                 handler=handler
             ))
-
-    def create_db(self):
         click.echo("Initializing database: "+self.path_db)
-        config = get_config(path=self.path_ini)
+        self.create_db_schema()
+
+    def create_db_schema(self, path_ini=None):
+        if not path_ini:
+            path_ini = self.path_ini
+        config = get_config(path=path_ini)
         SessionContext(config=config)
         Base.metadata.create_all(SessionContext.engine)
 
@@ -334,14 +336,19 @@ class Installer(object):
         click.echo("")
 
 @click.command()
+# TODO : currently --help shows "--update TEXT" - how to change TEXT ?
+@click.option('--update', help="Check/update the DB schema after a software update")
 @click.option('--dev', is_flag=True, help="If you want to develop/debug Showergel")
 @click.option('--no-revert-on-failure', is_flag=True, help="If you want to develop/debug this installer")
-def main(dev, no_revert_on_failure):
+def main(update, dev, no_revert_on_failure):
     installer = Installer()
-    if (dev):
+    if (update):
+        installer.create_db_schema(path_ini=update)
+        click.secho("DB is up-to-date", fg='green', bold=True)
+    elif (dev):
         installer.check_no_overwriting()
-        installer.create_ini(dev=True)
-        installer.create_db()
+        installer.create_ini_and_db(dev=True)
+        installer.recap()
     else:
         try:
             installer.hello()
@@ -355,8 +362,7 @@ def main(dev, no_revert_on_failure):
                 installer.create_systemd_unit()
 
             # do this now because adding Liquidsoap script as a service changes the log path
-            installer.create_ini()
-            installer.create_db()
+            installer.create_ini_and_db()
             if installer.service_name and click.confirm("\nStart the service(s) at boot ?"
                 , default=True):
                 installer.enable_systemd_unit()
@@ -365,4 +371,4 @@ def main(dev, no_revert_on_failure):
                 installer.revert()
             raise
 
-    installer.recap()
+        installer.recap()
