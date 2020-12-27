@@ -91,9 +91,14 @@ def get_config(path=None) -> ConfigParser:
 
 def _showergel_wrapper(f):
     """
-    decorator for ``ShowergelHandler```methods, providing self.db (a fresh
-    SQLAlchemy session), self.query (for GET), cleaned self.path and catching any Exception.
-    Exceptions are logged, then the handler replies ``500 Internal Error``.
+    decorator for ``ShowergelHandler```methods, providing
+     * ``self.db`` (a fresh SQLAlchemy session),
+     * ``self.query`` (especially for GET parameters)
+     * ``self.data``  (decoded JSON data provided to POST/PUT)
+     * cleaned ``self.path``
+
+    Any exception will be caught and logged.
+    Then, the handler replies ``500 Internal Error``.
     """
     def wrapper(*args):
         _self = args[0]
@@ -106,6 +111,15 @@ def _showergel_wrapper(f):
                 _self.query = parse_qs(parsed.query)
                 for k, v in _self.query.items():
                     _self.query[k] = v[0]
+
+                length = int(_self.headers.get('content-length'))
+                if length:
+                    raw = _self.rfile.read(length).decode('utf8', errors='replace')
+                    _self.data = json.loads(raw)
+                    _self.rfile.close()
+                    _log.debug("%s %s got %r", _self.command, _self.path, _self.data)
+                else:
+                    _self.data = None
 
                 f(*args)
         except Exception as exc:
@@ -123,6 +137,7 @@ class ShowergelHandler(SimpleHTTPRequestHandler):
         # those will be set by _showergel_wrapper later
         self.db = None
         self.query = None
+        self.data = None
 
     def version_string(self):
         """
@@ -155,14 +170,8 @@ class ShowergelHandler(SimpleHTTPRequestHandler):
 
     @_showergel_wrapper
     def do_POST(self):
-        length = int(self.headers.get('content-length'))
-        raw = self.rfile.read(length).decode('utf8', errors='replace')
-        data = json.loads(raw)
-        self.rfile.close()
-        _log.debug("POST %s got %r", self.path, data)
-
         if self.path == "/metadata_log":
-            save_metadata(self.server.config, self.db, data)
+            save_metadata(self.server.config, self.db, self.data)
         else:
             self._close(404)
             return
