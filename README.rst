@@ -2,29 +2,57 @@
 Showergel
 =========
 
-While a Liquidsoap_ script creates a radio stream,
-Showergel provides complementary features like metadata logging or occasional scheduling,
-with a (minimalist, localhost-oriented) Web interface.
-It can install itself (and your ``.liq``) as a systemd service.
+Showergel is made to live aside Liquidsoap_:
+while a Liquidsoap script creates a radio stream,
+Showergel provides complementary features like logging or occasional scheduling,
+with a (minimalist) Web interface.
+It is made to run on a Linux box (with systemd) dedicated to your radio stream.
 
-It is meant to remain small and simple (a Python package using a SQLite DB),
-for community/benevolent radios.
-Showergel runs on a Linux box (with systemd) dedicated to your radio stream.
+**The project is still in its infancy** - we would welcome both contributions
+and comments, feel free to start a disucssion in the Issues tab.
 
-**This is a work in progress.**
-Contributions and comments will be welcomed in the Issues tab.
+Design
+======
+
+Showergel is a light program made to run permanently along your Liqudidsoap instance.
+It communicates with Liqudidsoap via its telnet server,
+and with the outside world via HTTP.
+
+We assume that most of the program time should be handled by your Liquidsoap script,
+typically with the ``random`` operator over a music folder
+or a ``switch`` scheduling regular pre-recorded shows.
+
+In other words you still have to write yourself the Liquidsoap script that will fit your radio.
+We only provides a few examples,
+covering Liquidsoap's basics and Showgel's integration.
+
+Showergel is meant for community and benevolent radios.
+Therefore we'll keep it small and simple:
+
+* Showergel is intended to run on the same machine as Liquidsoap.
+* It relies on Python3's SimpleHTTPRequestHandler_ because it's enough
+  to provide an interface for a single stream,
+  and it allows us to keep everything in a single process.
+* Showergel's data is stored in SQLite_ because a database backing a radio stream
+  usually weights a few dozen megabytes.
+* Scheduling is delegated to APScheduler_ ... who also needs SQLAlchemy_ to
+  access SQLite, so we use SQLAlchemy too.
+* Showergel will not hold your music and shows collection.
+  For that matter we suggest Beets_,
+  you can find examples of its integration with Liquidsoap in
+  `Liquidsoap documentation <https://www.liquidsoap.info/doc-dev/beets.html>`_.
+
+Showergel have only been tested under Linux.
 
 License: GPL3_.
-
 
 Install
 =======
 
-You'll need Python's pip ; run ``pip install showergel``.
+Install the program by the running ``pip install showergel``.
 
-Start the interactive installer by calling ``showergel_install``.
+Run the interactive installer by calling ``showergel_install``.
 It will explain on the terminal what is happening and what to do from here.
-
 If you stick to defaults, the installer will:
 
 * create a database (``showergel.db``)
@@ -54,37 +82,6 @@ Configure
 
 See comments in the ``.ini`` file created by the installer.
 
-
-Design principles: simplicity and modularity
-============================================
-
-Showergel is meant to provide additional blocks to your Liquidsoap instance,
-like metadata logging or occasional scheduling.
-
-*Occasional scheduling* means we assume that most of the program time is handled by your Liquidsoap script alone,
-typically with the ``random`` operator over a music folder
-or a ``switch`` scheduling regular pre-recorded shows.
-In other words you still have to write yourself the Liquidsoap script that will fit your radio.
-We only provides a few examples,
-covering Liquidsoap's basics and Showgel's integration.
-
-Showergel is meant for community and benevolent radios.
-Therefore we'll keep it small and simple:
-
-* Showergel is intended to run on the same machine as Liquidsoap.
-* It relies on Python3's SimpleHTTPRequestHandler_ because it's enough
-  to provide an interface for a single stream,
-  and it allows us to keep everything in a single process.
-* Showergel's data is stored in SQLite_ because a database backing a radio stream
-  usually weights a few dozen megabytes.
-* Scheduling is delegated to APScheduler_ ... who also needs SQLAlchemy_ to
-  access SQLite, so we use SQLAlchemy too.
-* Showergel will not hold your music and shows collection.
-  For that matter we suggest Beets_,
-  you can find examples of its integration with Liquidsoap in
-  `Liquidsoap documentation <https://www.liquidsoap.info/doc-dev/beets.html>`_.
-
-Showergel have only been tested under Linux.
 
 Develop
 =======
