@@ -17,7 +17,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.orm import relationship
 
-from .db import Base, SessionContext
+from .db import Base
 
 
 _log = logging.getLogger(__name__)
@@ -95,8 +95,8 @@ class FieldFilter(object):
     # will always be called with the same config object, so we don't need much
     # thread-safety
 
-    _fields = None
-    _wildcards = None
+    _fields = []
+    _wildcards = []
 
     @classmethod
     def _load(cls, config):
