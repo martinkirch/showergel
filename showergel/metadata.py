@@ -8,7 +8,6 @@ played by Liquidsoap.
 """
 
 import logging
-import sqlite3
 import re
 from typing import Type, Dict, List, Tuple
 from configparser import ConfigParser
@@ -35,7 +34,46 @@ class Log(Base):
     source = Column(String)
     initial_uri = Column(String)
 
-    extra = relationship("LogExtra", back_populates="log")
+    extra = relationship("LogExtra", back_populates="log") ### TODO joined pre-load of extra
+
+    @classmethod
+    def get(cls, db:Type[Session], start:String=None, end:String=None,
+        limit:int=10, chronological:bool=None) -> List:
+
+        query = db.query(cls)
+
+        if start:
+            query = query.filter(cls.on_air >= start)
+        if end:
+            query = query.filter(cls.on_air <= end)
+
+        if chronological:
+            query = query.order_by(cls.on_air.asc())
+        else:
+            query = query.order_by(cls.on_air.desc())
+
+        if not(start and end):
+            query = query.limit(limit)
+
+        return [l.to_dict() for l in query]
+    
+    def to_dict(self):
+        d = {'on_air': self.on_air}
+        if self.artist:
+            d['artist'] = self.artist
+        if self.title:
+            d['title'] = self.title
+        if self.album:
+            d['album'] = self.album
+        if self.source:
+            d['source'] = self.source
+        if self.initial_uri:
+            d['initial_uri'] = self.initial_uri
+
+        for additional in self.extra:
+            d[additional.key] = additional.value
+
+        return d
 
 
 class LogExtra(Base):
