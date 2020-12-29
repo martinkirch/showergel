@@ -60,7 +60,7 @@ If you stick to defaults, the installer will:
 * create a systemd user service called ``showergel`` ;
   in other words you can ``systemctl --user status|start|stop|restart showergel``.
 * enable the service and systemd's lingering_ so Showergel will start automatically at boot time.
-* after installation Showergel will be available at http://localhost:1234/.
+* after installation Showergel will be available at http://localhost:2345/.
 
 The installer's questions allow you to:
 
