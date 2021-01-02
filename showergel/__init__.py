@@ -35,6 +35,11 @@ Possible parameters:
 
 Therefore, ``GET /metadata_log`` returns the 10 most recent metadata items played.
 
+``/users``
+----------
+
+Return the list of harbor users
+
 POST requests:
 ==============
 
@@ -52,6 +57,52 @@ Save Liquidsoap's metadata, it can be called from Liquidsoap by::
 
     radio = on_metadata(post_to_daemon, source)
 
+``/login``
+----------
+
+Username/password check. Returns the matched user object, or a 404 error.
+Call it from Liquidsoap as follows::
+
+    TODO how to pass "/path/to/harbor_auth.py #{user} #{password}"
+    TODO how is it logged to metadata ?
+
+    def auth_function(user,password) = 
+        response = http.post(
+            "http://127.0.0.1:2345/login",
+            data=json_of(metadata)
+        )
+
+        ret = get_process_output()
+        if string.trim(ret) == "ok" then
+            log("Access granted to #{user}")
+            true
+        else
+            log("Access denied to #{user}")
+            false
+        end
+    end
+
+    harbor = input.harbor(auth=auth_function, ...
+
+PUT requests:
+==============
+
+All ``PUT`` requests should attach their data as JSON.
+
+
+``/users``
+----------
+
+Create an user. Expects ``username`` and  ``password``. Returns the created user object.
+
+DELETE requests:
+================
+
+``/users?username=someone``
+---------------------------
+
+Deletes ``someone``'s user account.
+
 """
 
 import sys
@@ -68,6 +119,7 @@ from urllib.parse import urlparse, parse_qs
 
 from .db import SessionContext
 from .metadata import save_metadata, Log
+from .users import User
 
 _log = logging.getLogger(__name__)
 WWW_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), "www")
@@ -112,9 +164,9 @@ def _showergel_wrapper(f):
                 for k, v in _self.query.items():
                     _self.query[k] = v[0]
 
-                length = int(_self.headers.get('content-length'))
+                length = _self.headers.get('content-length')
                 if length:
-                    raw = _self.rfile.read(length).decode('utf8', errors='replace')
+                    raw = _self.rfile.read(int(length)).decode('utf8', errors='replace')
                     _self.data = json.loads(raw)
                     _self.rfile.close()
                     _log.debug("%s %s got %r", _self.command, _self.path, _self.data)
@@ -145,6 +197,10 @@ class ShowergelHandler(SimpleHTTPRequestHandler):
         """
         return self.server_version
 
+    def log_message(self, *args):
+        "Override the super method to redirect messages to our own log"
+        _log.info(*args)
+
     def _close(self, code):
         self.send_response(code)
         self.end_headers()
@@ -165,6 +221,8 @@ class ShowergelHandler(SimpleHTTPRequestHandler):
                 limit=self.query.get('limit'),
                 chronological=self.query.get('chronological')
             ))
+        elif self.path == "/users":
+            self._json_response(User.list(self.db))
         else:
             super().do_GET()
 
@@ -172,16 +230,37 @@ class ShowergelHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         if self.path == "/metadata_log":
             save_metadata(self.server.config, self.db, self.data)
+        elif self.path == "/login":
+            user = User.check(self.db, self.data.get('username'), self.data.get('password'))
+            if user:
+                self._json_response(user.to_dict())
+            else:
+                self._close(404)
+                return
         else:
             self._close(404)
             return
 
         self._close(200)
 
-    def log_message(self, *args):
-        "Override the super method to redirect messages to our own log"
-        _log.info(*args)
+    @_showergel_wrapper
+    def do_PUT(self):
+        if self.path == "/users":
+            user = User.create(self.db, self.data.get('username'), self.data.get('password'))
+            if user:
+                self._json_response(user.to_dict())
+            else:
+                self._close(401)
+        else:
+            self._close(404)
 
+    @_showergel_wrapper
+    def do_DELETE(self):
+        if self.path == "/users":
+            User.delete(self.db, self.query.get('username'))
+            self._close(200)
+        else:
+            self._close(404)
 
 class ShowergelServer(ThreadingHTTPServer):
     allow_reuse_address = True

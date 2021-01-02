@@ -100,16 +100,6 @@ launch Liqudisoap, then run ``showergel showergel.ini``.
 You'll likely want to enable the detailed log by setting ``level=DEBUG``
 in the ``logger_root`` section of the ini file.
 
-Custom authentication for ``input.harbor``
-==========================================
-
-*this will be moved to an HTTP endpoint*
-
-``showergel/harbor_auth.py`` is an independant script
-that can back a custom authentication function for ``input.harbor``,
-where each user has her own password.
-See the documentation in the script's docstring.
-
 
 .. _Liquidsoap: https://www.liquidsoap.info/
 .. _GPL3: https://www.gnu.org/licenses/gpl-3.0.html
