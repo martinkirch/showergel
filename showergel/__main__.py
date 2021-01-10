@@ -1,6 +1,5 @@
 """
-This module is useful to plug a debugger.
-Here is a useful VSCode debugger config::
+This module helps to plug a VSCode debugger with the following configuration::
 
     {
             "name": "Server showergel",

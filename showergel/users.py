@@ -9,12 +9,12 @@ This module contains functions that process and store user list for Liquidsoap's
 import logging
 import crypt
 from hmac import compare_digest
-from typing import Type, Optional, List, Dict
+from typing import Type, List, Dict
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm.session import Session
 
-from .db import Base
+from . import Base
 
 
 _log = logging.getLogger(__name__)

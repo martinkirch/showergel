@@ -9,11 +9,12 @@ import os
 import os.path
 import shutil
 import socket
+from configparser import ConfigParser
 
 import click
+from sqlalchemy import engine_from_config
 
-from . import get_config
-from .db import SessionContext, Base
+
 
 _log = logging.getLogger(__name__)
 
@@ -212,9 +213,15 @@ class Installer(object):
     def create_db_schema(self, path_ini=None):
         if not path_ini:
             path_ini = self.path_ini
-        config = get_config(path=path_ini)
-        SessionContext(config=config)
-        Base.metadata.create_all(SessionContext.engine)
+
+        from showergel import Base
+        # indirectly import all Base subclasses:
+        from showergel import rest
+
+        config = ConfigParser()
+        config.read(path_ini)
+        engine = engine_from_config(config['db'])
+        Base.metadata.create_all(engine)
 
     def ask_liquid_script(self):
         click.echo("\nIf you would like to also create a systemd service for your Liquidsoap script, enter its path below. Otherwise, leave blank.")

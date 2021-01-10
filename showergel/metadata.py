@@ -1,7 +1,7 @@
 """
-===============
-Metadata logger
-===============
+============
+Metadata log
+============
 
 This module contains functions that process and store the metadata of tracks
 played by Liquidsoap.
@@ -17,7 +17,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.orm import relationship
 
-from .db import Base
+from . import Base
 
 
 _log = logging.getLogger(__name__)
@@ -35,6 +35,34 @@ class Log(Base):
     initial_uri = Column(String)
 
     extra = relationship("LogExtra", back_populates="log") ### TODO joined pre-load of extra
+
+    @staticmethod
+    def save_metadata(config, db, data:Dict):
+        """
+        Save the metadata provided by Liquidsoap.
+
+        Fields that do not fit into our ``log`` table are saved to ``log_extra``,
+        except those matching one in the ``ignore_fields`` configuration.
+        Empty values are not saved.
+        When ``initial_uri`` is not provided by Liquidsoap, we might use
+        ``source_url`` instead (this may happen for example from ``http.input``).
+        """
+        try:
+            log_entry = Log(on_air=data['on_air'])
+        except KeyError:
+            raise ValueError("Metadata should at least contain on_air")
+
+        for column in ['artist', 'title', 'album', 'source', 'initial_uri']:
+            if data.get(column):
+                setattr(log_entry, column, data[column])
+        if not data.get('initial_uri') and data.get('source_url'):
+            log_entry.initial_uri = data['source_url']
+
+        db.add(log_entry)
+        db.flush()
+
+        for couple in FieldFilter.filter(config, data):
+            db.add(LogExtra(log=log_entry, key=couple[0], value=couple[1]))
 
     @classmethod
     def get(cls, db:Type[Session], start:String=None, end:String=None,
@@ -138,31 +166,3 @@ class FieldFilter(object):
             elif k and v:
                 result.append((k, v))
         return result
-
-
-def save_metadata(config:Type[ConfigParser], db:Type[Session], data:Dict):
-    """
-    Save the metadata provided by Liquidsoap.
-
-    Fields that do not fit into our ``log`` table are saved to ``log_extra``,
-    except those matching one in the ``ignore_fields`` configuration.
-    Empty values are not saved.
-    When ``initial_uri`` is not provided by Liquidsoap, we might use
-    ``source_url`` instead (this may happen for example from ``http.input``).
-    """
-    try:
-        log_entry = Log(on_air=data['on_air'])
-    except KeyError:
-        raise ValueError("Metadata should at least contain on_air")
-
-    for column in ['artist', 'title', 'album', 'source', 'initial_uri']:
-        if data.get(column):
-            setattr(log_entry, column, data[column])
-    if not data.get('initial_uri') and data.get('source_url'):
-        log_entry.initial_uri = data['source_url']
-
-    db.add(log_entry)
-    db.flush()
-
-    for couple in FieldFilter.filter(config, data):
-        db.add(LogExtra(log=log_entry, key=couple[0], value=couple[1]))

@@ -21,6 +21,26 @@ tests = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)"
 tests_no_zope = ["coverage[toml] (>=5.0.2)", "hypothesis", "pympler", "pytest (>=4.3.0)", "six"]
 
 [[package]]
+name = "bottle"
+version = "0.12.19"
+description = "Fast and simple WSGI-framework for small web-applications."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "bottle-sqlalchemy"
+version = "0.4.3"
+description = "SQLAlchemy integration for Bottle."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+bottle = ">=0.9"
+sqlalchemy = "*"
+
+[[package]]
 name = "click"
 version = "7.1.2"
 description = "Composable command line interface toolkit"
@@ -175,7 +195,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "7fbbb506904a19715b0fb784f08a667390117bf6f3411950e0c869f6864fcde1"
+content-hash = "cc9ec3909f97c85e852e4aa9c6f3718edb2a5168edc7c527c5cc450fd52ff84f"
 
 [metadata.files]
 atomicwrites = [
@@ -185,6 +205,13 @@ atomicwrites = [
 attrs = [
     {file = "attrs-20.3.0-py2.py3-none-any.whl", hash = "sha256:31b2eced602aa8423c2aea9c76a724617ed67cf9513173fd3a4f03e3a929c7e6"},
     {file = "attrs-20.3.0.tar.gz", hash = "sha256:832aa3cde19744e49938b91fea06d69ecb9e649c93ba974535d08ad92164f700"},
+]
+bottle = [
+    {file = "bottle-0.12.19-py3-none-any.whl", hash = "sha256:f6b8a34fe9aa406f9813c02990db72ca69ce6a158b5b156d2c41f345016a723d"},
+    {file = "bottle-0.12.19.tar.gz", hash = "sha256:a9d73ffcbc6a1345ca2d7949638db46349f5b2b77dac65d6494d45c23628da2c"},
+]
+bottle-sqlalchemy = [
+    {file = "bottle-sqlalchemy-0.4.3.tar.gz", hash = "sha256:ba6127f3aff2b78649781adbbee65518233dc481e9f9e32e3b050d1ad9551c17"},
 ]
 click = [
     {file = "click-7.1.2-py2.py3-none-any.whl", hash = "sha256:dacca89f4bfadd5de3d7489b7c8a566eee0d3676333fbb50030263894c38c0dc"},

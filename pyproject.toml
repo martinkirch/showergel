@@ -24,6 +24,8 @@ showergel_install = "showergel.install:main"
 python = "^3.7"
 sqlalchemy = "^1.3.19"
 click = "^7.1.2"
+bottle = "^0.12.19"
+bottle-sqlalchemy = "^0.4.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
