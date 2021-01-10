@@ -20,7 +20,7 @@ _log = logging.getLogger(__name__)
 
 INI_TEMPLATE = """
 [db]
-sqlalchemy.url = sqlite:///{db}
+sqlalchemy.url = sqlite://{db}
 
 ############### Metadata logger ###############
 [metadata_log]
@@ -39,7 +39,7 @@ ignore_fields = musicbrainz*, comment*, itunes*, lyrics
 # As there is no security check, be careful to keep the address on a private network.
 address = localhost
 port = {port:d}
-
+{debug}
 
 ############# Logging configuration ##########
 
@@ -53,7 +53,7 @@ keys = main
 keys = generic
 
 [logger_root]
-level = INFO
+level = {log_level}
 handlers = main
 
 [handler_main]
@@ -197,15 +197,21 @@ class Installer(object):
     def create_ini_and_db(self, dev=False):
         if dev:
             handler = "class = logging.StreamHandler\nargs = (sys.stderr,)"
+            debug = "debug = True"
+            log_level = "DEBUG"
         else:
             handler = "class = logging.handlers.RotatingFileHandler\nargs=('{}', 'a', 1000000, 10)".format(
                 self.path_log)
+            debug = ""
+            log_level = "INFO"
         with open(self.path_ini, 'w') as ini:
             click.echo("Writing configuration file: "+self.path_ini)
             ini.write(INI_TEMPLATE.format(
                 db=self.path_db,
                 port=self.port,
-                handler=handler
+                handler=handler,
+                debug=debug,
+                log_level=log_level,
             ))
         click.echo("Initializing database: "+self.path_db)
         self.create_db_schema()
