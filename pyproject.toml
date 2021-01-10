@@ -26,9 +26,11 @@ sqlalchemy = "^1.3.19"
 click = "^7.1.2"
 bottle = "^0.12.19"
 bottle-sqlalchemy = "^0.4.3"
+Paste = "^3.5.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
+WebTest = "^2.0.35"
 
 [build-system]
 requires = ["poetry>=0.12"]

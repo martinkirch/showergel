@@ -29,10 +29,10 @@ def get_metadata_log(db):
     Therefore, ``GET /metadata_log`` returns the 10 most recent metadata items played.
     """
     return Log.get(db,
-        start=request.query.start,
-        end=request.query.end,
-        limit=request.query.limit,
-        chronological=bool(request.query.chronological),
+        start=request.params.start,
+        end=request.params.end,
+        limit=request.params.limit,
+        chronological=bool(request.params.chronological),
     )
 
 @app.post("/metadata_log")

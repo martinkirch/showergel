@@ -56,7 +56,8 @@ def main():
 
     debug = bool(app.config['listen'].get('debug'))
 
-    app.run( # TODO change server, for  unit testing
+    app.run(
+        server='paste',
         host=app.config['listen']['address'],
         port=int(app.config['listen']['port']),
         reloader=debug,

@@ -100,6 +100,8 @@ launch Liqudisoap, then run ``showergel showergel.ini``.
 You'll likely want to enable the detailed log by setting ``level=DEBUG``
 in the ``logger_root`` section of the ini file.
 
+Test with ``pytest``.
+
 
 .. _Liquidsoap: https://www.liquidsoap.info/
 .. _GPL3: https://www.gnu.org/licenses/gpl-3.0.html
