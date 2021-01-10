@@ -13,13 +13,20 @@ from configparser import ConfigParser
 
 from bottle import Bottle, response
 from bottle.ext import sqlalchemy
+from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import engine_from_config
+from sqlalchemy import engine_from_config, event
 
 _log = logging.getLogger(__name__)
 Base = declarative_base()
 WWW_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), "www")
 
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
 
 class ShowergelBottle(Bottle):
 
