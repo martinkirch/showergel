@@ -44,13 +44,17 @@ class User(Base):
         return user
 
     @classmethod
+    def from_username(cls, db:Type[Session], username:String):
+        return db.query(cls).filter(cls.username == username).first()
+
+    @classmethod
     def check(cls, db:Type[Session], username:String, password:String):
-        user = db.query(cls).filter(cls.username == username).first()
+        user = cls.from_username(db, username)
         if user:
             if compare_digest(crypt.crypt(password, user.password), user.password):
                 return user
         return None
-    
+
     @classmethod
     def delete(cls, db:Type[Session], username:String):
         if username:
