@@ -4,7 +4,7 @@ Metadata log RESTful interface
 ==============================
 """
 
-from bottle import request
+from bottle import request, HTTPError
 
 from showergel.metadata import Log
 from .. import app
@@ -28,12 +28,14 @@ def get_metadata_log(db):
 
     Therefore, ``GET /metadata_log`` returns the 10 most recent metadata items played.
     """
-    return Log.get(db,
-        start=request.params.start,
-        end=request.params.end,
-        limit=request.params.limit,
-        chronological=bool(request.params.chronological),
-    )
+    return {
+        'metadata_log': Log.get(db,
+            start=request.params.start,
+            end=request.params.end,
+            limit=request.params.limit,
+            chronological=bool(request.params.chronological),
+        )
+    }
 
 @app.post("/metadata_log")
 def post_metadata_log(db):
@@ -50,5 +52,8 @@ def post_metadata_log(db):
 
         radio = on_metadata(post_to_daemon, source)
     """
-    Log.save_metadata(app.config, db, request.json)
+    try:
+        Log.save_metadata(app.config, db, request.json)
+    except ValueError as value_error:
+        raise HTTPError(status=400, body=str(value_error))
     return {}

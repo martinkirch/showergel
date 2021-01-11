@@ -52,11 +52,24 @@ class Log(Base):
         except KeyError:
             raise ValueError("Metadata should at least contain on_air")
 
+        latest = Log.get(db, limit=1)
+        if latest:
+            latest = latest[0]
+        else:
+            latest = {}
+
+        if not data.get('initial_uri') and data.get('source_url'):
+            log_entry.initial_uri = data['source_url']
+            del data['source_url']
+
+        matches_latest = True
         for column in ['artist', 'title', 'album', 'source', 'initial_uri']:
             if data.get(column):
                 setattr(log_entry, column, data[column])
-        if not data.get('initial_uri') and data.get('source_url'):
-            log_entry.initial_uri = data['source_url']
+                if data.get(column) != latest.get(column):
+                    matches_latest = False
+        if matches_latest:
+            return
 
         db.add(log_entry)
         db.flush()
@@ -80,7 +93,11 @@ class Log(Base):
         else:
             query = query.order_by(cls.on_air.desc())
 
-        if not(start and end):
+        if limit:
+            query = query.limit(limit)
+        elif not(start and end):
+            if not limit:
+                limit = 10
             query = query.limit(limit)
 
         return [l.to_dict() for l in query]
