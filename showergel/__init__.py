@@ -11,7 +11,7 @@ import logging.config
 import json
 from configparser import ConfigParser
 
-from bottle import Bottle, response
+from bottle import Bottle, response, HTTPError
 from bottle.ext import sqlalchemy
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -31,6 +31,9 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 class ShowergelBottle(Bottle):
 
     def default_error_handler(self, res):
+        if isinstance(res, HTTPError):
+            _log.critical("Uncaught %r", res.exception)
+            _log.critical(res.traceback)
         response.content_type = 'application/json'
         return json.dumps({"code": int(res.status_code), "message": res.body})
 
