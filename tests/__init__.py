@@ -1,4 +1,6 @@
+import logging
 from unittest import TestCase
+
 from webtest import TestApp
 from sqlalchemy import create_engine
 import bottle
@@ -16,4 +18,5 @@ class ShowergelTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
+        logging.getLogger().setLevel(logging.DEBUG)
         cls.app = TestApp(app)
