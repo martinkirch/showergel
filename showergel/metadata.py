@@ -11,30 +11,48 @@ import logging
 import re
 from typing import Type, Dict, List, Tuple
 from configparser import ConfigParser
+from datetime import datetime
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm.session import Session
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.sqlite import DATETIME
 
 from . import Base
 
 
 _log = logging.getLogger(__name__)
 
+LIQUIDSOAP_DATEFORMAT = r"%Y/%m/%d %H:%M:%S"
+
+def to_datetime(date_string):
+    """
+    Parameters:
+        date_string(str): a string representation, using either Liquidsoap's on_air
+            format (``YYYY/MM/DD HH:MM:SS``) or ISO 8601.
+    Return:
+        (datetime): parsed datetime
+    """
+    try:
+        return datetime.strptime(date_string, LIQUIDSOAP_DATEFORMAT)
+    except ValueError:
+        pass
+    return datetime.fromisoformat(date_string)
+    
 
 class Log(Base):
     __tablename__ = 'log'
 
     id = Column(Integer, primary_key=True)
-    on_air = Column(String, nullable=False, index=True)
+    on_air = Column(DATETIME, nullable=False, index=True)
     artist = Column(String)
     title = Column(String)
     album = Column(String)
     source = Column(String)
     initial_uri = Column(String)
 
-    extra = relationship("LogExtra", back_populates="log") ### TODO joined pre-load of extra
+    extra = relationship("LogExtra", back_populates="log", lazy='joined')
 
     @staticmethod
     def save_metadata(config, db, data:Dict):
@@ -48,7 +66,7 @@ class Log(Base):
         ``source_url`` instead (this may happen for example from ``http.input``).
         """
         try:
-            log_entry = Log(on_air=data['on_air'])
+            log_entry = Log(on_air=to_datetime(data['on_air']))
         except KeyError:
             raise ValueError("Metadata should at least contain on_air")
 
@@ -84,9 +102,9 @@ class Log(Base):
         query = db.query(cls)
 
         if start:
-            query = query.filter(cls.on_air >= start)
+            query = query.filter(cls.on_air >= to_datetime(start))
         if end:
-            query = query.filter(cls.on_air <= end)
+            query = query.filter(cls.on_air <= to_datetime(end))
 
         if chronological:
             query = query.order_by(cls.on_air.asc())
@@ -101,9 +119,9 @@ class Log(Base):
             query = query.limit(limit)
 
         return [l.to_dict() for l in query]
-    
+
     def to_dict(self):
-        d = {'on_air': self.on_air}
+        d = {'on_air': self.on_air.isoformat()}
         if self.artist:
             d['artist'] = self.artist
         if self.title:
@@ -140,13 +158,16 @@ class FieldFilter(object):
     # will always be called with the same config object, so we don't need much
     # thread-safety
 
-    _fields = []
-    _wildcards = []
+    _fields = None
+    _wildcards = None
 
     @classmethod
     def _load(cls, config):
-        raw = config['metadata_log']['ignore_fields']
-        splitted = raw.split(',')
+        try:
+            raw = config['metadata_log']['ignore_fields']
+            splitted = raw.split(',')
+        except KeyError: # if [metadata_log] ignore_fields⁼  is not in the config
+            splitted = []
         # we ignore at least fields from the log table
         fields = set(['on_air', 'artist', 'title', 'album', 'source', 'initial_uri'])
         wildcards = list()

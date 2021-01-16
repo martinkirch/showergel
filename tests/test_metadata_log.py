@@ -1,8 +1,7 @@
 import random
 from datetime import datetime, timedelta
-from . import ShowergelTestCase
-
-LIQUIDSOAP_DATEFORMAT = r"%Y/%m/%d %H:%M:%S"
+from showergel.metadata import LIQUIDSOAP_DATEFORMAT, LogExtra
+from . import ShowergelTestCase, DBSession
 
 with open("/usr/share/dict/words") as words_file:
     WORDS = words_file.read().splitlines()
@@ -22,23 +21,29 @@ class TestMetadataLog(ShowergelTestCase):
             'title': artistic_generator(),
             'source': 'test',
         })
-        
+
+        # ensure there's nothing in log_extra at this point
+        session = DBSession()
+        found = session.query(LogExtra).all()
+        self.assertEqual(0, len(found))
+
         now += tracktime
         last = {
-            'on_air': now.strftime(LIQUIDSOAP_DATEFORMAT),
+            'on_air': now.isoformat(),
             'artist': artistic_generator(),
             'title': artistic_generator(),
             'source': 'test',
             'source_url': "http://check.its.renamed/to/initial_uri"
         }
-        # make it robust to repeated posts
+        # make it robust to repeated posts (often happens with Liquidsoap's `on_metadata`)
         resp = self.app.post_json('/metadata_log', last)
         resp = self.app.post_json('/metadata_log', last)
         resp = self.app.post_json('/metadata_log', last)
 
         logged = self.app.get('/metadata_log').json['metadata_log']
+        print(repr(logged))
         self.assertEqual(2, len(logged))
-        
+
         # check source_url is used as initial_uri
         last['initial_uri'] = last['source_url']
         del last['source_url']
@@ -46,3 +51,44 @@ class TestMetadataLog(ShowergelTestCase):
 
         # at least on_air is required
         resp = self.app.post_json('/metadata_log', {}, status=400)
+
+        before_track3 = now
+        now += tracktime
+        last = {
+            'on_air': now.isoformat(),
+            'artist': artistic_generator(),
+            'title': artistic_generator(),
+            'source': 'test',
+        }
+        resp = self.app.post_json('/metadata_log', last)
+
+        logged = self.app.get('/metadata_log', {
+            "chronological": True,
+            "limit": 2,
+        }).json['metadata_log']
+        self.assertEqual(2, len(logged))
+        for log in logged:
+            on_air = datetime.fromisoformat(log["on_air"])
+            self.assertLessEqual(on_air, before_track3)
+
+        logged = self.app.get('/metadata_log', {
+            "start": before_track3.isoformat(),
+        }).json['metadata_log']
+        self.assertEqual(2, len(logged))
+
+        logged = self.app.get('/metadata_log', {
+            "end": before_track3.isoformat(),
+        }).json['metadata_log']
+        self.assertEqual(2, len(logged))
+
+        logged = self.app.get('/metadata_log', {
+            "start": datetime(2021, 1, 1),
+            "end": datetime(2021, 1, 2),
+        }).json['metadata_log']
+        self.assertEqual(0, len(logged))
+
+        logged = self.app.get('/metadata_log', {
+            "start": datetime(2021, 1, 1),
+            "end": now + tracktime,
+        }).json['metadata_log']
+        self.assertEqual(3, len(logged))

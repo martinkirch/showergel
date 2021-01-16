@@ -3,14 +3,17 @@ from unittest import TestCase
 
 from webtest import TestApp
 from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 import bottle
 from bottle.ext import sqlalchemy
 from showergel import app, Base, rest
 
 # you may add echo=True :
-engine = create_engine("sqlite:///:memory:")
-Base.metadata.create_all(engine)
-app.install(sqlalchemy.Plugin(engine))
+__engine = create_engine("sqlite:///:memory:")
+Base.metadata.create_all(__engine)
+app.install(sqlalchemy.Plugin(__engine))
+
+DBSession = sessionmaker(bind=__engine)
 
 bottle.debug(mode=True)
 
