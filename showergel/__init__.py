@@ -10,8 +10,10 @@ import logging
 import logging.config
 import json
 from configparser import ConfigParser
+from functools import wraps
+from datetime import datetime
 
-from bottle import Bottle, response, HTTPError
+from bottle import Bottle, response, HTTPError, request
 from bottle.ext import sqlalchemy
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -31,9 +33,6 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
 class ShowergelBottle(Bottle):
 
     def default_error_handler(self, res):
-        if isinstance(res, HTTPError):
-            _log.critical("Uncaught %r", res.exception)
-            _log.critical(res.traceback)
         response.content_type = 'application/json'
         return json.dumps({"code": int(res.status_code), "message": res.body})
 
@@ -57,6 +56,22 @@ def main():
 
     from . import rest
 
+    def force_python_rootlogger(fn):
+        """
+        PaserServer's logger may bypasses our logging.config.fileConfig,
+        especially when an error occurs. So we add this tiny plugin
+        """
+        @wraps(fn)
+        def _force_python_rootlogger(*args, **kwargs):
+            try:
+                actual_response = fn(*args, **kwargs)
+            except Exception as excn:
+                _log.exception(excn)
+                raise HTTPError(500, "Internal Error", excn)
+            return actual_response
+        return _force_python_rootlogger
+    app.install(force_python_rootlogger)
+
     debug = bool(app.config['listen'].get('debug'))
 
     app.run(
@@ -64,5 +79,5 @@ def main():
         host=app.config['listen']['address'],
         port=int(app.config['listen']['port']),
         reloader=debug,
-        debug=debug,
+        quiet=True,
     )
