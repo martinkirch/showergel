@@ -13,6 +13,12 @@ def artistic_generator():
 class TestMetadataLog(ShowergelTestCase):
 
     def test_metadata_log(self):
+        # at least on_air is required
+        resp = self.app.post_json('/metadata_log', {}, status=400)
+
+        # don't crash when no JSON is provided
+        resp = self.app.post('/metadata_log', status=400)
+
         tracktime = timedelta(minutes=3)
         now = datetime.now()
         resp = self.app.post_json('/metadata_log', {
@@ -48,9 +54,6 @@ class TestMetadataLog(ShowergelTestCase):
         last['initial_uri'] = last['source_url']
         del last['source_url']
         self.assertDictEqual(last, logged[0])
-
-        # at least on_air is required
-        resp = self.app.post_json('/metadata_log', {}, status=400)
 
         before_track3 = now
         now += tracktime

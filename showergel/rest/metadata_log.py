@@ -53,6 +53,8 @@ def post_metadata_log(db):
         radio = on_metadata(post_to_daemon, source)
     """
     try:
+        if not request.json:
+            raise ValueError()
         Log.save_metadata(app.config, db, request.json)
     except ValueError as value_error:
         raise HTTPError(status=400, body=str(value_error))
