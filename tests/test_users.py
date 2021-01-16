@@ -23,6 +23,10 @@ class TestUsers(ShowergelTestCase):
         self.assertEqual(date.today(), datetime.fromisoformat(users[0]["created_at"]).date())
         self.assertEqual(date.today(), datetime.fromisoformat(users[0]["modified_at"]).date())
 
+        # Don't crash when POSTing wrong
+        resp = self.app.post('/login', expect_errors=True)
+        self.assertEqual(resp.status_code, 404)
+
         resp = self.app.post_json('/login', {"username": "tester", "password": "lost"}, expect_errors=True)
         self.assertEqual(resp.status_code, 404)
         resp = self.app.post_json('/login', {"username": "unkown", "password": "verysecret"}, expect_errors=True)

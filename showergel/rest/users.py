@@ -43,11 +43,11 @@ def post_login(db):
 
         harbor = input.harbor(auth=auth_function, ...
     """
-    user = User.check(db, request.json.get('username'), request.json.get('password'))
-    if user:
-        return user.to_dict()
-    else:
-        raise HTTPError(status=404, body=HTTP_CODES[404])
+    if request.json:
+        user = User.check(db, request.json.get('username'), request.json.get('password'))
+        if user:
+            return user.to_dict()
+    raise HTTPError(status=404, body=HTTP_CODES[404])
 
 @app.get("/users")
 def get_users(db):
