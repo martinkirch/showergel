@@ -10,8 +10,10 @@ import logging
 import logging.config
 import json
 from configparser import ConfigParser
+from functools import wraps
+from datetime import datetime
 
-from bottle import Bottle, response, HTTPError
+from bottle import Bottle, response, HTTPError, request
 from bottle.ext import sqlalchemy
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -57,6 +59,25 @@ def main():
 
     from . import rest
 
+    def use_python_rootlogger(fn):
+        """
+        Bottle's default logger bypasses our logging.config.fileConfig,
+        so we add this tiny plugin
+        """
+        @wraps(fn)
+        def _use_python_rootlogger(*args, **kwargs):
+            actual_response = fn(*args, **kwargs)
+            _log.info('%s %s %s %s %s',
+                request.remote_addr,
+                datetime.now(),
+                request.method,
+                request.url,
+                response.status
+            )
+            return actual_response
+        return _use_python_rootlogger
+    app.install(use_python_rootlogger)
+
     debug = bool(app.config['listen'].get('debug'))
 
     app.run(
@@ -64,5 +85,5 @@ def main():
         host=app.config['listen']['address'],
         port=int(app.config['listen']['port']),
         reloader=debug,
-        debug=debug,
+        quiet=True,
     )
