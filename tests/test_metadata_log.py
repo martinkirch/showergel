@@ -41,16 +41,16 @@ class TestMetadataLog(ShowergelTestCase):
             'source': 'test',
             'source_url': "http://check.its.renamed/to/initial_uri"
         }
-        # make it robust to repeated posts (often happens with Liquidsoap's `on_metadata`)
+        # make it robust to repeated posts
         resp = self.app.post_json('/metadata_log', last)
         resp = self.app.post_json('/metadata_log', last)
-        resp = self.app.post_json('/metadata_log', last)
-
+        # even if on_air changes (Liquidsoap's `on_metadata` often repeats itself)
+        copy_later = dict(last.items())
+        copy_later['on_air'] = (now + tracktime).isoformat()
+        resp = self.app.post_json('/metadata_log', copy_later)
         logged = self.app.get('/metadata_log').json['metadata_log']
-        print(repr(logged))
         self.assertEqual(2, len(logged))
-
-        # check source_url is used as initial_uri
+        # also check source_url is used as initial_uri
         last['initial_uri'] = last['source_url']
         del last['source_url']
         self.assertDictEqual(last, logged[0])
