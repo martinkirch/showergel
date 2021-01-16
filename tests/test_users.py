@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime, date
 from . import ShowergelTestCase
 
 class TestUsers(ShowergelTestCase):
@@ -17,7 +18,10 @@ class TestUsers(ShowergelTestCase):
 
         resp = self.app.get('/users')
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(len(resp.json['users']), 2)
+        users = resp.json['users']
+        self.assertEqual(len(users), 2)
+        self.assertEqual(date.today(), datetime.fromisoformat(users[0]["created_at"]).date())
+        self.assertEqual(date.today(), datetime.fromisoformat(users[0]["modified_at"]).date())
 
         resp = self.app.post_json('/login', {"username": "tester", "password": "lost"}, expect_errors=True)
         self.assertEqual(resp.status_code, 404)

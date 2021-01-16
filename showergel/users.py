@@ -8,11 +8,13 @@ This module contains functions that process and store user list for Liquidsoap's
 
 import logging
 import crypt
+from datetime import datetime
 from hmac import compare_digest
 from typing import Type, List, Dict
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm.session import Session
+from sqlalchemy.dialects.sqlite import JSON, DATETIME
 
 from . import Base
 
@@ -24,12 +26,17 @@ class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
+    created_at = Column(DATETIME, default=datetime.now)
+    modified_at = Column(DATETIME, default=datetime.now, onupdate=datetime.now)
     username = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
+    extra = Column(JSON, default={})
 
     def to_dict(self) -> Dict:
         return {
             "username": self.username,
+            "created_at": self.created_at.isoformat(),
+            "modified_at": self.modified_at.isoformat(),
         }
 
     @classmethod
