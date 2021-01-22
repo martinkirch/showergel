@@ -86,6 +86,7 @@ class Log(Base):
                 setattr(log_entry, column, data[column])
                 if data.get(column) != latest.get(column):
                     matches_latest = False
+                    break
         if matches_latest:
             return
 
