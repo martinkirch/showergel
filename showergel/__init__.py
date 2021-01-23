@@ -13,7 +13,7 @@ from configparser import ConfigParser
 from functools import wraps
 from datetime import datetime
 
-from bottle import Bottle, response, HTTPError, request
+from bottle import Bottle, response, HTTPError, request, static_file
 from bottle.ext import sqlalchemy
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -55,6 +55,12 @@ def main():
     app.install(sqlalchemy.Plugin(engine))
 
     from . import rest
+
+    static_root = os.path.join(os.path.dirname(__file__), 'www')
+    _log.info("static_root=%s",static_root)
+    @app.route('/<path:path>')
+    def serve_front(path):
+        return static_file(path, root=static_root)
 
     def force_python_rootlogger(fn):
         """
