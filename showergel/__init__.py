@@ -78,7 +78,26 @@ def main():
         return _force_python_rootlogger
     app.install(force_python_rootlogger)
 
+    def send_cors(fn):
+        """
+        Send CORS headers along all requests.
+        This is only enabled in debug mode, because WebPack's live-compiling-server
+        is hosting on another port
+        """
+        @wraps(fn)
+        def _send_cors(*args, **kwargs):
+            response.headers['Access-Control-Allow-Origin'] = '*'
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS, HEAD, DELETE'
+            response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
+
+            if request.method != 'OPTIONS':
+                return fn(*args, **kwargs)
+        return _send_cors
+
     debug = bool(app.config['listen'].get('debug'))
+    if debug:
+        _log.warning("Running in development mode - don't do this on a broadcasting machine")
+        app.install(send_cors)
 
     app.run(
         server='paste',
