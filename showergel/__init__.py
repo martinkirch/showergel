@@ -94,7 +94,12 @@ def main():
                 return fn(*args, **kwargs)
         return _send_cors
 
-    debug = bool(app.config['listen'].get('debug'))
+    debug = app.config['listen'].get('debug')
+    if debug in ('False', 'false'):
+        debug = False
+    else:
+        debug = bool(debug)
+
     if debug:
         _log.warning("Running in development mode - don't do this on a broadcasting machine")
         app.install(send_cors)
