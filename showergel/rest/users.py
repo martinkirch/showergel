@@ -22,17 +22,19 @@ def post_login(db):
     Username/password check. Returns the matched user object, or a 404 error.
     Call it from Liquidsoap as follows::
 
-        TODO how to pass "/path/to/harbor_auth.py #{user} #{password}"
         TODO how is it logged to metadata ?
 
-        def auth_function(user,password) = 
-            response = http.post(
-                "http://127.0.0.1:2345/login",
-                data=json_of(metadata)
-            )
-
-            ret = get_process_output()
-            if string.trim(ret) == "ok" then
+        def auth_function(user, password) =
+            reponse = string_of(http.post(
+                headers=[("Content-Type", "application/json")],
+                "http://localhost:2345/login",
+                data=json_of([
+                    ("username", user), ("password", password)
+                ])
+            ))
+            if string.contains(
+                prefix="((\"HTTP/1.0\", 200, \"OK\"),",
+                reponse) then
                 log("Access granted to #{user}")
                 true
             else
