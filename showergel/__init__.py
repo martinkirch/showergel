@@ -13,7 +13,7 @@ from configparser import ConfigParser
 from functools import wraps
 from datetime import datetime
 
-from bottle import Bottle, response, HTTPError, request, static_file
+from bottle import Bottle, response, HTTPError, request, static_file, redirect, HTTPResponse
 from bottle.ext import sqlalchemy
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -61,6 +61,9 @@ def main():
     @app.route('/<path:path>')
     def serve_front(path):
         return static_file(path, root=static_root)
+    @app.route('/')
+    def root_redirect():
+        redirect('/index.html')
 
     def force_python_rootlogger(fn):
         """
@@ -72,8 +75,12 @@ def main():
             try:
                 actual_response = fn(*args, **kwargs)
             except Exception as excn:
-                _log.exception(excn)
-                raise HTTPError(500, "Internal Error", excn)
+                if isinstance(excn, HTTPResponse):
+                    # may happen when redirecting: Bottle raises a response
+                    return excn
+                else:
+                    _log.exception(excn)
+                    raise HTTPError(500, "Internal Error", excn)
             return actual_response
         return _force_python_rootlogger
     app.install(force_python_rootlogger)
