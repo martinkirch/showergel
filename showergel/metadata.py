@@ -83,10 +83,9 @@ class Log(Base):
         matches_latest = True
         for column in ['artist', 'title', 'album', 'source', 'initial_uri']:
             if data.get(column):
-                setattr(log_entry, column, data[column])
                 if data.get(column) != latest.get(column):
                     matches_latest = False
-                    break
+                setattr(log_entry, column, data[column])
         if matches_latest:
             return
 
