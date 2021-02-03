@@ -8,8 +8,17 @@ Showergel provides complementary features like logging or occasional scheduling,
 with a (minimalist) Web interface.
 It is made to run on a Linux box (with systemd) dedicated to your radio stream.
 
-**This is work in progress** - we would welcome both contributions
+**This is work in progress!** We'll welcome both contributions
 and comments, feel free to start a disucssion in the Issues tab.
+
+News
+====
+
+Right after the 0.1.0 release, 
+Showergel has been presented at Liquidshop_1.0_, 
+the very first Liquidsoap workshop !
+You can watch the 15-minutes presentation on Youtube_,
+slides are in the repository's ``doc`` folder.
 
 Install
 =======
@@ -113,3 +122,5 @@ License: GPL3_.
 .. _SQLAlchemy: https://www.sqlalchemy.org/
 .. _lingering: https://www.freedesktop.org/software/systemd/man/loginctl.html
 .. _Bottle: https://bottlepy.org/docs/dev/
+.. _Liquidshop_1.0: http://www.liquidsoap.info/liquidshop/
+.. _Youtube: https://www.youtube.com/watch?v=9U2xsAhz_dU
