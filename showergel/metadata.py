@@ -18,6 +18,7 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.sqlite import DATETIME
+from sqlalchemy.exc import IntegrityError
 
 from . import Base
 
@@ -45,7 +46,7 @@ class Log(Base):
     __tablename__ = 'log'
 
     id = Column(Integer, primary_key=True)
-    on_air = Column(DATETIME, nullable=False, index=True)
+    on_air = Column(DATETIME, nullable=False, unique=True, index=True)
     artist = Column(String)
     title = Column(String)
     album = Column(String)
@@ -59,6 +60,9 @@ class Log(Base):
         """
         Save the metadata provided by Liquidsoap.
 
+        We enforce uniqueness of the ``on_air`` field ; repeated posts with the
+        same date-time will be ignored.
+
         Fields that do not fit into our ``log`` table are saved to ``log_extra``,
         except those matching one in the ``ignore_fields`` configuration.
         Empty values are not saved.
@@ -70,27 +74,21 @@ class Log(Base):
         except KeyError:
             raise ValueError("Metadata should at least contain on_air")
 
-        latest = Log.get(db, limit=1)
-        if latest:
-            latest = latest[0]
-        else:
-            latest = {}
-
         if not data.get('initial_uri') and data.get('source_url'):
             log_entry.initial_uri = data['source_url']
             del data['source_url']
 
-        matches_latest = True
         for column in ['artist', 'title', 'album', 'source', 'initial_uri']:
             if data.get(column):
-                if data.get(column) != latest.get(column):
-                    matches_latest = False
                 setattr(log_entry, column, data[column])
-        if matches_latest:
-            return
 
-        db.add(log_entry)
-        db.flush()
+        try:
+            db.add(log_entry)
+            db.flush()
+        except IntegrityError:
+            _log.debug("We already have metadata at given on_air - ignoring %r", data)
+            db.rollback()
+            return
 
         for couple in FieldFilter.filter(config, data):
             db.add(LogExtra(log=log_entry, key=couple[0], value=couple[1]))

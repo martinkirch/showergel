@@ -51,15 +51,6 @@ def post_metadata_log(db):
         end
 
         radio = on_metadata(post_to_daemon, source)
-
-    **Note** that although Showergel avoids inserting duplicated metadata,
-    Liquidsoap may repeat one source's metadata later on if one operator
-    uses the default ``replay_metadata=true``. This is likely to happen if
-    you're using a track-insensitive ``fallback`` that skips previous source's
-    track before switching.
-    In other words, if you get duplicates in the metadata log,
-    you might avoid them by adding ``replay_metadata=false`` to your track-insensitive
-    ``fallback``/``random``/``rotate``/``switch`` operators.
     """
     try:
         if not request.json:

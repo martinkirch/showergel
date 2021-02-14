@@ -11,3 +11,6 @@ Changes and release history
 
 Fix releases:
  - **0.1.1** fixes the DB path written by the installer
+ - **0.1.2** enforces uniqueness on ``log.on_air``. Re-create your database,
+    or run ``drop index ix_log_on_air; create unique index ix_log_on_air ON log (on_air);``
+    in ``sqlite3 your.db``.
