@@ -72,6 +72,8 @@ def main():
         def _force_python_rootlogger(*args, **kwargs):
             try:
                 actual_response = fn(*args, **kwargs)
+            except HTTPError:
+                raise
             except Exception as excn:
                 _log.exception(excn)
                 raise HTTPError(500, "Internal Error", excn)
