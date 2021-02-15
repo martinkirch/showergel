@@ -76,7 +76,7 @@ def main():
                 raise
             except Exception as excn:
                 _log.exception(excn)
-                raise HTTPError(500, "Internal Error", excn)
+                raise HTTPError(500, "Internal Error", excn) from None
             return actual_response
         return _force_python_rootlogger
     app.install(force_python_rootlogger)

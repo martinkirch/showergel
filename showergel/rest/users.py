@@ -49,7 +49,7 @@ def post_login(db):
         username = request.json.get('username')
         password = request.json.get('password')
     except Exception:
-        raise HTTPError(status=404, body=HTTP_CODES[404])
+        raise HTTPError(status=404, body=HTTP_CODES[404]) from None
     user = User.check(db, username, password)
     if user:
         return user.to_dict()
