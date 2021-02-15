@@ -72,6 +72,7 @@ class Log(Base):
         try:
             log_entry = Log(on_air=to_datetime(data['on_air']))
         except KeyError:
+            _log.warning("Missing on_air in %r", data)
             raise ValueError("Metadata should at least contain on_air") from None
 
         if not data.get('initial_uri') and data.get('source_url'):
