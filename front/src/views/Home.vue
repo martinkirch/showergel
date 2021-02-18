@@ -4,8 +4,8 @@
   </div>
 </template>
 
-<script lang="ts">
-import http from '../http'
+<script>
+import http from '@/http'
 
 export default {
   data () {
