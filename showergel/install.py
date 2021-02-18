@@ -20,7 +20,7 @@ _log = logging.getLogger(__name__)
 
 INI_TEMPLATE = """
 [db]
-sqlalchemy.url = sqlite://{db}
+sqlalchemy.url = sqlite:///{db}
 
 ############### Metadata logger ###############
 [metadata_log]

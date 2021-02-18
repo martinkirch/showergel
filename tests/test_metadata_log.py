@@ -21,12 +21,14 @@ class TestMetadataLog(ShowergelTestCase):
 
         tracktime = timedelta(minutes=3)
         now = datetime.now()
-        resp = self.app.post_json('/metadata_log', {
+
+        first_track = {
             'on_air': now.strftime(LIQUIDSOAP_DATEFORMAT),
             'artist': artistic_generator(),
             'title': artistic_generator(),
             'source': 'test',
-        })
+        }
+        resp = self.app.post_json('/metadata_log', first_track)
 
         # ensure there's nothing in log_extra at this point
         session = DBSession()
@@ -41,13 +43,15 @@ class TestMetadataLog(ShowergelTestCase):
             'source': 'test',
             'source_url': "http://check.its.renamed/to/initial_uri"
         }
-        # make it robust to repeated posts
+
+        # make it robust to repeated posts...
         resp = self.app.post_json('/metadata_log', last)
         resp = self.app.post_json('/metadata_log', last)
-        # even if on_air changes (Liquidsoap's `on_metadata` often repeats itself)
-        copy_later = dict(last.items())
-        copy_later['on_air'] = (now + tracktime).isoformat()
-        resp = self.app.post_json('/metadata_log', copy_later)
+        # ... and especially if a liquidsoap operator reposts old data !
+        # we take care of this because many operators (switch, fallback,...)
+        # default `replay_metadata` to true
+        resp = self.app.post_json('/metadata_log', first_track)
+
         logged = self.app.get('/metadata_log').json['metadata_log']
         self.assertEqual(2, len(logged))
         # also check source_url is used as initial_uri

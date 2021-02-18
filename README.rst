@@ -8,8 +8,17 @@ Showergel provides complementary features like logging or occasional scheduling,
 with a (minimalist) Web interface.
 It is made to run on a Linux box (with systemd) dedicated to your radio stream.
 
-**This is work in progress** - we would welcome both contributions
+**This is work in progress!** We'll welcome both contributions
 and comments, feel free to start a disucssion in the Issues tab.
+
+News
+====
+
+Right after the 0.1.0 release, 
+Showergel has been presented at Liquidshop_1.0_, 
+the very first Liquidsoap workshop !
+You can watch the 15-minutes presentation on Youtube_,
+slides are in the repository's ``doc`` folder.
 
 Install
 =======
@@ -88,9 +97,8 @@ Showergel is meant for community and benevolent radios.
 Therefore we'll keep it small and simple:
 
 * Showergel is intended to run on the same machine as Liquidsoap.
-* It relies on Python3's SimpleHTTPRequestHandler_ because it's enough
-  to provide an interface for a single stream,
-  and it allows us to keep everything in a single process.
+* The REST/Web interface is served by the Bottle_ framework,
+  because it's enough and allows keeping everything in a single process.
 * Showergel's data is stored in SQLite_ because a database backing a radio stream
   usually weights a few dozen megabytes.
 * Scheduling is delegated to APScheduler_ ... who also needs SQLAlchemy_ to
@@ -111,6 +119,8 @@ License: GPL3_.
 .. _APScheduler: https://apscheduler.readthedocs.io/en/stable/
 .. _SQLite: https://sqlite.org/
 .. _Beets: http://beets.io
-.. _SimpleHTTPRequestHandler: https://docs.python.org/3/library/http.server.html#http.server.SimpleHTTPRequestHandler
 .. _SQLAlchemy: https://www.sqlalchemy.org/
 .. _lingering: https://www.freedesktop.org/software/systemd/man/loginctl.html
+.. _Bottle: https://bottlepy.org/docs/dev/
+.. _Liquidshop_1.0: http://www.liquidsoap.info/liquidshop/
+.. _Youtube: https://www.youtube.com/watch?v=9U2xsAhz_dU

@@ -34,7 +34,14 @@ class ShowergelBottle(Bottle):
 
     def default_error_handler(self, res):
         response.content_type = 'application/json'
-        return json.dumps({"code": int(res.status_code), "message": res.body})
+        if (res.exception and
+            isinstance(res.exception, json.JSONDecodeError) and
+            "request.json" in res.traceback
+            ):
+            response.status = 400
+            return json.dumps({"code": 400, "message": "Please send well-formed JSON"})
+        else:
+            return json.dumps({"code": int(res.status_code), "message": res.body})
 
 app = ShowergelBottle()
 
@@ -74,13 +81,15 @@ def main():
         def _force_python_rootlogger(*args, **kwargs):
             try:
                 actual_response = fn(*args, **kwargs)
+            except HTTPError:
+                raise
             except Exception as excn:
                 if isinstance(excn, HTTPResponse):
                     # may happen when redirecting: Bottle raises a response
                     return excn
                 else:
                     _log.exception(excn)
-                    raise HTTPError(500, "Internal Error", excn)
+                    raise HTTPError(500, "Internal Error", excn) from None
             return actual_response
         return _force_python_rootlogger
     app.install(force_python_rootlogger)

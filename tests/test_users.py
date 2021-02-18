@@ -13,6 +13,12 @@ class TestUsers(ShowergelTestCase):
         self.assertEqual(resp.status_code, 200)
         resp = self.app.put_json('/users', {"username": "someone êlse", "password": ""}, expect_errors=True)
         self.assertEqual(resp.status_code, 400)
+        resp = self.app.put('/users',
+            "{malformed:json}",
+            expect_errors=True,
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertEqual(resp.status_code, 400)
         resp = self.app.put_json('/users', {"username": "someone êlse", "password": "with pass"})
         self.assertEqual(resp.status_code, 200)
 
@@ -25,6 +31,12 @@ class TestUsers(ShowergelTestCase):
 
         # Don't crash when POSTing wrong
         resp = self.app.post('/login', expect_errors=True)
+        self.assertEqual(resp.status_code, 404)
+        resp = self.app.post('/login',
+            "{malformed:json}",
+            expect_errors=True,
+            headers={"Content-Type": "application/json"},
+        )
         self.assertEqual(resp.status_code, 404)
 
         resp = self.app.post_json('/login', {"username": "tester", "password": "lost"}, expect_errors=True)
