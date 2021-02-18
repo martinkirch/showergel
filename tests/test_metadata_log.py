@@ -99,3 +99,21 @@ class TestMetadataLog(ShowergelTestCase):
             "end": now + tracktime,
         }).json['metadata_log']
         self.assertEqual(3, len(logged))
+
+        # put some data to LogExtra... and get it back
+        now += tracktime
+        last = {
+            'on_air': now.isoformat(),
+            'artist': artistic_generator(),
+            'title': artistic_generator(),
+            'source': 'test',
+            'editor': 'Pytest',
+            'tracknumber': 1,
+        }
+        resp = self.app.post_json('/metadata_log', last)
+
+        logged = self.app.get('/metadata_log', {
+            "limit": 1,
+        }).json['metadata_log'][0]
+        self.assertEqual(logged['editor'], 'Pytest')
+        self.assertEqual(logged['tracknumber'], '1')
