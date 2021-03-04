@@ -15,3 +15,4 @@ Fix releases:
     Re-create your database,
     or run ``drop index ix_log_on_air; create unique index ix_log_on_air ON log (on_air);``
     in ``sqlite3 your.db``.
+ - **0.1.3** add the possibility to set the binding port via an environment variable

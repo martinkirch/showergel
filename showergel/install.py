@@ -37,6 +37,8 @@ ignore_fields = musicbrainz*, comment*, itunes*, lyrics
 [listen]
 # Showergel's interface will be available at http://[address]:[port]/
 # As there is no security check, be careful to keep the address on a private network.
+# If port is not a number, we assume it is the name of an environment variable
+# that contains the required port number (like, Heroku's $PORT).
 address = localhost
 port = {port:d}
 {debug}

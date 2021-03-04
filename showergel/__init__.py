@@ -6,6 +6,7 @@ Showergel
 
 import sys
 import os.path
+from os import environ
 import logging
 import logging.config
 import json
@@ -83,10 +84,15 @@ def main():
 
     debug = bool(app.config['listen'].get('debug'))
 
+    try:
+        port = int(app.config['listen']['port'])
+    except ValueError:
+        port = int(environ[app.config['listen']['port']])
+
     app.run(
         server='paste',
         host=app.config['listen']['address'],
-        port=int(app.config['listen']['port']),
+        port=port,
         reloader=debug,
         quiet=True,
     )
