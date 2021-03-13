@@ -10,11 +10,14 @@ from sqlalchemy.orm import sessionmaker
 from showergel.users import User
 from showergel.metadata import Log
 
-with open("/usr/share/dict/words") as words_file:
-    WORDS = words_file.read().splitlines()
+try:
+    with open("/usr/share/dict/words") as words_file:
+        WORDS = words_file.read().splitlines()
+except FileNotFoundError:
+    WORDS = "lorem ipsum dolor sit amet consectetur adipiscing elit aenean ultrices augue in neque tincidunt cursus aenean non turpis odio integer porttitor ipsum feugiat orci lobortis eu varius nulla pulvinar ut non enim massa qliquam at eros quis orci luctus facilisis quisque quis pulvinar mi proin nisl nibh vehicula at risus vitae porttitor ornare purus".split()
 
 def artistic_generator():
-    return ' '.join([WORDS[random.randint(0, len(WORDS))] for i in range(2)])
+    return ' '.join([WORDS[random.randint(0, len(WORDS)-1)] for i in range(2)])
 
 def stub_log_data(session, config):
     tracktime = timedelta(minutes=3)
