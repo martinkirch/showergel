@@ -99,3 +99,51 @@ class TestMetadataLog(ShowergelTestCase):
             "end": now + tracktime,
         }).json['metadata_log']
         self.assertEqual(3, len(logged))
+
+        # put some data to LogExtra... and get it back
+        now += tracktime
+        last = {
+            'on_air': now.isoformat(),
+            'artist': artistic_generator(),
+            'title': artistic_generator(),
+            'source': 'test',
+            'editor': 'Pytest',
+            'tracknumber': 1,
+        }
+        resp = self.app.post_json('/metadata_log', last)
+
+        logged = self.app.get('/metadata_log', {
+            "limit": 1,
+        }).json['metadata_log'][0]
+        self.assertEqual(logged['editor'], 'Pytest')
+        self.assertEqual(logged['tracknumber'], '1')
+
+    def test_zzzz_db_filler(self):
+        """
+        zzzz ensures it's run last : this just stuffs the DB with test data.
+        It's not a test but a way to create quickly a test database for front-end development.
+        """
+        tracktime = timedelta(minutes=3)
+        now = datetime.now()
+
+        sources = ['test', 'live', 'unknwon_sound_source1231']
+        albums = ['Showergel Rocks', 'Better hygiene with Liquidsoap']
+
+        for i in range(50):
+            now -= tracktime
+            title = artistic_generator()
+            artist = artistic_generator()
+            album = albums[i % len(albums)]
+            filename = f"/home/radio/Music/{album}/" +\
+                artist.replace(' ', '_') + '-' + title.replace(' ', '_') + '.flac'
+            self.app.post_json('/metadata_log', {
+                'on_air': now.isoformat(),
+                'artist': artist,
+                'title': title,
+                'source': sources[i % len(sources)],
+                'initial_uri': filename,
+                'album': album,
+                'editor': "Pytest",
+                'year': now.year - (i % 10),
+                'tracknumber': i % 8,
+            })

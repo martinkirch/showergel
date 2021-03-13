@@ -7,16 +7,15 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Options, Vue } from 'vue-class-component'
+<script>
 import Sidebar from '@/components/Sidebar.vue'
 
-@Options({
+export default {
+  name: 'Showergel',
   components: {
     Sidebar
   }
-})
-export default class App extends Vue {}
+}
 </script>
 
 <style>
