@@ -15,7 +15,7 @@ from functools import wraps
 from datetime import datetime
 
 from bottle import Bottle, response, HTTPError, request, static_file, redirect, HTTPResponse
-from bottle.ext import sqlalchemy
+from bottle.ext.sqlalchemy import Plugin as SQLAlchemyPlugin
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import engine_from_config, event
@@ -43,8 +43,21 @@ class ShowergelBottle(Bottle):
             return json.dumps({"code": 400, "message": "Please send well-formed JSON"})
         else:
             return json.dumps({"code": int(res.status_code), "message": res.body})
+    
+    def get_engine(self):
+        for p in self.plugins:
+            if isinstance(p, SQLAlchemyPlugin):
+                return p.engine
+        return None
 
 app = ShowergelBottle()
+
+def read_bool_param(param):
+    debug = app.config['listen'].get(param)
+    if debug in ('False', 'false'):
+        return False
+    else:
+        return bool(debug)
 
 def main():
     if len(sys.argv) < 2:
@@ -52,15 +65,15 @@ def main():
         sys.exit(1)
     config_path = sys.argv[1]
     logging.config.fileConfig(config_path, disable_existing_loggers=False)
-    
+
     # we don't use Bottle's app.config.load_config because it's eager loading
     # values: that doesn't go well with interpolation keys in logging config
     parser = ConfigParser()
     parser.read(config_path)
     app.config = parser
-    
+
     engine = engine_from_config(app.config['db'])
-    app.install(sqlalchemy.Plugin(engine))
+    app.install(SQLAlchemyPlugin(engine))
 
     from . import rest
 
@@ -111,13 +124,15 @@ def main():
                 return fn(*args, **kwargs)
         return _send_cors
 
-    debug = app.config['listen'].get('debug')
-    if debug in ('False', 'false'):
-        debug = False
-    else:
-        debug = bool(debug)
-
-    if debug:
+    server = 'paste'
+    debug = read_bool_param('debug')
+    if read_bool_param('demo'):
+        # stubbing to :memory: works better with the default, mono-threaded server
+        server = 'wsgiref'
+        app.install(send_cors)
+        from showergel.demo import stub_all
+        stub_all(app.get_engine(), app.config)
+    elif debug:
         _log.warning("Running in development mode - don't do this on a broadcasting machine")
         app.install(send_cors)
 
@@ -127,7 +142,7 @@ def main():
         port = int(environ[app.config['listen']['port']])
 
     app.run(
-        server='paste',
+        server=server,
         host=app.config['listen']['address'],
         port=port,
         reloader=debug,
