@@ -1,1 +1,1 @@
-web: python showergel/__main__.py showergel.ini
+web: python showergel/__main__.py /app/showergel.ini
