@@ -1,1 +1,1 @@
-web: python showergel/__main__.py /app/showergel.ini
+web: python showergel/__main__.py procfile.ini
