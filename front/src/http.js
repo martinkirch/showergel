@@ -1,7 +1,12 @@
 import axios from 'axios'
 
 if (process.env.NODE_ENV === 'development') {
-  axios.defaults.baseURL = 'http://localhost:2345'
+  console.log(process.env.VUE_APP_BACKEND_URL)
+  if (process.env.VUE_APP_BACKEND_URL) {
+    axios.defaults.baseURL = process.env.VUE_APP_BACKEND_URL
+  } else {
+    axios.defaults.baseURL = 'http://localhost:2345'
+  }
 }
 
 export default axios.create({
