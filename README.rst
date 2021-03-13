@@ -76,7 +76,24 @@ in the ``logger_root`` section of the ini file.
 
 Test with ``pytest``.
 
-A font-end is coming up for v 0.2.0, see front/README.md 
+A font-end is coming up for v 0.2.0, see front/README.md
+
+Deploy to Heroku in demo mode
+=============================
+
+Before, you might need to update ``requirements.txt`` from time to time :
+
+```bash
+poetry export --without-hashes -f requirements.txt --output requirements.txt
+```
+
+Create and push the app
+
+```bash
+heroku create --region eu
+git push heroku main
+heroku logs --tail
+```
 
 Design
 ======

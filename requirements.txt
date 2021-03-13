@@ -1,0 +1,6 @@
+bottle-sqlalchemy==0.4.3
+bottle==0.12.19
+click==7.1.2; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.5.0")
+paste==3.5.0
+six==1.15.0; python_version >= "2.7" and python_full_version < "3.0.0" or python_full_version >= "3.3.0"
+sqlalchemy==1.3.20; (python_version >= "2.7" and python_full_version < "3.0.0") or (python_full_version >= "3.4.0")
