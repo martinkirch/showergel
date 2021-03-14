@@ -1,8 +1,6 @@
 """
-=======================
 Users RESTful interface
 =======================
-
 """
 import logging
 
@@ -16,13 +14,13 @@ _log = logging.getLogger(__name__)
 @app.post("/login")
 def post_login(db):
     """
-    POST ``/login``
-    ----------
+    Should be called by Liquidsoap to authenticate harbor users.
+    It returns the matched user information as a JSONobject, or a 404 error.
+    Call it from Liquidsoap as follows:
+    
+    .. code-block:: ocaml
 
-    Username/password check. Returns the matched user object, or a 404 error.
-    Call it from Liquidsoap as follows::
-
-        TODO how is it logged to metadata ?
+        ## TODO how is it logged to metadata ?
 
         def auth_function(user, password) =
             reponse = string_of(http.post(
@@ -58,10 +56,9 @@ def post_login(db):
 @app.get("/users")
 def get_users(db):
     """
-    GET ``/users``
-    ----------
-
-    Return the list of harbor users
+    :>jsonarr username:
+    :>jsonarr created_at:
+    :>jsonarr modified_at:
     """
     return {"users": User.list(db)}
 
@@ -69,10 +66,13 @@ def get_users(db):
 @app.put("/users")
 def put_users(db):
     """
-    PUT ``/users``
-    ----------
+    Create an user
 
-    Create an user. Expects ``username`` and  ``password``. Returns the created user object.
+    :<json username:
+    :<json password:
+    :>json username:
+    :>json created_at:
+    :>json modified_at:
     """
     if request.json.get('password') and request.json.get('username'):
         username = request.json.get('username')
@@ -89,10 +89,9 @@ def put_users(db):
 @app.delete("/users")
 def delete_users(db):
     """
-    DELETE ``/users``
-    ---------------------------
+    Delete someone's user account
 
-    Deletes ``someone``'s user account ; POST its ``username``.
+    :query username:
     """
     User.delete(db, username=request.params.username)
     return {}

@@ -1,11 +1,8 @@
 """
-====================================
 RESTful interface to current playout
 ====================================
 """
 from datetime import datetime
-
-from bottle import request
 
 from .. import app
 
@@ -13,8 +10,6 @@ from .. import app
 @app.get("/live")
 def get_live():
     """
-    GET ``/live``
-
     Currently only returns server time.
     """
     return {

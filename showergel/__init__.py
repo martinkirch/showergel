@@ -51,6 +51,7 @@ class ShowergelBottle(Bottle):
         return None
 
 app = ShowergelBottle()
+from . import rest
 
 def read_bool_param(param):
     debug = app.config['listen'].get(param)
@@ -74,8 +75,6 @@ def main():
 
     engine = engine_from_config(app.config['db'])
     app.install(SQLAlchemyPlugin(engine))
-
-    from . import rest
 
     static_root = os.path.join(os.path.dirname(__file__), 'www')
     _log.info("static_root=%s",static_root)
