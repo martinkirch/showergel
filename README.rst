@@ -8,6 +8,11 @@ Showergel provides complementary features like logging or occasional scheduling,
 with a (minimalist) Web interface.
 It is made to run on a Linux box (with systemd) dedicated to your radio stream.
 
+Documentation and
+`installation instructions <https://showergel.readthedocs.io/en/latest/installing.html>`_
+are hosted
+on https://showergel.readthedocs.io/.
+
 **This is work in progress!** We'll welcome both contributions
 and comments, feel free to start a disucssion in the Issues tab.
 

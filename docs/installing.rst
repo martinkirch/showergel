@@ -94,7 +94,11 @@ We might need to update ``requirements.txt`` from time to time:
 
 .. code-block:: bash
 
-    poetry export --without-hashes -f requirements.txt --output requirements.txt
+    poetry export --dev --without-hashes -f requirements.txt --output requirements.txt
+
+``--dev`` is here because ``requirements.txt`` is also used by ReadTheDocs
+to compile the present documentation, which requires a Sphinx extension.
+
 
 .. _Poetry: https://python-poetry.org/
 .. _lingering: https://www.freedesktop.org/software/systemd/man/loginctl.html
