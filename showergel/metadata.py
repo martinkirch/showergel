@@ -168,7 +168,7 @@ class FieldFilter(object):
         except KeyError: # if [metadata_log] ignore_fields⁼  is not in the config
             splitted = []
         # we ignore at least fields from the log table
-        fields = set(['on_air', 'artist', 'title', 'album', 'source', 'initial_uri'])
+        fields = set()
         wildcards = list()
         for entry in splitted:
             if '*' in entry:
@@ -181,12 +181,13 @@ class FieldFilter(object):
         _log.debug("Will ignore medadata fields matching %r", wildcards)
 
     @classmethod
-    def filter(cls, config:Type[ConfigParser], data:Dict) -> List[Tuple[str, str]]:
+    def filter(cls, config:Type[ConfigParser], data:Dict, filter_extra=True) -> List[Tuple[str, str]]:
         """
         Extracts metadata entries that fit in our ``log_extra`` table.
         Parameter:
             config: daemon configuration ; we search for ``ignore_fields`` in the ``metadata_log`` section.
             data: as provided by Liquidsoap
+            filter_extra: can disable filtering fields that should be in our ``log`` table.
         Returns:
             A list of ``(key, value)`` couples, for each key in the input
             dictionary that is not included in ``ignore_fields`` or in the main
@@ -196,7 +197,10 @@ class FieldFilter(object):
             cls._load(config)
         result = list()
         for k, v in data.items():
-            if k in cls._fields:
+            if filter_extra and k in [
+                'on_air', 'artist', 'title', 'album', 'source', 'initial_uri']:
+                pass
+            elif k in cls._fields:
                 pass
             elif any(rule.match(k) for rule in cls._wildcards):
                 pass

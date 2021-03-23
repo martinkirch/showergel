@@ -1,10 +1,24 @@
 from datetime import datetime, timedelta
-from showergel.metadata import LIQUIDSOAP_DATEFORMAT, LogExtra
+from showergel.metadata import LIQUIDSOAP_DATEFORMAT, LogExtra, FieldFilter
 from showergel.demo import artistic_generator
 from . import ShowergelTestCase, DBSession
 
+FIELD_FILTER_CONFIG = {
+    'metadata_log': {
+        'ignore_fields': "lyrics, mb*",
+    }
+}
 
 class TestMetadataLog(ShowergelTestCase):
+
+    def test_field_filter(self):
+        # when disabling `filter_extra`, title should be included
+        filtered = dict(FieldFilter.filter(FIELD_FILTER_CONFIG, {
+            "title": "Greatest song in the world",
+            "lyrics": "lorem ipsum",
+        }, filter_extra=False))
+        self.assertIn('title', filtered)
+        self.assertNotIn('lyrics', filtered)
 
     def test_metadata_log(self):
         # at least on_air is required
