@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Type
+from typing import Type, Optional
 from datetime import timedelta
 from threading import RLock
 from telnetlib import Telnet
@@ -35,6 +35,7 @@ class TelnetConnector:
     UPTIME_PATTERN = re.compile(r"([0-9]+)d ([0-9]+)h ([0-9]+)m ([0-9]+)s")
     METADATA_PATTERN = re.compile(r"^([^=]+)=\"(.*)\"$")
 
+    # TODO just pass "config"
     def __init__(self, host:str, port:int, timeout:int=10):
         self._lock = RLock()
         self.host = host
@@ -44,8 +45,8 @@ class TelnetConnector:
         self._connection = Telnet()
         self._reconnect()
 
-        self.sources = {}
-        self._sources_updated_at = None
+        self.soap_objects = {}
+        self._soaps_updated_at = None
         self.uptime()
         self._latest_active_source = None
 
@@ -84,7 +85,7 @@ class TelnetConnector:
     def uptime(self) -> Type[timedelta]:
         """
         Observing a decreasing uptime is interpreted as an instance reboot ;
-        in that case we update the sources list stored internally.
+        in that case we update the list of soap objects cached internally.
 
         :return timedelta: the connected Liquidsoap instance's uptime
         """
@@ -96,17 +97,17 @@ class TelnetConnector:
             minutes = int(parsed.group(3)),
             seconds = int(parsed.group(4)),
         )
-        if not self._sources_updated_at or uptime < self._sources_updated_at:
-            self.sources = {}
+        if not self._soaps_updated_at or uptime < self._soaps_updated_at:
+            self.soap_objects = {}
             raw = self._command("list")
             for line in raw.split("\r\n"):
                 splitted = line.split(" : ")
-                self.sources[splitted[0]] = splitted[1]
+                self.soap_objects[splitted[0]] = splitted[1]
 
-        self._sources_updated_at = uptime
+        self._soaps_updated_at = uptime
         self._lock.release()
         return uptime
-    
+
     def current(self) -> dict:
         """
         :return dict: metadata of what's currently playing
@@ -134,8 +135,6 @@ class TelnetConnector:
 
     def _find_active_source(self) -> dict:
         """
-        TODO test what happens when a playlist/single plays
-
         May return an empty dict when nothing is found
         """
         metadata = {}
@@ -143,15 +142,15 @@ class TelnetConnector:
         status = None
         self._lock.acquire()
         if self._latest_active_source:
-            # the most common case: it's still playing -- TOOD check it really happens
-            src = self._latest_active_source
-            status = self._command(src + ".status")
-            if self._check_source_is_active(src, status):
-                active_source = src
+            # the most common case: it's still playing
+            status = self._get_active_status(self._latest_active_source)
+            if status:
+                active_source = self._latest_active_source
+                log.debug("re-using _latest_active_source")
         if not active_source:
-            for src in self.sources:
-                status = self._command(src + ".status")
-                if self._check_source_is_active(src, status):
+            for src in self.soap_objects:
+                status = self._get_active_status(src)
+                if status:
                     active_source = src
                     break
         if active_source:
@@ -164,15 +163,26 @@ class TelnetConnector:
 
     STATUS_CHECK = {
         'input.http': lambda s: s.startswith("connected"),
-
-        # TODO: playlist, single, input.harbor
+        'input.https': lambda s: s.startswith("connected"),
+        'input.harbor': lambda s: s.startswith("source client connected"),
+        'input.harbor.ssl': lambda s: s.startswith("source client connected"),
     }
 
-    def _check_source_is_active(self, source, status) -> bool:
-        source_type = self.sources[source]
+    def _get_active_status(self, source:str) -> Optional[str]:
+        """
+        :param source:str: source name
+        :return str: result of source's ``status`` command / ``None`` if source is not active.
+        """
+        source_type = self.soap_objects[source]
         if source_type in self.STATUS_CHECK:
-            return self.STATUS_CHECK[source_type](status)
-        return False
+            status = self._command(source + ".status")
+            if self.STATUS_CHECK[source_type](status):
+                return status
+            else:
+                return None
+        else:
+            log.debug("Don't know how to check %s", source_type)
+        return None
 
 
 # test tool against a real Liquidsoap instance:
