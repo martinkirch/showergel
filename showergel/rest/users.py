@@ -20,19 +20,16 @@ def post_login(db):
     
     .. code-block:: ocaml
 
-        ## TODO how is it logged to metadata ?
-
         def auth_function(user, password) =
-            reponse = string_of(http.post(
+            let (status, _, _) = http.post(
                 headers=[("Content-Type", "application/json")],
                 "http://localhost:2345/login",
                 data=json_of([
                     ("username", user), ("password", password)
                 ])
             ))
-            if string.contains(
-                prefix="((\"HTTP/1.0\", 200, \"OK\"),",
-                reponse) then
+            let (_, code, _) = status
+            if code == 200 then
                 log("Access granted to #{user}")
                 true
             else
