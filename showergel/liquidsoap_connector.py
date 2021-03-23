@@ -119,6 +119,7 @@ class TelnetConnector:
             metadata = self._metadata_to_dict(raw)
         else:
             metadata = self._find_active_source()
+            metadata.update(self._read_output_metadata())
         metadata['uptime'] = str(uptime)
         return metadata
 
@@ -183,6 +184,21 @@ class TelnetConnector:
         else:
             log.debug("Don't know how to check %s", source_type)
         return None
+
+    def _read_output_metadata(self) -> dict:
+        """
+        Some inputs don't have a ``.metadata`` command. When they're playing,
+        the only way to fetch current metadata is to ask an output.
+        """
+        for soap_name, soap_type in self.soap_objects.items():
+            if soap_type.startswith('output.'):
+                all_metadata = self._command(soap_name + '.metadata')
+                separator = "--- 1 ---\n"
+                index = all_metadata.find(separator)
+                if index >= 0:
+                    index += len(separator)
+                    return self._metadata_to_dict(all_metadata[index:])
+        return {}
 
 
 # test tool against a real Liquidsoap instance:
