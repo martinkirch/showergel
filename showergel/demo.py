@@ -4,6 +4,7 @@ This module contains everything about the demo mode
 
 import random
 from datetime import datetime, timedelta
+from typing import Type
 
 from sqlalchemy.orm import sessionmaker
 
@@ -59,3 +60,89 @@ def stub_all(engine, config):
     stub_log_data(session, config)
     session.commit()
     session.close()
+
+class FakeLiquidsoapConnector:
+    """
+    mocks ``TelnetConnector`` for unit tests.
+
+    returns something different each time it's called.
+    """
+
+    FAKE_TIME_SHIFT = timedelta(minutes=3)
+
+    def __init__(self):
+        self._uptime = timedelta(hours=10)
+        now = datetime.now().replace(microsecond=0)
+        self._on_air = now - self._uptime
+        self._i = 0
+
+    def uptime(self) -> Type[timedelta]:
+        self._uptime += self.FAKE_TIME_SHIFT
+        return self._uptime
+
+    def current(self) -> dict:
+        metadata = self.generate_metadata()
+        metadata["uptime"] = str(self.uptime())
+        self._on_air += self.FAKE_TIME_SHIFT
+        metadata["on_air"] = self._on_air.isoformat()
+        return metadata
+
+    def generate_metadata(self) -> dict:
+        """
+        generates something different each call
+        """
+        sources = ['test', 'live', 'unknwon_sound_source1231']
+        albums = ['Showergel Rocks', 'Better hygiene with Liquidsoap']
+
+        self._i += 1
+        title = artistic_generator()
+        artist = artistic_generator()
+        album = albums[self._i % len(albums)]
+        filename = f"/home/radio/Music/{album}/" +\
+            artist.replace(' ', '_') + '-' + title.replace(' ', '_') + '.flac'
+        return {
+            'artist': artist,
+            'title': title,
+            'source': sources[self._i % len(sources)],
+            'initial_uri': filename,
+            'album': album,
+            'editor': "Pytest",
+            'year': self._on_air.year - (self._i % 10),
+            'tracknumber': self._i % 8,
+        }
+
+class DemoLiquidsoapConnector(FakeLiquidsoapConnector):
+    """
+    mocks ``TelnetConnector`` for demo mode. It takes clock time into account,
+    to simulate 3-minutes tracks
+    """
+
+    TRACK_LENGTH = timedelta(minutes=3)
+
+    def __init__(self):
+        super().__init__()
+        self._started_at = datetime.now().replace(microsecond=0)
+        self._metadata = self.generate_metadata()
+
+    def uptime(self) -> Type[timedelta]:
+        uptime = datetime.now().replace(microsecond=0) - self._started_at
+        if (datetime.now() - self._on_air) >= self.TRACK_LENGTH:
+            self._on_air = datetime.now().replace(microsecond=0)
+            self._metadata = self.generate_metadata()
+        return uptime
+
+    def current(self) -> dict:
+        # call uptime() first because it might update ._metadata
+        uptime = str(self.uptime())
+        metadata = dict(self._metadata)
+        metadata["uptime"] = uptime
+        metadata["on_air"] = self._on_air.isoformat()
+        return metadata
+
+# test tool
+if __name__ == '__main__':
+    conn = FakeLiquidsoapConnector()
+    import time
+    while True:
+        print(conn.current())
+        time.sleep(1.)
