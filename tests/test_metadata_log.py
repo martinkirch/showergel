@@ -12,17 +12,24 @@ FIELD_FILTER_CONFIG = {
 class TestMetadataLog(ShowergelTestCase):
 
     def test_field_filter(self):
+        # FieldFilter misses its configuration:
+        with self.assertRaises(ValueError):
+            FieldFilter.filter({
+                "title": "Greatest song in the world",
+                "lyrics": "lorem ipsum",
+            })
+
         # when disabling `filter_extra`, title should be included
-        filtered = dict(FieldFilter.filter(FIELD_FILTER_CONFIG, {
+        filtered = dict(FieldFilter.filter({
             "title": "Greatest song in the world",
             "lyrics": "lorem ipsum",
-        }, filter_extra=False))
+        }, config=FIELD_FILTER_CONFIG, filter_extra=False))
         self.assertIn('title', filtered)
         self.assertNotIn('lyrics', filtered)
 
         # don't crash if configuration misses FieldFilter's params
         FieldFilter.setup({})
-        _ = FieldFilter.filter(FIELD_FILTER_CONFIG, {
+        _ = FieldFilter.filter({
             "title": "Greatest song in the world",
             "lyrics": "lorem ipsum",
         }, filter_extra=False)

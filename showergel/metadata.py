@@ -91,7 +91,7 @@ class Log(Base):
             db.rollback()
             return
 
-        for couple in FieldFilter.filter(config, data):
+        for couple in FieldFilter.filter(data, config=config):
             db.add(LogExtra(log=log_entry, key=couple[0], value=couple[1]))
 
     @classmethod
@@ -181,12 +181,14 @@ class FieldFilter(object):
         _log.debug("Will ignore medadata fields matching %r", wildcards)
 
     @classmethod
-    def filter(cls, config:Type[ConfigParser], data:Dict, filter_extra=True) -> List[Tuple[str, str]]:
+    def filter(cls, data:Dict, config:dict=None, filter_extra=True) -> List[Tuple[str, str]]:
         """
         Extracts metadata entries that fit in our ``log_extra`` table.
+        Expects you called ``setup()`` before, or provide ``config``.
+
         Parameter:
-            config: daemon configuration ; we search for ``ignore_fields`` in the ``metadata_log`` section.
             data: as provided by Liquidsoap
+            config: daemon configuration ; we search for ``ignore_fields`` in the ``metadata_log`` section.
             filter_extra: can disable filtering fields that should be in our ``log`` table.
         Returns:
             A list of ``(key, value)`` couples, for each key in the input
@@ -194,7 +196,10 @@ class FieldFilter(object):
             ``log`` table.
         """
         if cls._fields is None:
-            cls.setup(config)
+            if config is None:
+                raise ValueError("FieldFilter is not configured yet ! Caller should provide config, or call .setup(config) before.")
+            else:
+                cls.setup(config)
         result = list()
         for k, v in data.items():
             if filter_extra and k in [
