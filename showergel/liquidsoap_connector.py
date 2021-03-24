@@ -65,13 +65,14 @@ class TelnetConnector:
         response = None
         remaining_attempts = 2
         while remaining_attempts > 0:
-            log.debug("Telnet command: %s", command)
+            # log.debug("Telnet command: %s", command)
             remaining_attempts -= 1
             try:
                 self._connection.write(command.encode('utf8') + b'\n')
                 line = self._connection.read_until(b'END').decode('utf8')
                 response = line.rstrip("END").strip("\r\n")
-                log.debug("Telnet response: %r", response)
+                # log.debug("Telnet response: %r", response)
+                return response
             except EOFError:
                 if remaining_attempts:
                     self._reconnect()
@@ -101,8 +102,8 @@ class TelnetConnector:
             for line in raw.split("\r\n"):
                 splitted = line.split(" : ")
                 self.soap_objects[splitted[0]] = splitted[1]
+            self._soaps_updated_at = uptime
 
-        self._soaps_updated_at = uptime
         self._lock.release()
         return uptime
 
