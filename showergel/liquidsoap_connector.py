@@ -118,6 +118,12 @@ class TelnetConnector:
         else:
             metadata = self._find_active_source()
             metadata.update(self._read_output_metadata())
+
+        metadata = dict(FieldFilter.filter(metadata, filter_extra=False))
+
+        if 'on_air' in metadata:
+            metadata['on_air'] = to_datetime(metadata['on_air']).isoformat()
+
         metadata['uptime'] = str(uptime)
         return metadata
 
@@ -130,7 +136,6 @@ class TelnetConnector:
                 metadata[parsed.group(1)] = parsed.group(2)
             else:
                 log.warning("Can't parse metadata item: %r", line)
-        metadata = dict(FieldFilter.filter(metadata))
         return metadata
 
     def _find_active_source(self) -> dict:
