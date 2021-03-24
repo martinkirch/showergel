@@ -14,6 +14,6 @@ This module helps to plug a VSCode debugger with the following configuration::
 
 """
 
-from showergel import main
+from showergel.server import main
 
 main()
