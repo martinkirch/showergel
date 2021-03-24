@@ -20,6 +20,13 @@ class TestMetadataLog(ShowergelTestCase):
         self.assertIn('title', filtered)
         self.assertNotIn('lyrics', filtered)
 
+        # don't crash if configuration misses FieldFilter's params
+        FieldFilter.setup({})
+        _ = FieldFilter.filter(FIELD_FILTER_CONFIG, {
+            "title": "Greatest song in the world",
+            "lyrics": "lorem ipsum",
+        }, filter_extra=False)
+
     def test_metadata_log(self):
         # at least on_air is required
         resp = self.app.post_json('/metadata_log', {}, status=400)

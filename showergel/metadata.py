@@ -161,11 +161,11 @@ class FieldFilter(object):
     _wildcards = None
 
     @classmethod
-    def _load(cls, config):
+    def setup(cls, config):
         try:
             raw = config['metadata_log']['ignore_fields']
             splitted = raw.split(',')
-        except KeyError: # if [metadata_log] ignore_fields⁼  is not in the config
+        except KeyError: # if `[metadata_log] ignore_fields`  is not in the config
             splitted = []
         # we ignore at least fields from the log table
         fields = set()
@@ -194,7 +194,7 @@ class FieldFilter(object):
             ``log`` table.
         """
         if cls._fields is None:
-            cls._load(config)
+            cls.setup(config)
         result = list()
         for k, v in data.items():
             if filter_extra and k in [
