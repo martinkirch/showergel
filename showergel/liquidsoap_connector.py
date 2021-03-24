@@ -212,6 +212,41 @@ class TelnetConnector:
         return {}
 
 
+
+class Connection:
+    """
+    This is both a Liquidsoap connector factory and a singleton holder.
+    **Call ``Connection.setup(config=...)`` when starting showergel**.
+
+    see TelnetConnector, showergel.demo.FakeLiquidsoapConnector,
+    showergel.demo.DemoLiquidsoapConnector
+    """
+    _instance = None
+
+    @classmethod
+    def setup(cls, config:dict=None):
+        if config and 'liquidsoap' in config:
+            method = config['liquidsoap'].get('method')
+            if method == 'demo':
+                from showergel.demo import DemoLiquidsoapConnector
+                cls._instance = DemoLiquidsoapConnector()
+            elif method == 'telnet':
+                cls._instance = TelnetConnector(config)
+            else:
+                log.warning("Unknown method %s. Only 'demo' or 'telnet' are supported.", method)
+                log.warning("Falling back to FakeLiquidsoapConnector: current playout info will be incorrect.")
+
+        if cls._instance is None:
+            from showergel.demo import FakeLiquidsoapConnector
+            cls._instance = FakeLiquidsoapConnector()
+
+    @classmethod
+    def get(cls) -> Type[TelnetConnector]:
+        if cls._instance is None:
+            raise RuntimeError("Please call Connection.setup(config=...) first")
+        return cls._instance
+
+
 # test tool against a real Liquidsoap instance:
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)

@@ -63,7 +63,7 @@ def stub_all(engine, config):
 
 class FakeLiquidsoapConnector:
     """
-    mocks ``TelnetConnector`` for unit tests.
+    mocks ``TelnetConnector`` when no configuration exists at all - as in unit tests.
 
     returns something different each time it's called.
     """
@@ -104,6 +104,7 @@ class FakeLiquidsoapConnector:
             'artist': artist,
             'title': title,
             'source': sources[self._i % len(sources)],
+            'status': 'simulating',
             'initial_uri': filename,
             'album': album,
             'editor': "Pytest",
@@ -115,6 +116,12 @@ class DemoLiquidsoapConnector(FakeLiquidsoapConnector):
     """
     mocks ``TelnetConnector`` for demo mode. It takes clock time into account,
     to simulate 3-minutes tracks
+
+    Enable it with the following configuration:
+
+    .. code-block:: ini
+        [liquidsoap]
+        method = demo
     """
 
     TRACK_LENGTH = timedelta(minutes=3)

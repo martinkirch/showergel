@@ -135,6 +135,9 @@ def main():
         _log.warning("Running in development mode - don't do this on a broadcasting machine")
         app.install(send_cors)
 
+    from showergel.liquidsoap_connector import Connection
+    Connection.setup(app.config)
+
     try:
         port = int(app.config['listen']['port'])
     except ValueError:
