@@ -9,6 +9,7 @@ from showergel.metadata import to_datetime, FieldFilter
 
 log = logging.getLogger(__name__)
 
+
 class TelnetConnector:
     """
     Connects Showergel to Liquidsoap over Telnet. All method calls are thread-safe.
@@ -28,16 +29,21 @@ class TelnetConnector:
         method = telnet
         host = 192.168.1.10
         port = 4444
+    
+    You can also set ``timeout``, in seconds (defaults to 10).
     """
     
     UPTIME_PATTERN = re.compile(r"([0-9]+)d ([0-9]+)h ([0-9]+)m ([0-9]+)s")
     METADATA_PATTERN = re.compile(r"^([^=]+)=\"(.*)\"$")
 
-    def __init__(self, config:dict, timeout:int=10):
+    def __init__(self, config:dict):
         self._lock = RLock()
         self.host = config['liquidsoap']['host']
         self.port = config['liquidsoap']['port']
-        self.timeout = timeout
+        if 'timeout' in config['liquidsoap']:
+            self.timeout = int(config['liquidsoap']['timeout'])
+        else:
+            self.timeout = 10
         FieldFilter.setup(config)
 
         self._connection = Telnet()
