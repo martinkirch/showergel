@@ -5,14 +5,12 @@ from datetime import timedelta
 from threading import RLock
 from telnetlib import Telnet
 
-from showergel.metadata import to_datetime
+from showergel.metadata import to_datetime, FieldFilter
 
 log = logging.getLogger(__name__)
 
 class TelnetConnector:
     """
-    TODO: reuse metadata filter, and filter lyrics
-
     Connects Showergel to Liquidsoap over Telnet. All method calls are thread-safe.
 
     This requires the Liquidsoap script to enable ``server.telnet``, with
@@ -35,12 +33,12 @@ class TelnetConnector:
     UPTIME_PATTERN = re.compile(r"([0-9]+)d ([0-9]+)h ([0-9]+)m ([0-9]+)s")
     METADATA_PATTERN = re.compile(r"^([^=]+)=\"(.*)\"$")
 
-    # TODO just pass "config"
-    def __init__(self, host:str, port:int, timeout:int=10):
+    def __init__(self, config:dict, timeout:int=10):
         self._lock = RLock()
-        self.host = host
-        self.port = port
+        self.host = config['liquidsoap']['host']
+        self.port = config['liquidsoap']['port']
         self.timeout = timeout
+        FieldFilter.setup(config)
 
         self._connection = Telnet()
         self._reconnect()
@@ -52,7 +50,7 @@ class TelnetConnector:
 
     def _reconnect(self):
         self._lock.acquire()
-        log.info("Attempting to contact Liquidsoap over telnet @%s:%d",
+        log.info("Attempting to contact Liquidsoap over telnet @%s:%s",
             self.host, self.port)
         self._connection.open(
             host=self.host,
@@ -132,6 +130,7 @@ class TelnetConnector:
                 metadata[parsed.group(1)] = parsed.group(2)
             else:
                 log.warning("Can't parse metadata item: %r", line)
+        metadata = dict(FieldFilter.filter(metadata))
         return metadata
 
     def _find_active_source(self) -> dict:
@@ -204,7 +203,15 @@ class TelnetConnector:
 # test tool against a real Liquidsoap instance:
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
-    conn = TelnetConnector("192.168.1.33", 1234)
+    conn = TelnetConnector({
+        "liquidsoap": {
+            "host": "192.168.1.33",
+            "port": "1234",
+        },
+        'metadata_log': {
+            'ignore_fields': "lyrics,musicbrainz*,r128*",
+        }
+    })
     import time
     while True:
         print(conn.current())
