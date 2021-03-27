@@ -133,11 +133,11 @@ def root_redirect():
 
 
 def read_bool_param(param):
-    debug = app.config['listen'].get(param)
-    if debug in ('False', 'false'):
+    value = app.config['listen'].get(param)
+    if value in ('False', 'false'):
         return False
     else:
-        return bool(debug)
+        return bool(value)
 
 def serve():
     if len(sys.argv) < 2:
