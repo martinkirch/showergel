@@ -10,7 +10,6 @@ played by Liquidsoap.
 import logging
 import re
 from typing import Type, Dict, List, Tuple
-from configparser import ConfigParser
 from datetime import datetime
 
 from sqlalchemy import Column, Integer, String
@@ -20,7 +19,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.sqlite import DATETIME
 from sqlalchemy.exc import IntegrityError
 
-from . import Base
+from showergel.db import Base
 
 
 _log = logging.getLogger(__name__)

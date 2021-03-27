@@ -6,18 +6,24 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import bottle
 from bottle.ext import sqlalchemy
-from showergel import app, Base, rest
-from showergel.liquidsoap_connector import Connection
-# you may add echo=True :
-__engine = create_engine("sqlite:///:memory:")
-Base.metadata.create_all(__engine)
-app.install(sqlalchemy.Plugin(__engine))
 
+from showergel import app
+from showergel.db import Base
+from showergel.liquidsoap_connector import Connection
+
+app.config = {
+    'db': {
+        "sqlalchemy.url": "sqlite:///:memory:",
+        # "echo": True,
+    }
+}
+app.init()
+
+__engine = app.get_engine()
+Base.metadata.create_all(__engine)
 DBSession = sessionmaker(bind=__engine)
 
 bottle.debug(mode=True)
-
-Connection.setup()
 
 class ShowergelTestCase(TestCase):
 

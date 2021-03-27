@@ -18,7 +18,7 @@ classifiers = [
 ]
 
 [tool.poetry.scripts]
-showergel = "showergel.server:main"
+showergel = "showergel:serve"
 showergel_install = "showergel.install:main"
 
 [tool.poetry.dependencies]

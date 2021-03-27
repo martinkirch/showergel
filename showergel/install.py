@@ -222,7 +222,7 @@ class Installer(object):
         if not path_ini:
             path_ini = self.path_ini
 
-        from showergel import Base
+        from showergel.db import Base
         # indirectly import all Base subclasses:
         from showergel import rest
 

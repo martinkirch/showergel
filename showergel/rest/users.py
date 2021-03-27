@@ -6,12 +6,14 @@ import logging
 
 from bottle import request, HTTPError, HTTP_CODES
 
+from showergel.showergel_bottle import ShowergelBottle
 from showergel.users import User
-from .. import app
 
 _log = logging.getLogger(__name__)
 
-@app.post("/login")
+users_app = ShowergelBottle()
+
+@users_app.post("/login")
 def post_login(db):
     """
     Should be called by Liquidsoap to authenticate harbor users.
@@ -50,7 +52,7 @@ def post_login(db):
         return user.to_dict()
     raise HTTPError(status=404, body=HTTP_CODES[404])
 
-@app.get("/users")
+@users_app.get("/users")
 def get_users(db):
     """
     :>jsonarr username:
@@ -60,7 +62,7 @@ def get_users(db):
     return {"users": User.list(db)}
 
 
-@app.put("/users")
+@users_app.put("/users")
 def put_users(db):
     """
     Create an user
@@ -83,7 +85,7 @@ def put_users(db):
     raise HTTPError(status=400, body="Non-empty 'username' and 'password' are expected.")
 
 
-@app.delete("/users")
+@users_app.delete("/users")
 def delete_users(db):
     """
     Delete someone's user account

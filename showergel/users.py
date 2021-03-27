@@ -16,7 +16,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm.session import Session
 from sqlalchemy.dialects.sqlite import JSON, DATETIME
 
-from . import Base
+from showergel.db import Base
 
 
 _log = logging.getLogger(__name__)

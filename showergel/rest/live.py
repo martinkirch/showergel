@@ -4,11 +4,13 @@ RESTful interface to current playout
 """
 from datetime import datetime
 
-from .. import app
-from ..liquidsoap_connector import Connection
+from showergel.showergel_bottle import ShowergelBottle
 
+from showergel.liquidsoap_connector import Connection
 
-@app.get("/live")
+live_app = ShowergelBottle()
+
+@live_app.get("/live")
 def get_live():
     """
     The returned JSON object might contain many more fields, depending on what's

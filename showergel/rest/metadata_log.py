@@ -5,11 +5,12 @@ Metadata log RESTful interface
 
 from bottle import request, HTTPError
 
+from showergel.showergel_bottle import ShowergelBottle
 from showergel.metadata import Log
-from .. import app
 
+metadata_log_app = ShowergelBottle()
 
-@app.get("/metadata_log")
+@metadata_log_app.get("/metadata_log")
 def get_metadata_log(db):
     """
     Without parameters, ``GET /metadata_log`` returns the 10 most recent metadata items played.
@@ -34,7 +35,7 @@ def get_metadata_log(db):
         )
     }
 
-@app.post("/metadata_log")
+@metadata_log_app.post("/metadata_log")
 def post_metadata_log(db):
     """
     Should be called by Liquidsoap to save tracks' metadata.
@@ -62,7 +63,7 @@ def post_metadata_log(db):
     try:
         if not request.json:
             raise ValueError()
-        Log.save_metadata(app.config, db, request.json)
+        Log.save_metadata(metadata_log_app.config, db, request.json)
     except ValueError as value_error:
         raise HTTPError(status=400, body=str(value_error))
     return {}
