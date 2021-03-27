@@ -1,6 +1,6 @@
 <template>
   <div id="app" class="columns">
-    <Sidebar></Sidebar>
+    <Sidebar :title="apptitle"></Sidebar>
     <div class="column container is-fluid">
       <router-view />
     </div>
@@ -8,12 +8,28 @@
 </template>
 
 <script>
+import http from '@/http'
 import Sidebar from '@/components/Sidebar.vue'
 
 export default {
   name: 'Showergel',
   components: {
     Sidebar
+  },
+  data() {
+    return {
+      apptitle: "Showergel"
+    }
+  },
+  methods: {
+    onParamsResponse (response) {
+      this.apptitle = response.data.name
+    }
+  },
+  mounted () {
+    http.get('/params')
+      .then(this.onParamsResponse)
+      .catch(error => { console.log(error) })
   }
 }
 </script>

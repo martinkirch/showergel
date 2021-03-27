@@ -2,7 +2,7 @@
   <div id="sidebar" class="column is-narrow">
     <div class="header">
       <p class="logo">🧴</p>
-      <h1 class="title">Showergel</h1>
+      <h1 class="title">{{ title }}</h1>
     </div>
     <aside class="menu">
       <ul class="menu-list">
@@ -26,6 +26,13 @@
     </aside>
   </div>
 </template>
+
+<script>
+export default {
+  props: ['title']
+}
+</script>
+
 
 <style scoped>
 #sidebar {
