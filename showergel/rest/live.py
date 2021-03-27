@@ -24,3 +24,18 @@ def get_live():
     metadata = Connection.get().current()
     metadata["server_time"] = datetime.now().isoformat()
     return metadata
+
+@live_app.get("/params")
+def get_params():
+    """
+    This returns values from the ``[interface]`` section of the configuration file.
+
+    :>json name: instance name (appears as interface's title)
+    """
+    try:
+        interface_section = live_app.config["interface"]
+    except KeyError:
+        interface_section = {}
+    return {
+        "name": interface_section.get("name", "Showergel")
+    }
