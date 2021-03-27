@@ -78,7 +78,7 @@ class TelnetConnector:
                 line = self._connection.read_until(b'END').decode('utf8')
                 response = line.rstrip("END").strip("\r\n")
                 # log.debug("Telnet response: %r", response)
-                return response
+                break
             except EOFError:
                 if remaining_attempts:
                     self._reconnect()
