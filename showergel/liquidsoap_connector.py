@@ -9,6 +9,8 @@ from showergel.metadata import to_datetime, FieldFilter
 
 log = logging.getLogger(__name__)
 
+# Liquidsoap's message before it closes the connection because of inactivity
+LIQUIDSOAP_CLOSING = "Connection timed out.. Bye!"
 
 class TelnetConnector:
     """
@@ -47,15 +49,18 @@ class TelnetConnector:
         FieldFilter.setup(config)
 
         self._connection = Telnet()
-        self._reconnect()
+        self._connect()
 
         self.soap_objects = {}
         self._soaps_updated_at = None
         self.uptime()
         self._latest_active_source = None
 
-    def _reconnect(self):
+    def _connect(self, reconnect=False):
         self._lock.acquire()
+        if reconnect:
+            self._connection.close()
+            self._connection = Telnet()
         log.info("Attempting to contact Liquidsoap over telnet @%s:%s",
             self.host, self.port)
         self._connection.open(
@@ -77,13 +82,15 @@ class TelnetConnector:
                 self._connection.write(command.encode('utf8') + b'\n')
                 line = self._connection.read_until(b'END').decode('utf8')
                 response = line.rstrip("END").strip("\r\n")
+                if response == LIQUIDSOAP_CLOSING:
+                    raise EOFError()
                 # log.debug("Telnet response: %r", response)
                 break
             except EOFError:
                 if remaining_attempts:
-                    self._reconnect()
+                    self._connect(reconnect=True)
                 else:
-                    log.critical("Failed to open connection to %s:%d", self.host, self.port)
+                    log.critical("Failed to open connection to %s:%s", self.host, self.port)
         self._lock.release()
         return response
 
