@@ -44,19 +44,21 @@ port = {port:d}
 {debug}
 
 ############## Liquidsoap connection #########
+[liquidsoap]
 
-# Uncomment and tune the block below to enable Showergel's link to Liquidsoap.
-# This is mandatory to display "now playing" information or for scheduling.
-# The block below assumes that your Liquidsoap script contains the following settings:
+# Parameters enabling Showergel's link to Liquidsoap. Those are necessary to
+# display "now playing" information, or for scheduling.
+# If your Liquidsoap script contains the following settings:
 #
 # set("server.telnet",true)
 # set("server.telnet.bind_addr","127.0.0.1")
 # set("server.telnet.port",1234)
+#
+# then change "method" from "none" to "telnet".
 
-#[liquidsoap]
-#method = telnet
-#host = 127.0.0.1
-#port = 1234
+method = none
+host = 127.0.0.1
+port = 1234
 
 ############# Logging configuration ##########
 
@@ -365,8 +367,6 @@ class Installer(object):
         click.echo(" * "+self.path_ini)
         click.echo("")
         click.secho("\nWe advise you to read and tune Showergel's configuration: "+self.path_ini,
-            bold=True)
-        click.secho("In perticular, we advise enabling the Telnet connection to Liquidsoap",
             bold=True)
         click.echo("")
 

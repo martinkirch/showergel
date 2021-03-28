@@ -1,7 +1,7 @@
 import logging
 import re
 from typing import Type, Optional
-from datetime import timedelta
+from datetime import timedelta, datetime
 from threading import RLock
 from telnetlib import Telnet
 
@@ -219,6 +219,21 @@ class TelnetConnector:
         return {}
 
 
+class EmptyConnector(TelnetConnector):
+    def __init__(self):
+        self.started_at = datetime.now()
+
+    def uptime(self):
+        return datetime.now() - self.started_at
+
+    def current(self):
+        return {
+            'on_air': self.started_at.isoformat(),
+            'uptime': str(self.uptime()),
+            'source': "unknown",
+            'status': "please configure Showergel's [liquidsoap] section",
+        }
+
 
 class Connection:
     """
@@ -234,7 +249,9 @@ class Connection:
     def setup(cls, config:dict=None):
         if config and 'liquidsoap' in config:
             method = config['liquidsoap'].get('method')
-            if method == 'demo':
+            if method == 'none':
+                cls._instance = EmptyConnector()
+            elif method == 'demo':
                 from showergel.demo import DemoLiquidsoapConnector
                 cls._instance = DemoLiquidsoapConnector()
             elif method == 'telnet':
