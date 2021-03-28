@@ -1,5 +1,19 @@
 <template>
-  <div class="about">
-    <h1>This is an about page</h1>
+  <div class="content">
+    <h1>This is Showergel</h1>
+    <h2>A companion app for your Liquidsoap radio</h2>
+    <p>Showergel is still in early development.</p>
+    <ul>
+      <li>
+        <a href="https://showergel.readthedocs.io/en/latest/" target="_blank">
+          Documentation
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/martinkirch/showergel" target="_blank">
+          Sources and issue tracker
+        </a>
+      </li>
+    </ul>
   </div>
 </template>
