@@ -42,9 +42,9 @@
           <tr>
             <th>Day</th>
             <th>When</th>
-            <th>Source</th>
             <th>Artist</th>
             <th>Title</th>
+            <th>Source</th>
             <th>Source URI</th>
           </tr>
         </thead>
@@ -52,9 +52,9 @@
           <tr v-for="result in results" :key="result.on_air">
             <td>{{ new Date(result.on_air).toLocaleDateString() }}</td>
             <td>{{ new Date(result.on_air).toLocaleTimeString() }}</td>
-            <td class="is-size-7">{{ result.source }}</td>
             <td>{{ result.artist }}</td>
             <td>{{ result.title }}</td>
+            <td class="is-size-7">{{ result.source }}</td>
             <td class="is-size-7">{{ result.initial_uri }}</td>
           </tr>
         </tbody>
