@@ -4,6 +4,7 @@ import Home from '../views/Home.vue'
 const routes = [
   {
     path: '/',
+    alias: '/index.html',
     name: 'Home',
     component: Home
   },
