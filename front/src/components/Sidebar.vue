@@ -15,6 +15,14 @@
           </router-link>
         </li>
         <li>
+          <router-link to="/users" active-class="is-active">
+              <span class="icon is-medium">
+                <i class="mdi mdi-account-group"></i>
+              </span>
+              <span>Users</span>
+          </router-link>
+        </li>
+        <li>
           <router-link to="/playout_history" active-class="is-active">
               <span class="icon is-medium">
                 <i class="mdi mdi-history"></i>
