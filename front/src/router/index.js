@@ -9,6 +9,11 @@ const routes = [
     component: Home
   },
   {
+    path: '/playout_history',
+    name: 'Playout History',
+    component: () => import(/* webpackChunkName: "playout_history" */ '../views/PlayoutHistory.vue')
+  },
+  {
     path: '/about',
     name: 'About',
     // route level code-splitting

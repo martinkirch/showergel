@@ -9,15 +9,23 @@
         <li>
           <router-link to="/" active-class="is-active">
               <span class="icon is-medium">
-                <i class="mdi mdi-24px mdi-home"></i>
+                <i class="mdi mdi-home"></i>
               </span>
               <span>Home</span>
           </router-link>
         </li>
         <li>
+          <router-link to="/playout_history" active-class="is-active">
+              <span class="icon is-medium">
+                <i class="mdi mdi-history"></i>
+              </span>
+              <span>Playout History</span>
+          </router-link>
+        </li>
+        <li>
           <router-link to="/about" active-class="is-active">
               <span class="icon is-medium">
-                <i class="mdi mdi-24px mdi-information"></i>
+                <i class="mdi mdi-information"></i>
               </span>
               <span>About</span>
           </router-link>

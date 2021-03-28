@@ -1,5 +1,5 @@
 <template>
-  <div id="home">
+  <div class="content is-large">
     <p id="servertime">{{ formattedServerTime }}</p>
     <p>Now playing</p>
     <h1 id="currentTrack">{{ currentTrack }}</h1>
