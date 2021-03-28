@@ -52,7 +52,7 @@ def stub_users(session):
     User.create(session, "Debuggers", "blablabla")
 
 def stub_all(engine, config):
-    from showergel import Base
+    from showergel.db import Base
     Base.metadata.create_all(engine)
     Session = sessionmaker(bind=engine)
     session = Session()
