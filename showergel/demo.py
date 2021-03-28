@@ -91,7 +91,7 @@ class FakeLiquidsoapConnector:
         """
         generates something different each call
         """
-        sources = ['test', 'live', 'unknwon_sound_source1231']
+        sources = ['test', 'live', 'unkown_sound_source1231']
         albums = ['Showergel Rocks', 'Better hygiene with Liquidsoap']
 
         self._i += 1
