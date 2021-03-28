@@ -22,6 +22,10 @@ INI_TEMPLATE = """
 [db]
 sqlalchemy.url = sqlite:///{db}
 
+[interface]
+# name displayed in the interface's left bar
+name = Showergel
+
 ############### Metadata logger ###############
 [metadata_log]
 
