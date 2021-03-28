@@ -41,13 +41,13 @@ export default {
         .catch(error => { console.log(error) })
     },
     onLiveResponse (response) {
-      this.serverTime = new Date(response.data.server_time)
-      this.currentArtist = response.data.artist
-      this.currentTitle = response.data.title
-      this.currentSource = response.data.source
-      this.currentStatus = response.data.status
-      this.currentOnAir = new Date(response.data.on_air)
       setTimeout(this.getLive, 1000)
+      this.currentArtist = response.data.artist || ''
+      this.currentTitle = response.data.title || ''
+      this.currentSource = response.data.source || ''
+      this.currentStatus = response.data.status || ''
+      this.serverTime = new Date(response.data.server_time)
+      this.currentOnAir = new Date(response.data.on_air)
     }
   },
   mounted () {
