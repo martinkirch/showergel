@@ -1,32 +1,53 @@
 <template>
   <div id="playout_history" class="content">
     <h1>Users</h1>
-    <form @submit.prevent="addUser()" class="box">
-      <h3 @click="showUserAdd = true" id="showUserAdd">Add</h3>
-      <div v-if="showUserAdd">
-        <div class="field">
-            <label class="label" for="username">Username</label>
-            <div class="control">
-            <input class="input" id="username" />
-            </div>
-        </div>
-        <div class="field">
-            <label class="label" for="password">Password</label>
-            <div class="control">
-            <input class="input" type="password" id="password" />
-            </div>
-        </div>
-        <div class="field">
-            <label class="label" for="password_confirmation">Confirm password</label>
-            <div class="control">
-            <input class="input" type="password" id="password_confirmation" />
-            </div>
-        </div>
-        <div class="field">
-            <button class="button is-primary">Create account</button>
-        </div>
+    <p>
+      From here you can edit usernames and passwords that will be allowed
+      to stream, if <code>harbor</code> authentication is set up.
+    </p>
+    <button class="button block is-primary is-rounded" @click="showUserAdd = true">Add</button>
+    <div class="modal" :class="{ 'is-active': showUserAdd }">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <form @submit.prevent="addUser()" class="box">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Create user account</p>
+          <button class="delete" aria-label="close" @click="resetAdd()"></button>
+        </header>
+        <section class="modal-card-body">
+          <p>
+            Avoid special characters (even spaces) in usernames.
+          </p>
+          <div class="field">
+              <label class="label" for="username">Username</label>
+              <div class="control">
+                <input class="input" id="username" v-model="addUsername" />
+              </div>
+          </div>
+          <div class="field">
+              <label class="label" for="password">Pass phrase</label>
+              <div class="control">
+                <input class="input" type="password" id="password" v-model="addPassword"/>
+              </div>
+          </div>
+          <div class="field">
+              <label class="label" for="password_confirmation">Confirm pass phrase</label>
+              <div class="control">
+                <input class="input" type="password" id="password_confirmation" v-model="addPasswordConfirmation" />
+              </div>
+              <p class="help is-danger" v-show="addPasswordsMismatch">
+                Pass phrases don't match
+              </p>
+          </div>
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-success">Create account</button>
+          <button class="button" @click="resetAdd()">Cancel</button>
+        </footer>
+        </form>
       </div>
-    </form>
+    </div>
+
     <div class="table-container">
       <table class="table is-striped">
         <thead>
@@ -42,7 +63,15 @@
             <td>{{ user.username }}</td>
             <td>{{ new Date(user.created_at).toLocaleString() }}</td>
             <td>{{ new Date(user.modified_at).toLocaleString() }}</td>
-            <td></td>
+            <td>
+              <button
+                class="button is-danger icon"
+                @click="deleteUser(user.username)"
+                title="Remove user account"
+                >
+                  <i class="mdi mdi-account-off"></i>
+              </button>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -56,27 +85,53 @@ import http from '@/http'
 export default {
   data () {
     return {
+      addUsername: '',
+      addPassword: '',
+      addPasswordConfirmation: '',
       showUserAdd: false,
       users: []
     }
   },
 
   computed: {
-
+    addPasswordsMismatch() {
+      return this.addPassword != this.addPasswordConfirmation;
+    }
   },
 
   methods: {
     getUsers () {
       http.get('/users')
         .then(this.onResults)
-        .catch(error => { console.log(error) })
+        .catch(error => { console.log(error) });
     },
     onResults (response) {
       this.users = response.data.users
     },
+    resetAdd () {
+      this.showUserAdd = false;
+      this.addUsername = '';
+      this.addPassword = '';
+      this.addPasswordConfirmation = '';
+    },
     addUser () {
-        // TODO
-        // then showUserAdd = false;
+      if (! this.addPasswordsMismatch) {
+        http.put('/users', {
+          username: this.addUsername,
+          password: this.addPassword,
+        })
+          .then(this.resetAdd)
+          .then(this.getUsers)
+          .catch(error => { console.log(error) });
+      }
+    },
+    deleteUser(username) {
+      if(confirm(`Really remove ${username}'s account ? All related data will be removed too.`)) {
+        let params = new URLSearchParams([['username', username]])
+        http.delete('/users', {params: params})
+          .then(this.getUsers)
+          .catch(error => { console.log(error) });
+      }
     }
   },
   mounted () {
