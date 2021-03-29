@@ -131,6 +131,13 @@ def serve_front(path):
 def root_redirect():
     redirect('/index.html')
 
+@app.route('/<:re:.*>', method='OPTIONS')
+def enable_cors_generic_route():
+    """
+    this only ensures we support ``OPTIONS`` requests (instead of returning 405).
+    CORS headers will be returned iff ``send_cors`` is enabled.
+    """
+    return {}
 
 def read_bool_param(param):
     value = app.config['listen'].get(param)
