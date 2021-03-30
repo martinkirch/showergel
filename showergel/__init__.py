@@ -45,21 +45,18 @@ def force_python_rootlogger(fn):
         return actual_response
     return _force_python_rootlogger
 
-def send_cors(fn):
+def send_cors():
     """
     Send CORS headers along all requests.
     This is only enabled in debug mode, because WebPack's live-compiling-server
     is hosting on another port
-    """
-    @wraps(fn)
-    def _send_cors(*args, **kwargs):
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS, HEAD, DELETE'
-        response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
 
-        if request.method != 'OPTIONS':
-            return fn(*args, **kwargs)
-    return _send_cors
+    FIXME #12 in some cases (like, errors) it's not returned... could be fixed
+    in Bottle 0.13 - see https://github.com/bottlepy/bottle/issues/1125
+    """
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS, HEAD, DELETE'
+    response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'
 
 
 class MainBottle(ShowergelBottle):
@@ -94,12 +91,12 @@ class MainBottle(ShowergelBottle):
         self.install(SQLAlchemyPlugin(engine))
 
         if demo:
-            self.install(send_cors)
+            self.add_hook('after_request', send_cors)
             from showergel.demo import stub_all
             stub_all(self.get_engine(), self.config)
         elif debug:
             _log.warning("Running in development mode - don't do this on a broadcasting machine")
-            self.install(send_cors)
+            self.add_hook('after_request', send_cors)
 
         Connection.setup(self.config)
 
