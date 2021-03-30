@@ -9,12 +9,12 @@
     <div class="modal" :class="{ 'is-active': showUserAdd }">
       <div class="modal-background"></div>
       <div class="modal-card">
-        <form @submit.prevent="addUser()" class="box">
         <header class="modal-card-head">
           <p class="modal-card-title">Create user account</p>
           <button class="delete" aria-label="close" @click="resetAdd()"></button>
         </header>
         <section class="modal-card-body">
+          <form @submit.prevent="addUser()" class="box" id="addUser">
           <p>
             Avoid special characters (even spaces) in usernames.
           </p>
@@ -39,12 +39,12 @@
                 Pass phrases don't match
               </p>
           </div>
+          </form>
         </section>
         <footer class="modal-card-foot">
-          <button class="button is-success">Create account</button>
+          <button class="button is-success" type="submit" form="addUser">Create account</button>
           <button class="button" @click="resetAdd()">Cancel</button>
         </footer>
-        </form>
       </div>
     </div>
 
@@ -81,6 +81,7 @@
 
 <script>
 import http from '@/http'
+import notifications from '@/notifications'
 
 export default {
   data () {
@@ -103,7 +104,7 @@ export default {
     getUsers () {
       http.get('/users')
         .then(this.onResults)
-        .catch(error => { console.log(error) });
+        .catch(notifications.error_handler);
     },
     onResults (response) {
       this.users = response.data.users
@@ -122,15 +123,14 @@ export default {
         })
           .then(this.resetAdd)
           .then(this.getUsers)
-          .catch(error => { console.log(error) });
+          .catch(notifications.error_handler);
       }
     },
     deleteUser(username) {
       if(confirm(`Really remove ${username}'s account ? All related data will be removed too.`)) {
-        let params = new URLSearchParams([['username', username]])
-        http.delete('/users', {params: params})
+        http.delete('/users/'+username)
           .then(this.getUsers)
-          .catch(error => { console.log(error) });
+          .catch(notifications.error_handler);
       }
     }
   },
