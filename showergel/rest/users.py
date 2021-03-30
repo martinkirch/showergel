@@ -4,7 +4,7 @@ Users RESTful interface
 """
 import logging
 
-from bottle import request, HTTPError, HTTP_CODES
+from bottle import request, HTTPError, HTTP_CODES, response
 
 from showergel.showergel_bottle import ShowergelBottle
 from showergel.users import User
@@ -65,7 +65,7 @@ def get_users(db):
 @users_app.put("/users")
 def put_users(db):
     """
-    Create an user
+    User registration
 
     :<json username:
     :<json password:
@@ -85,12 +85,14 @@ def put_users(db):
     raise HTTPError(status=400, body="Non-empty 'username' and 'password' are expected.")
 
 
-@users_app.delete("/users")
-def delete_users(db):
+@users_app.delete("/users/<username>")
+def delete_users(db, username):
     """
     Delete someone's user account
 
-    :query username:
+    :>json deleted: username
     """
-    User.delete(db, username=request.params.username)
-    return {}
+    User.delete(db, username=username)
+    return {
+        "deleted": username
+    }

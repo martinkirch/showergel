@@ -16,3 +16,10 @@ class ShowergelBottle(Bottle):
             return json.dumps({"code": 400, "message": "Please send well-formed JSON"})
         else:
             return json.dumps({"code": int(res.status_code), "message": res.body})
+
+    def _handle(self, environ):
+        """
+        Workaround for https://github.com/bottlepy/bottle/issues/602
+        """
+        environ["PATH_INFO"] = environ["PATH_INFO"].encode("utf8").decode("latin1")
+        return super()._handle(environ)

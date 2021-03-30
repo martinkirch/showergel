@@ -1,4 +1,5 @@
 import unittest
+from urllib.parse import quote
 from datetime import datetime, date
 from . import ShowergelTestCase
 
@@ -55,7 +56,7 @@ class TestUsers(ShowergelTestCase):
             {"username": "tester", "password": "verysecret"})
         self.assertEqual(resp.status_code, 200)
 
-        resp = self.app.delete('/users', {"username": "someone êlse"})
+        resp = self.app.delete(quote('/users/someone êlse'))
         self.assertEqual(resp.status_code, 200)
 
         resp = self.app.post_json('/login',
