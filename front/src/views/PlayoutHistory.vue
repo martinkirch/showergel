@@ -33,6 +33,19 @@
             </div>
           </div>
         </div>
+        <div class="field is-flex is-align-self-flex-end">
+          <label class="checkbox" for="chronological">
+            <input
+              class="checkbox"
+              type="checkbox"
+              id="chronological"
+              v-model="chronological"
+              true-value="yes"
+              false-value=""
+            />
+            Chronologically
+          </label>
+        </div>
         <div class="field is-align-self-flex-end">
           <button :class="`button is-link ${isLoading ? 'is-loading' : ''}`">
             Search
@@ -77,9 +90,9 @@ export default {
       if (this.end) {
         params.append("end", format(new Date(this.end), "yyyy-MM-dd"));
       }
-      // if (this.chronological) {
-      params.append("chronological", "yes");
-      // }
+      if (this.chronological) {
+        params.append("chronological", this.chronological);
+      }
 
       http
         .get("/metadata_log", { params })
@@ -117,5 +130,9 @@ export default {
   --vdp-hover-bg-color: hsl(217, 71%, 53%);
   --vdp-selected-color: #ffffff;
   --vdp-selected-bg-color: hsl(217, 71%, 53%);
+}
+
+.titles .columns {
+  margin-bottom: 0;
 }
 </style>

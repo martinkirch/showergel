@@ -10,9 +10,9 @@
       v-if="!loading && error"
       class="is-flex is-justify-content-center is-align-items-center my-6"
     >
-      <p>
-        Sorry there was an error. Please try again or contact tha IT
-        administrator.
+      <p class="is-error">
+        Sorry there was an error. You may find more details in your Javascript
+        console, or in Showergel's logs
       </p>
     </div>
     <div v-if="!loading && !error" class="list-container">
