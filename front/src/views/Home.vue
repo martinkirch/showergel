@@ -19,6 +19,7 @@ export default {
       currentSource: '',
       currentStatus: 'connecting to Liquidsoap',
       currentOnAir: new Date(),
+      timeoutID: null,
     }
   },
 
@@ -41,7 +42,7 @@ export default {
         .catch(error => { console.log(error) })
     },
     onLiveResponse (response) {
-      setTimeout(this.getLive, 1000)
+      self.timeoutID = setTimeout(this.getLive, 1000)
       this.currentArtist = response.data.artist || ''
       this.currentTitle = response.data.title || ''
       this.currentSource = response.data.source || ''
@@ -52,6 +53,11 @@ export default {
   },
   mounted () {
     this.getLive()
+  },
+  unmounted () {
+    if (self.timeoutID) {
+      clearTimeout(self.timeoutID);
+    }
   }
 }
 </script>
