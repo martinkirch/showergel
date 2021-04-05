@@ -14,3 +14,8 @@ class TestLive(ShowergelTestCase):
         self.assertIn('source', resp)
         self.assertIn('on_air', resp)
         self.assertIn('status', resp)
+
+    def test_get_parameters(self):
+        resp = self.app.get('/parameters').json
+        self.assertEqual(resp['name'], "ShowergelTest")
+        self.assertIn('version', resp)

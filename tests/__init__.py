@@ -15,6 +15,9 @@ app.config = {
     'db': {
         "sqlalchemy.url": "sqlite:///:memory:",
         # "echo": True,
+    },
+    'interface': {
+        'name': "ShowergelTest",
     }
 }
 app.init()

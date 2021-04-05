@@ -4,6 +4,7 @@ RESTful interface to current playout
 """
 from datetime import datetime
 
+import pkg_resources
 from showergel.showergel_bottle import ShowergelBottle
 
 from showergel.liquidsoap_connector import Connection
@@ -25,17 +26,20 @@ def get_live():
     metadata["server_time"] = datetime.now().isoformat()
     return metadata
 
-@live_app.get("/params")
-def get_params():
+@live_app.get("/parameters")
+def get_parameters():
     """
     This returns values from the ``[interface]`` section of the configuration file.
 
     :>json name: instance name (appears as interface's title)
+    :>json version: showergel's version
     """
     try:
         interface_section = live_app.config["interface"]
     except KeyError:
         interface_section = {}
+    version = pkg_resources.get_distribution("showergel").version
     return {
-        "name": interface_section.get("name", "Showergel")
+        "name": interface_section.get("name", "Showergel"),
+        "version": version,
     }
