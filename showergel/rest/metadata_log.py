@@ -18,7 +18,7 @@ def get_metadata_log(db):
 
     :query string start: (ISO 8601 format) define an inclusive query interval
     :query string end: define an inclusive query interval
-    :query int limit: restricts the number of results (and defaults to 10). 
+    :query int limit: restricts the number of results (and defaults to 10).
         It is ignored if ``start`` and ``end`` are provided.
     :query bool chronological: may be set to anything non-empty (use ``1`` or ``true``),
         otherwise results are sorted recent first.
@@ -39,26 +39,7 @@ def get_metadata_log(db):
 def post_metadata_log(db):
     """
     Should be called by Liquidsoap to save tracks' metadata.
-    Call it from your Liquidsoap script as follows:
-
-    .. code-block:: ocaml
-
-        def post_to_daemon(m)
-            response = http.post("http://localhost:4321/metadata_log", data=json_of(m))
-            log(label="http_posted", string_of(response))
-        end
-
-        radio = on_track(post_to_daemon, source)
-
-    .. note::
-        Although Showergel avoids inserting duplicated metadata,
-        Liquidsoap may repeat one source's metadata later on if one operator
-        uses the default ``replay_metadata=true``.
-
-        In other words, if you get duplicates in the metadata log,
-        you might avoid them by adding ``replay_metadata=false`` to your
-        ``fallback``/``random``/``rotate``/``switch`` operators.
-        Especially if they're track-insensitive.
+    See :ref:`liq_metadata`.
     """
     try:
         if not request.json:

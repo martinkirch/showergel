@@ -18,29 +18,7 @@ def post_login(db):
     """
     Should be called by Liquidsoap to authenticate harbor users.
     It returns the matched user information as a JSONobject, or a 404 error.
-    Call it from Liquidsoap as follows:
-    
-    .. code-block:: ocaml
-
-        def auth_function(user, password) =
-            let (status, _, _) = http.post(
-                headers=[("Content-Type", "application/json")],
-                "http://localhost:2345/login",
-                data=json_of([
-                    ("username", user), ("password", password)
-                ])
-            ))
-            let (_, code, _) = status
-            if code == 200 then
-                log("Access granted to #{user}")
-                true
-            else
-                log("Access denied to #{user}")
-                false
-            end
-        end
-
-        harbor = input.harbor(auth=auth_function, ...
+    See :ref:`liq_login`.
     """
     try:
         username = request.json.get('username')

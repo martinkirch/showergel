@@ -28,6 +28,7 @@ click = "^7.1.2"
 bottle = "^0.12.19"
 bottle-sqlalchemy = "^0.4.3"
 Paste = "^3.5.0"
+sphinx-rtd-theme = "^0.5.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
