@@ -2,6 +2,7 @@
   <div class="content">
     <h1>This is Showergel</h1>
     <h2>A companion app for your Liquidsoap radio</h2>
+    <p>Version {{ parameters.version }}</p>
     <p>Showergel is still in early development.</p>
     <ul>
       <li>
@@ -17,3 +18,10 @@
     </ul>
   </div>
 </template>
+
+
+<script>
+export default {
+  props: ['parameters']
+}
+</script>
