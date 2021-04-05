@@ -24,7 +24,7 @@ sqlalchemy.url = sqlite:///{db}
 
 [interface]
 # name displayed in the interface's left bar
-name = Showergel
+name = {basename}
 
 ############### Metadata logger ###############
 [metadata_log]
@@ -235,6 +235,7 @@ class Installer(object):
                 handler=handler,
                 debug=debug,
                 log_level=log_level,
+                basename=self.basename,
             ))
         click.echo("Initializing database: "+self.path_db)
         self.create_db_schema()
