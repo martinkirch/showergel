@@ -3,7 +3,10 @@
     <h1>Users</h1>
     <p>
       From here you can edit usernames and passwords that will be allowed
-      to stream, if <code>harbor</code> authentication is set up.
+      to stream, if <code>harbor</code> authentication
+      <a href="https://showergel.readthedocs.io/en/latest/liquidsoap.html#authenticating-users-on-harbor" target="_blank">
+        is set up
+      </a>.
     </p>
     <button class="button block is-primary is-rounded" @click="showUserAdd = true">Add</button>
     <div class="modal" :class="{ 'is-active': showUserAdd }">

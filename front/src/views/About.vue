@@ -11,6 +11,11 @@
         </a>
       </li>
       <li>
+        <a href="https://www.liquidsoap.info/doc-1.4.4/" target="_blank">
+          Liquidsoap documentation
+        </a>
+      </li>
+      <li>
         <a href="https://github.com/martinkirch/showergel" target="_blank">
           Sources and issue tracker
         </a>
