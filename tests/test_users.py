@@ -56,6 +56,12 @@ class TestUsers(ShowergelTestCase):
             {"username": "tester", "password": "verysecret"})
         self.assertEqual(resp.status_code, 200)
 
+        resp = self.app.post_json('/users/tester', {"password": "newsecret"})
+        self.assertEqual(resp.status_code, 200)
+        resp = self.app.post_json('/login',
+            {"username": "tester", "password": "newsecret"})
+        self.assertEqual(resp.status_code, 200)
+
         resp = self.app.delete(quote('/users/someone êlse'))
         self.assertEqual(resp.status_code, 200)
 

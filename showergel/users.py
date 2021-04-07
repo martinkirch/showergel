@@ -66,3 +66,6 @@ class User(Base):
     def delete(cls, db:Type[Session], username:String):
         if username:
             db.query(cls).filter(cls.username == username).delete()
+
+    def update_password(self, new_password):
+        self.password = crypt.crypt(new_password)
