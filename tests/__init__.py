@@ -14,7 +14,7 @@ from showergel.liquidsoap_connector import Connection
 app.config = {
     'db': {
         "sqlalchemy.url": "sqlite:///:memory:",
-        "echo": True,
+        # "echo": True,
     },
     'interface': {
         'name': "ShowergelTest",
