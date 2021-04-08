@@ -17,11 +17,11 @@ class TestMetadataLog(ShowergelTestCase):
                 "lyrics": "lorem ipsum",
             })
 
-        # when disabling `filter_extra`, title should be included
+        # when disabling `only_extra`, title should be included
         filtered = dict(FieldFilter.filter({
             "title": "Greatest song in the world",
             "lyrics": "lorem ipsum",
-        }, config=FIELD_FILTER_CONFIG, filter_extra=False))
+        }, config=FIELD_FILTER_CONFIG, only_extra=False))
         self.assertIn('title', filtered)
         self.assertNotIn('lyrics', filtered)
 
@@ -30,7 +30,7 @@ class TestMetadataLog(ShowergelTestCase):
         _ = FieldFilter.filter({
             "title": "Greatest song in the world",
             "lyrics": "lorem ipsum",
-        }, filter_extra=False)
+        }, only_extra=False)
 
     def test_metadata_log(self):
         # at least on_air is required

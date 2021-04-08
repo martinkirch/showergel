@@ -133,7 +133,7 @@ class TelnetConnector:
             metadata = self._find_active_source()
             metadata.update(self._read_output_metadata())
 
-        metadata = dict(FieldFilter.filter(metadata, filter_extra=False))
+        metadata = dict(FieldFilter.filter(metadata, only_extra=False))
 
         if 'on_air' in metadata:
             metadata['on_air'] = to_datetime(metadata['on_air']).isoformat()

@@ -180,7 +180,7 @@ class FieldFilter(object):
         _log.debug("Will ignore medadata fields matching %r", wildcards)
 
     @classmethod
-    def filter(cls, data:Dict, config:dict=None, filter_extra=True) -> List[Tuple[str, str]]:
+    def filter(cls, data:Dict, config:dict=None, only_extra=True) -> List[Tuple[str, str]]:
         """
         Extracts metadata entries that fit in our ``log_extra`` table.
         Expects you called ``setup()`` before, or provide ``config``.
@@ -188,7 +188,7 @@ class FieldFilter(object):
         Parameter:
             data: as provided by Liquidsoap
             config: daemon configuration ; we search for ``ignore_fields`` in the ``metadata_log`` section.
-            filter_extra: can disable filtering fields that should be in our ``log`` table.
+            only_extra: tells if it also filters out fields that should be in our ``log`` table.
         Returns:
             A list of ``(key, value)`` couples, for each key in the input
             dictionary that is not included in ``ignore_fields`` or in the main
@@ -201,7 +201,7 @@ class FieldFilter(object):
                 cls.setup(config)
         result = list()
         for k, v in data.items():
-            if filter_extra and k in [
+            if only_extra and k in [
                 'on_air', 'artist', 'title', 'album', 'source', 'initial_uri']:
                 pass
             elif k in cls._fields:
