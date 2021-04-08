@@ -1,4 +1,5 @@
 import logging
+import sys
 from unittest import TestCase
 
 from webtest import TestApp
@@ -11,7 +12,7 @@ from showergel import app
 from showergel.db import Base
 from showergel.liquidsoap_connector import Connection
 
-app.config = {
+app.config.load_dict({
     'db': {
         "sqlalchemy.url": "sqlite:///:memory:",
         # "echo": True,
@@ -19,7 +20,7 @@ app.config = {
     'interface': {
         'name': "ShowergelTest",
     }
-}
+})
 app.init()
 
 __engine = app.get_engine()
@@ -28,9 +29,13 @@ DBSession = sessionmaker(bind=__engine)
 
 bottle.debug(mode=True)
 
+logging.basicConfig(
+    format="%(asctime)s %(levelname)-5.5s [%(name)s:%(lineno)s] %(message)s",
+    level=logging.DEBUG,
+)
+
 class ShowergelTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        logging.getLogger().setLevel(logging.DEBUG)
         cls.app = TestApp(app)

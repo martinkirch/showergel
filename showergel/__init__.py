@@ -10,7 +10,6 @@ import sys
 import logging
 import logging.config
 import json
-from configparser import ConfigParser
 from functools import wraps
 
 from bottle import Bottle, response, HTTPError, request, static_file, redirect, HTTPResponse
@@ -23,27 +22,6 @@ from showergel.liquidsoap_connector import Connection
 
 _log = logging.getLogger(__name__)
 
-
-def force_python_rootlogger(fn):
-    """
-    Server's logger may bypasses our logging.config.fileConfig,
-    especially when an error occurs. So we add this tiny plugin
-    """
-    @wraps(fn)
-    def _force_python_rootlogger(*args, **kwargs):
-        try:
-            actual_response = fn(*args, **kwargs)
-        except HTTPError:
-            raise
-        except Exception as excn:
-            if isinstance(excn, HTTPResponse):
-                # may happen when redirecting: Bottle raises a response
-                return excn
-            else:
-                _log.exception(excn)
-                raise HTTPError(500, "Internal Error", excn) from None
-        return actual_response
-    return _force_python_rootlogger
 
 def send_cors():
     """
@@ -72,7 +50,6 @@ class MainBottle(ShowergelBottle):
 
         http://bottlepy.org/docs/dev/tutorial.html#auto-reloading
         """
-        self.install(force_python_rootlogger)
         if not kwargs['reloader'] or environ.get('BOTTLE_CHILD'):
             self.init(demo=kwargs['demo'], debug=kwargs['debug'])
         elif kwargs['reloader']:
@@ -84,11 +61,12 @@ class MainBottle(ShowergelBottle):
         """
         Showergel's initialization function
         """
+        engine = engine_from_config(self.config, prefix="db.sqlalchemy.")
+        plugin = SQLAlchemyPlugin(engine)
+        self.install(plugin)
         for sub_app in sub_apps:
-            sub_app.config = self.config
-
-        engine = engine_from_config(self.config['db'])
-        self.install(SQLAlchemyPlugin(engine))
+            sub_app.install(plugin)
+            sub_app.config.update(self.config)
 
         if demo:
             self.add_hook('after_request', send_cors)
@@ -99,14 +77,6 @@ class MainBottle(ShowergelBottle):
             self.add_hook('after_request', send_cors)
 
         Connection.setup(self.config)
-
-    def install(self, plugin):
-        """
-        Because Bottle.install does not install plug-ins to sub-applications
-        """
-        super().install(plugin)
-        for sub_app in sub_apps:
-            sub_app.install(plugin)
 
     def get_engine(self):
         for p in self.plugins:
@@ -137,7 +107,7 @@ def enable_cors_generic_route():
     return {}
 
 def read_bool_param(param):
-    value = app.config['listen'].get(param)
+    value = app.config.get('listen.'+param)
     if value in ('False', 'false'):
         return False
     else:
@@ -150,16 +120,12 @@ def serve():
     config_path = sys.argv[1]
     logging.config.fileConfig(config_path, disable_existing_loggers=False)
 
-    # we don't use Bottle's app.config.load_config because it's eager loading
-    # values: that doesn't go well with interpolation keys in logging config
-    parser = ConfigParser()
-    parser.read(config_path)
-    app.config = parser
+    app.config.load_config(config_path)
 
     try:
-        port = int(app.config['listen']['port'])
+        port = int(app.config['listen.port'])
     except ValueError:
-        port = int(environ[app.config['listen']['port']])
+        port = int(environ[app.config['listen.port']])
 
     demo = read_bool_param('demo')
     debug = read_bool_param('debug')
@@ -169,7 +135,7 @@ def serve():
         server = 'wsgiref'
     app.run(
         server=server,
-        host=app.config['listen']['address'],
+        host=app.config['listen.address'],
         port=port,
         reloader=debug,
         quiet=True,

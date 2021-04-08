@@ -34,12 +34,10 @@ def get_parameters():
     :>json name: instance name (appears as interface's title)
     :>json version: showergel's version
     """
-    try:
-        interface_section = live_app.config["interface"]
-    except KeyError:
-        interface_section = {}
     version = pkg_resources.get_distribution("showergel").version
+    if not version:
+        version = "demo"
     return {
-        "name": interface_section.get("name", "Showergel"),
+        "name": live_app.config.get("interface.name", "Showergel"),
         "version": version,
     }

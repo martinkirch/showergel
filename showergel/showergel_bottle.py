@@ -1,6 +1,9 @@
 import json
+import logging
 
 from bottle import Bottle, response
+
+_log = logging.getLogger(__name__)
 
 class ShowergelBottle(Bottle):
 
@@ -15,6 +18,9 @@ class ShowergelBottle(Bottle):
             response.status = 400
             return json.dumps({"code": 400, "message": "Please send well-formed JSON"})
         else:
+            if res.exception:
+                _log.critical("Caught exception: %r", res.exception)
+                _log.debug("Caught:", exc_info=res.exception)
             return json.dumps({"code": int(res.status_code), "message": res.body})
 
     def _handle(self, environ):

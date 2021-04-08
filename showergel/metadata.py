@@ -162,7 +162,7 @@ class FieldFilter(object):
     @classmethod
     def setup(cls, config):
         try:
-            raw = config['metadata_log']['ignore_fields']
+            raw = config['metadata_log.ignore_fields']
             splitted = raw.split(',')
         except KeyError: # if `[metadata_log] ignore_fields`  is not in the config
             splitted = []

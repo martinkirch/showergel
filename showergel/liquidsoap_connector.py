@@ -40,10 +40,10 @@ class TelnetConnector:
 
     def __init__(self, config:dict):
         self._lock = RLock()
-        self.host = config['liquidsoap']['host']
-        self.port = config['liquidsoap']['port']
-        if 'timeout' in config['liquidsoap']:
-            self.timeout = int(config['liquidsoap']['timeout'])
+        self.host = config['liquidsoap.host']
+        self.port = config['liquidsoap.port']
+        if 'liquidsoap.timeout' in config:
+            self.timeout = int(config['liquidsoap.timeout'])
         else:
             self.timeout = 10
         FieldFilter.setup(config)
@@ -247,8 +247,8 @@ class Connection:
 
     @classmethod
     def setup(cls, config:dict=None):
-        if config and 'liquidsoap' in config:
-            method = config['liquidsoap'].get('method')
+        if config:
+            method = config.get('liquidsoap.method')
             if method == 'none':
                 cls._instance = EmptyConnector()
             elif method == 'demo':
@@ -275,13 +275,9 @@ class Connection:
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
     conn = TelnetConnector({
-        "liquidsoap": {
-            "host": "192.168.1.33",
-            "port": "1234",
-        },
-        'metadata_log': {
-            'ignore_fields': "lyrics,musicbrainz*,r128*",
-        }
+        "liquidsoap.host": "192.168.1.33",
+        "liquidsoap.port": "1234",
+        'metadata_log.ignore_fields': "lyrics,musicbrainz*,r128*",
     })
     import time
     while True:
