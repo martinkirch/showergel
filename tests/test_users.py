@@ -62,7 +62,8 @@ class TestUsers(ShowergelTestCase):
             {"username": "tester", "password": "newsecret"})
         self.assertEqual(resp.status_code, 200)
 
-        resp = self.app.delete(quote('/users/someone êlse'))
+        # encoding to latin1 because it seems to get better with webtest+bottle... and it matches the real app test
+        resp = self.app.delete(quote('/users/someone êlse', encoding='latin1'))
         self.assertEqual(resp.status_code, 200)
 
         resp = self.app.post_json('/login',
