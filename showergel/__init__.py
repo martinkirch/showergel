@@ -28,9 +28,6 @@ def send_cors():
     Send CORS headers along all requests.
     This is only enabled in debug mode, because WebPack's live-compiling-server
     is hosting on another port
-
-    FIXME #12 in some cases (like, errors) it's not returned... could be fixed
-    in Bottle 0.13 - see https://github.com/bottlepy/bottle/issues/1125
     """
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS, HEAD, DELETE'
