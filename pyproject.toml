@@ -16,6 +16,7 @@ classifiers = [
     "Topic :: Multimedia :: Sound/Audio",
     "Topic :: Multimedia :: Sound/Audio :: Players"
 ]
+include = ["bottle.py", "bottle_sqlalchemy.py"]
 
 [tool.poetry.scripts]
 showergel = "showergel:serve"
