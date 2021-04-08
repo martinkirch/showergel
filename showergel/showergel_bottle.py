@@ -22,10 +22,3 @@ class ShowergelBottle(Bottle):
                 _log.critical("Caught exception: %r", res.exception)
                 _log.debug("Caught:", exc_info=res.exception)
             return json.dumps({"code": int(res.status_code), "message": res.body})
-
-    def _handle(self, environ):
-        """
-        Workaround for https://github.com/bottlepy/bottle/issues/602
-        """
-        environ["PATH_INFO"] = environ["PATH_INFO"].encode("utf8").decode("latin1")
-        return super()._handle(environ)
