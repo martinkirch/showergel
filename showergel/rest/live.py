@@ -34,7 +34,11 @@ def get_parameters():
     :>json name: instance name (appears as interface's title)
     :>json version: showergel's version
     """
-    version = pkg_resources.get_distribution("showergel").version
+    version = None
+    try:
+        version = pkg_resources.get_distribution("showergel").version
+    except Exception:
+        pass
     if not version:
         version = "demo"
     return {
