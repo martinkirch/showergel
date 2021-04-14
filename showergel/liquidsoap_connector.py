@@ -102,20 +102,25 @@ class TelnetConnector:
         :return timedelta: the connected Liquidsoap instance's uptime
         """
         self._lock.acquire()
-        parsed = self.UPTIME_PATTERN.match(self._command("uptime"))
-        uptime = timedelta(
-            days    = int(parsed.group(1)),
-            hours   = int(parsed.group(2)),
-            minutes = int(parsed.group(3)),
-            seconds = int(parsed.group(4)),
-        )
-        if not self._soaps_updated_at or uptime < self._soaps_updated_at:
-            self.soap_objects = {}
-            raw = self._command("list")
-            for line in raw.split("\r\n"):
-                splitted = line.split(" : ")
-                self.soap_objects[splitted[0]] = splitted[1]
-            self._soaps_updated_at = uptime
+        raw_uptime = self._command("uptime")
+        parsed = self.UPTIME_PATTERN.match(raw_uptime)
+        if parsed:
+            uptime = timedelta(
+                days    = int(parsed.group(1)),
+                hours   = int(parsed.group(2)),
+                minutes = int(parsed.group(3)),
+                seconds = int(parsed.group(4)),
+            )
+            if not self._soaps_updated_at or uptime < self._soaps_updated_at:
+                self.soap_objects = {}
+                raw = self._command("list")
+                for line in raw.split("\r\n"):
+                    splitted = line.split(" : ")
+                    self.soap_objects[splitted[0]] = splitted[1]
+                self._soaps_updated_at = uptime
+        else:
+            uptime = timedelta()
+            log.error("Cannot parse uptime: %r", raw_uptime)
 
         self._lock.release()
         return uptime
