@@ -41,3 +41,11 @@ def get_parameters():
         "name": live_app.config.get("interface.name", "Showergel"),
         "version": version,
     }
+
+@live_app.delete("/live")
+def delete_live():
+    """
+    Skips current track: this sends a skip command to the first Liquidsoap output.
+    """
+    Connection.get().skip()
+    return {}

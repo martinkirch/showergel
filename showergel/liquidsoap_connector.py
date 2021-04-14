@@ -223,6 +223,12 @@ class TelnetConnector:
                     return self._metadata_to_dict(all_metadata[index:])
         return {}
 
+    def skip(self):
+        for soap_name, soap_type in self.soap_objects.items():
+            if soap_type.startswith('output.'):
+                self._command(soap_name + '.skip')
+                return
+
 
 class EmptyConnector(TelnetConnector):
     def __init__(self):
@@ -230,6 +236,9 @@ class EmptyConnector(TelnetConnector):
 
     def uptime(self):
         return datetime.now() - self.started_at
+
+    def skip(self):
+        pass
 
     def current(self):
         return {

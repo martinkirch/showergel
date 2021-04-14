@@ -4,6 +4,7 @@
     <p>Now playing</p>
     <h1 id="currentTrack">{{ currentTrack }}</h1>
     <h2>Since {{ currentOnAirTime }} from {{ currentSource }}[{{ currentStatus }}]</h2>
+    <button class="button" @click="confirmSkip()">Skip</button>
   </div>
 </template>
 
@@ -49,6 +50,16 @@ export default {
       this.currentStatus = response.data.status || ''
       this.serverTime = new Date(response.data.server_time)
       this.currentOnAir = new Date(response.data.on_air)
+    },
+    skip() {
+      http.delete('/live')
+        .then(this.getLive)
+        .catch(error => { console.log(error) })
+    },
+    confirmSkip () {
+      if ( confirm("Skip current track ?") ) {
+        this.skip();
+      }
     }
   },
   mounted () {

@@ -80,6 +80,9 @@ class FakeLiquidsoapConnector:
         self._uptime += self.FAKE_TIME_SHIFT
         return self._uptime
 
+    def skip(self):
+        pass
+
     def current(self) -> dict:
         metadata = self.generate_metadata()
         metadata["uptime"] = str(self.uptime())
@@ -131,11 +134,14 @@ class DemoLiquidsoapConnector(FakeLiquidsoapConnector):
         self._started_at = datetime.now().replace(microsecond=0)
         self._metadata = self.generate_metadata()
 
+    def skip(self):
+        self._on_air = datetime.now().replace(microsecond=0)
+        self._metadata = self.generate_metadata()
+
     def uptime(self) -> Type[timedelta]:
         uptime = datetime.now().replace(microsecond=0) - self._started_at
         if (datetime.now() - self._on_air) >= self.TRACK_LENGTH:
-            self._on_air = datetime.now().replace(microsecond=0)
-            self._metadata = self.generate_metadata()
+            self.skip()
         return uptime
 
     def current(self) -> dict:
