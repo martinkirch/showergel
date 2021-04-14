@@ -58,6 +58,9 @@ export default {
   text-align: center;
   padding: 1rem;
 }
+h1.title {
+  max-width: 6em;
+}
 .logo {
   font-size: 8rem;
 }
@@ -69,11 +72,5 @@ export default {
 }
 .button {
   justify-content: left !important;
-}
-.margin-top {
-  margin-top: 2rem;
-}
-.margin-btn {
-  margin-bottom: 10px;
 }
 </style>
