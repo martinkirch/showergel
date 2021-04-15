@@ -68,6 +68,13 @@
             <td>{{ new Date(user.modified_at).toLocaleString() }}</td>
             <td>
               <button
+                class="button is-warning icon"
+                @click="changePassword(user.username)"
+                title="Change pass phrase"
+                >
+                  <i class="mdi mdi-lock-reset"></i>
+              </button>
+              <button
                 class="button is-danger icon"
                 @click="deleteUser(user.username)"
                 title="Remove user account"
@@ -127,6 +134,23 @@ export default {
           .then(this.resetAdd)
           .then(this.getUsers)
           .catch(notifications.error_handler);
+      }
+    },
+    changePassword(username) {
+      let pass = prompt(`Please enter a new pass phrase for ${username}`);
+      if (pass) {
+        let confirm = prompt(`Please confirm ${username}'s new pass phrase`);
+        if (confirm) {
+          if (confirm == pass) {
+            http.post(`/users/${username}`, {
+              password: pass,
+            })
+            .then(notifications.success_handler("Pass phrase updated"))
+            .catch(notifications.error_handler);
+          } else {
+            notifications.error("Pass phrases don't match !");
+          }
+        }
       }
     },
     deleteUser(username) {
