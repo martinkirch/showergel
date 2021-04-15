@@ -31,8 +31,8 @@ your existing script (it also contain a few Liquidsoap tricks!).
 Sections below discuss implementation details on integrating each Showergel feature.
 
 
-Display current track
----------------------
+Display/skip current track
+--------------------------
 
 You just need to enable `Liquidsoap's telnet server <https://www.liquidsoap.info/doc-1.4.4/server.html>`_.
 For example:
