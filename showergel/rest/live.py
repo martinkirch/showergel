@@ -37,8 +37,8 @@ def get_parameters():
     version = None
     try:
         version = pkg_resources.get_distribution("showergel").version
-    except Exception:
-        pass
+    except Exception as excn:
+        log.warning(excn)
     if not version:
         version = "demo"
     return {
