@@ -52,6 +52,7 @@ class TelnetConnector:
         self._connect()
 
         self.soap_objects = {}
+        self._first_output_name = None
         self._soaps_updated_at = None
         self.uptime()
         self._latest_active_source = None
@@ -94,6 +95,18 @@ class TelnetConnector:
         self._lock.release()
         return response
 
+    def _update_soaps(self):
+        self.soap_objects = {}
+        raw = self._command("list")
+        for line in raw.split("\r\n"):
+            splitted = line.split(" : ")
+            self.soap_objects[splitted[0]] = splitted[1]
+        self._first_output_name = None
+        for soap_name, soap_type in self.soap_objects.items():
+            if soap_type.startswith('output.'):
+                self._first_output_name = soap_name
+                break
+
     def uptime(self) -> Type[timedelta]:
         """
         Observing a decreasing uptime is interpreted as an instance reboot ;
@@ -112,11 +125,7 @@ class TelnetConnector:
                 seconds = int(parsed.group(4)),
             )
             if not self._soaps_updated_at or uptime < self._soaps_updated_at:
-                self.soap_objects = {}
-                raw = self._command("list")
-                for line in raw.split("\r\n"):
-                    splitted = line.split(" : ")
-                    self.soap_objects[splitted[0]] = splitted[1]
+                self._update_soaps()
                 self._soaps_updated_at = uptime
         else:
             uptime = timedelta()
@@ -213,21 +222,18 @@ class TelnetConnector:
         Some inputs don't have a ``.metadata`` command. When they're playing,
         the only way to fetch current metadata is to ask an output.
         """
-        for soap_name, soap_type in self.soap_objects.items():
-            if soap_type.startswith('output.'):
-                all_metadata = self._command(soap_name + '.metadata')
-                separator = "--- 1 ---\n"
-                index = all_metadata.find(separator)
-                if index >= 0:
-                    index += len(separator)
-                    return self._metadata_to_dict(all_metadata[index:])
+        if self._first_output_name:
+            all_metadata = self._command(self._first_output_name + '.metadata')
+            separator = "--- 1 ---\n"
+            index = all_metadata.find(separator)
+            if index >= 0:
+                index += len(separator)
+                return self._metadata_to_dict(all_metadata[index:])
         return {}
 
     def skip(self):
-        for soap_name, soap_type in self.soap_objects.items():
-            if soap_type.startswith('output.'):
-                self._command(soap_name + '.skip')
-                return
+        if self._first_output_name:
+            self._command(self._first_output_name + '.skip')
 
 
 class EmptyConnector(TelnetConnector):
