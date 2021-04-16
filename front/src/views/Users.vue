@@ -90,8 +90,8 @@
 </template>
 
 <script>
-import http from '@/http'
-import notifications from '@/notifications'
+import http from '@/http';
+import notifications from '@/notifications';
 
 export default {
   data () {
@@ -117,7 +117,7 @@ export default {
         .catch(notifications.error_handler);
     },
     onResults (response) {
-      this.users = response.data.users
+      this.users = response.data.users;
     },
     resetAdd () {
       this.showUserAdd = false;
@@ -162,7 +162,7 @@ export default {
     }
   },
   mounted () {
-    this.getUsers()
+    this.getUsers();
   }
 }
 </script>

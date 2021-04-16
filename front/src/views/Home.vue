@@ -12,7 +12,7 @@
 </template>
 
 <script>
-import http from '@/http'
+import http from '@/http';
 
 export default {
   data () {
@@ -30,13 +30,13 @@ export default {
 
   computed: {
     formattedServerTime () {
-      return this.serverTime.toLocaleTimeString()
+      return this.serverTime.toLocaleTimeString();
     },
     currentTrack () {
-      return this.currentArtist + ' - ' + this.currentTitle
+      return this.currentArtist + ' - ' + this.currentTitle;
     },
     currentOnAirTime() {
-      return this.currentOnAir.toLocaleTimeString()
+      return this.currentOnAir.toLocaleTimeString();
     }
   },
 
@@ -47,13 +47,13 @@ export default {
         .catch(error => { console.log(error) })
     },
     onLiveResponse (response) {
-      self.timeoutID = setTimeout(this.getLive, 1000)
-      this.currentArtist = response.data.artist || ''
-      this.currentTitle = response.data.title || ''
-      this.currentSource = response.data.source || ''
-      this.currentStatus = response.data.status || ''
-      this.serverTime = new Date(response.data.server_time)
-      this.currentOnAir = new Date(response.data.on_air)
+      self.timeoutID = setTimeout(this.getLive, 1000);
+      this.currentArtist = response.data.artist || '';
+      this.currentTitle = response.data.title || '';
+      this.currentSource = response.data.source || '';
+      this.currentStatus = response.data.status || '';
+      this.serverTime = new Date(response.data.server_time);
+      this.currentOnAir = new Date(response.data.on_air);
       if ( response.data.remaining ) {
         this.remaining = Math.round(response.data.remaining);
       } else {
@@ -72,7 +72,7 @@ export default {
     }
   },
   mounted () {
-    this.getLive()
+    this.getLive();
   },
   unmounted () {
     if (self.timeoutID) {
