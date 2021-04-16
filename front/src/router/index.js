@@ -1,12 +1,12 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/Home.vue'
+import NowPlaying from '../views/NowPlaying.vue'
 
 const routes = [
   {
     path: '/',
     alias: '/index.html',
-    name: 'Home',
-    component: Home
+    name: 'NowPlaying',
+    component: NowPlaying
   },
   {
     path: '/playout_history',

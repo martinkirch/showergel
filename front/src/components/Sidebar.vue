@@ -9,17 +9,9 @@
         <li>
           <router-link to="/" active-class="is-active">
               <span class="icon is-medium">
-                <i class="mdi mdi-home"></i>
+                <i class="mdi mdi-play-box-outline"></i>
               </span>
-              <span>Home</span>
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/users" active-class="is-active">
-              <span class="icon is-medium">
-                <i class="mdi mdi-account-group"></i>
-              </span>
-              <span>Users</span>
+              <span>Now playing</span>
           </router-link>
         </li>
         <li>
@@ -28,6 +20,14 @@
                 <i class="mdi mdi-history"></i>
               </span>
               <span>Playout History</span>
+          </router-link>
+        </li>
+        <li>
+          <router-link to="/users" active-class="is-active">
+              <span class="icon is-medium">
+                <i class="mdi mdi-account-group"></i>
+              </span>
+              <span>Users</span>
           </router-link>
         </li>
         <li>

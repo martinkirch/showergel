@@ -1,7 +1,6 @@
 <template>
   <div class="content is-large">
     <p id="servertime">{{ formattedServerTime }}</p>
-    <p>Now playing</p>
     <h1 id="currentTrack">{{ currentTrack }}</h1>
     <h2 v-if="remaining">
       Remaining time (estimated): {{remaining}}s.
@@ -83,10 +82,6 @@ export default {
 </script>
 
 <style scoped>
-#home {
-  font-size: 2em;
-}
-
 #servertime {
   float: right;
   font-weight: bold;
