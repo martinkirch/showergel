@@ -3,6 +3,9 @@
     <p id="servertime">{{ formattedServerTime }}</p>
     <p>Now playing</p>
     <h1 id="currentTrack">{{ currentTrack }}</h1>
+    <h2 v-if="remaining">
+      Remaining time (estimated): {{remaining}}s.
+    </h2>
     <h2>Since {{ currentOnAirTime }} from {{ currentSource }}[{{ currentStatus }}]</h2>
     <button class="button" @click="confirmSkip()">Skip</button>
   </div>
@@ -20,6 +23,7 @@ export default {
       currentSource: '',
       currentStatus: 'connecting to Liquidsoap',
       currentOnAir: new Date(),
+      remaining: null,
       timeoutID: null,
     }
   },
@@ -50,6 +54,11 @@ export default {
       this.currentStatus = response.data.status || ''
       this.serverTime = new Date(response.data.server_time)
       this.currentOnAir = new Date(response.data.on_air)
+      if ( response.data.remaining ) {
+        this.remaining = Math.round(response.data.remaining);
+      } else {
+        this.remaining = null;
+      }
     },
     skip() {
       http.delete('/live')

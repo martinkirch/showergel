@@ -235,6 +235,13 @@ class TelnetConnector:
         if self._first_output_name:
             self._command(self._first_output_name + '.skip')
 
+    def remaining(self) -> Optional[float]:
+        if self._first_output_name:
+            raw = self._command(self._first_output_name + '.remaining')
+            if raw:
+                return float(raw)
+        return None
+
 
 class EmptyConnector(TelnetConnector):
     def __init__(self):
@@ -245,6 +252,9 @@ class EmptyConnector(TelnetConnector):
 
     def skip(self):
         pass
+
+    def remaining(self):
+        return None
 
     def current(self):
         return {

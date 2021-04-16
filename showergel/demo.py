@@ -83,6 +83,9 @@ class FakeLiquidsoapConnector:
     def skip(self):
         pass
 
+    def remaining(self):
+        return self.FAKE_TIME_SHIFT.total_seconds()
+
     def current(self) -> dict:
         metadata = self.generate_metadata()
         metadata["uptime"] = str(self.uptime())
@@ -151,6 +154,9 @@ class DemoLiquidsoapConnector(FakeLiquidsoapConnector):
         metadata["uptime"] = uptime
         metadata["on_air"] = self._on_air.isoformat()
         return metadata
+
+    def remaining(self):
+        return max(0.0, (self.TRACK_LENGTH - (datetime.now() - self._on_air)).total_seconds())
 
 # test tool
 if __name__ == '__main__':

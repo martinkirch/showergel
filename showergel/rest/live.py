@@ -21,9 +21,14 @@ def get_live():
     :>json on_air: current track start time
     :>json status: status of the current source ("playing" or "connected to ...")
     :>json server_time: server's datetime
+    :>json remaining: *maybe* remaining duration of current source, in seconds
     """
-    metadata = Connection.get().current()
+    connection = Connection.get()
+    metadata = connection.current()
     metadata["server_time"] = datetime.now().isoformat()
+    remaining = connection.remaining()
+    if remaining is not None:
+        metadata["remaining"] = remaining
     return metadata
 
 @live_app.get("/parameters")
