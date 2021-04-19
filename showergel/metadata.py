@@ -39,7 +39,7 @@ def to_datetime(date_string):
     except ValueError:
         pass
     return datetime.fromisoformat(date_string)
-    
+
 
 class Log(Base):
     __tablename__ = 'log'
@@ -109,9 +109,7 @@ class Log(Base):
         else:
             query = query.order_by(cls.on_air.desc())
 
-        if limit:
-            query = query.limit(limit)
-        elif not(start and end):
+        if not(start and end):
             if not limit:
                 limit = 10
             query = query.limit(limit)

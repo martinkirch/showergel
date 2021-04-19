@@ -109,14 +109,17 @@ class TestMetadataLog(ShowergelTestCase):
         self.assertEqual(2, len(logged))
 
         logged = self.app.get('/metadata_log', {
-            "start": datetime(2021, 1, 1),
-            "end": datetime(2021, 1, 2),
+            "start": datetime(2021, 1, 1).isoformat(),
+            "end": datetime(2021, 1, 2).isoformat(),
         }).json['metadata_log']
         self.assertEqual(0, len(logged))
 
+        # check that limit is ignored when start and end is provided
+        # check start and end can be parsed as YYYY-MM-DD
         logged = self.app.get('/metadata_log', {
-            "start": datetime(2021, 1, 1),
-            "end": now + tracktime,
+            "limit": 1,
+            "start": datetime(2021, 1, 1).strftime(r"%Y-%m-%d"),
+            "end": (now + tracktime).isoformat(),
         }).json['metadata_log']
         self.assertEqual(3, len(logged))
 
