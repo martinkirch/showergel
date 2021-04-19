@@ -27,7 +27,8 @@ def stub_log_data(session, config):
     sources = ['test', 'live', 'unknwon_sound_source1231']
     albums = ['Showergel Rocks', 'Better hygiene with Liquidsoap']
 
-    for i in range(50):
+    # generate a few days of log:
+    for i in range(3000):
         now -= tracktime
         title = artistic_generator()
         artist = artistic_generator()
