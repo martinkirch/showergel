@@ -64,12 +64,15 @@ class TelnetConnector:
             self._connection = Telnet()
         log.info("Attempting to contact Liquidsoap over telnet @%s:%s",
             self.host, self.port)
-        self._connection.open(
-            host=self.host,
-            port=self.port,
-            timeout=self.timeout
-        )
-        log.info("Connected.")
+        try:
+            self._connection.open(
+                host=self.host,
+                port=self.port,
+                timeout=self.timeout
+            )
+            log.info("Connected.")
+        except ConnectionRefusedError:
+            log.warning("Cannot connect to Liquidsoap. Please check it is running, or check Showergel's configuration.")
         self._lock.release()
 
     def _command(self, command:str) -> str:
@@ -80,6 +83,8 @@ class TelnetConnector:
             # log.debug("Telnet command: %s", command)
             remaining_attempts -= 1
             try:
+                if not self._connection.sock:
+                    raise BrokenPipeError()
                 self._connection.write(command.encode('utf8') + b'\n')
                 line = self._connection.read_until(b'END').decode('utf8')
                 response = line.rstrip("END").strip("\r\n")
@@ -87,7 +92,7 @@ class TelnetConnector:
                     raise EOFError()
                 # log.debug("Telnet response: %r", response)
                 break
-            except EOFError:
+            except (EOFError, BrokenPipeError, ConnectionResetError):
                 if remaining_attempts:
                     self._connect(reconnect=True)
                 else:
@@ -98,9 +103,10 @@ class TelnetConnector:
     def _update_soaps(self):
         self.soap_objects = {}
         raw = self._command("list")
-        for line in raw.split("\r\n"):
-            splitted = line.split(" : ")
-            self.soap_objects[splitted[0]] = splitted[1]
+        if raw:
+            for line in raw.split("\r\n"):
+                splitted = line.split(" : ")
+                self.soap_objects[splitted[0]] = splitted[1]
         self._first_output_name = None
         for soap_name, soap_type in self.soap_objects.items():
             if soap_type.startswith('output.'):
@@ -116,7 +122,10 @@ class TelnetConnector:
         """
         self._lock.acquire()
         raw_uptime = self._command("uptime")
-        parsed = self.UPTIME_PATTERN.match(raw_uptime)
+        if raw_uptime:
+            parsed = self.UPTIME_PATTERN.match(raw_uptime)
+        else:
+            parsed = None
         if parsed:
             uptime = timedelta(
                 days    = int(parsed.group(1)),
@@ -142,7 +151,10 @@ class TelnetConnector:
         current_rid = self._command("request.on_air")
         if current_rid:
             raw = self._command("request.metadata " + current_rid)
-            metadata = self._metadata_to_dict(raw)
+            if raw:
+                metadata = self._metadata_to_dict(raw)
+            else:
+                metadata = {}
         else:
             metadata = self._find_active_source()
             metadata.update(self._read_output_metadata())
@@ -209,10 +221,13 @@ class TelnetConnector:
         source_type = self.soap_objects[source]
         if source_type in self.STATUS_CHECK:
             status = self._command(source + ".status")
-            if self.STATUS_CHECK[source_type](status):
-                return status
-            else:
-                return None
+            try:
+                if self.STATUS_CHECK[source_type](status):
+                    return status
+                else:
+                    return None
+            except Exception as exc:
+                log.debug(exc)
         else:
             log.debug("Don't know how to check %s", source_type)
         return None
@@ -225,10 +240,11 @@ class TelnetConnector:
         if self._first_output_name:
             all_metadata = self._command(self._first_output_name + '.metadata')
             separator = "--- 1 ---\n"
-            index = all_metadata.find(separator)
-            if index >= 0:
-                index += len(separator)
-                return self._metadata_to_dict(all_metadata[index:])
+            if all_metadata:
+                index = all_metadata.find(separator)
+                if index >= 0:
+                    index += len(separator)
+                    return self._metadata_to_dict(all_metadata[index:])
         return {}
 
     def skip(self):
@@ -239,7 +255,10 @@ class TelnetConnector:
         if self._first_output_name:
             raw = self._command(self._first_output_name + '.remaining')
             if raw:
-                return float(raw)
+                try:
+                    return float(raw)
+                except ValueError:
+                    pass
         return None
 
 
