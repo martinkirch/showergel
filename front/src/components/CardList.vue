@@ -38,7 +38,7 @@
           >
             <div class="media-left">
               <div class="block pt-1">
-                {{ formatDate(new Date(title.on_air), "hh:mm") }}
+                {{ formatDate(new Date(title.on_air), "HH:mm:ss") }}
               </div>
             </div>
             <div class="media-content columns">
