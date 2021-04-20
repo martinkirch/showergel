@@ -19,6 +19,7 @@ Showergel's quickstart.liq
 
 We showcase the complete Showergel integration in a "quick-start script" you can download
 :download:`here <_static/quickstart.liq>`.
+It is tested against Liquidsoap 1.4.4.
 This ``.liq`` file defines typical radio sources and is heavily commented:
 you can use it to start your first stream, or pick portions that would improve
 your existing script (it also contain a few Liquidsoap tricks!).
@@ -60,8 +61,9 @@ Logging metadata
 ----------------
 
 You need to define a function that will post metadata to Showergel.
-Then you have to insert this function in your stream,
-using the
+
+For Liquidsoap version 1.x,
+you have to insert this function in your stream using the
 `on_metadata <https://www.liquidsoap.info/doc-1.4.4/reference.html#on_metadata>`_
 or
 `on_track <https://www.liquidsoap.info/doc-1.4.4/reference.html#on_track>`_
@@ -78,6 +80,20 @@ operators, as follows:
 
 Once this is defined, be careful to use ``radio`` as your outputs' source (instead of ``source``).
 Otherwise ``post_to_showergel`` will never be called and nothing will be logged.
+
+For Liquidsoap version 2.x, you just have to call
+`source.on_track <https://www.liquidsoap.info/doc-dev/reference.html#source.on_track>`_
+or `source.on_metadata <https://www.liquidsoap.info/doc-dev/reference.html#source.on_track>`_
+:
+
+.. code-block:: ocaml
+
+    def post_to_showergel(m)
+        response = http.post("#{SHOWERGEL}/metadata_log", data=json_of(m))
+        log(label="posted_to_showergel", string_of(response))
+    end
+
+    source.on_track(radio, post_to_showergel)
 
 The line that starts with ``log`` is optional,
 it may help when debugging.
@@ -115,6 +131,8 @@ Then you will be able to add/edit crendentials from Showergel's web interface.
 This method requires creating an authentication function (in your ``.liq``)
 passed to ``intput.harbor``'s ``auth`` parameter (instead of ``user`` and ``password``).
 
+For Liquidsoap version 1.x, this function can be written as:
+
 .. code-block:: ocaml
 
     def auth_function(user, password) =
@@ -134,3 +152,22 @@ passed to ``intput.harbor``'s ``auth`` parameter (instead of ``user`` and ``pass
 
     harbor = input.harbor(auth=auth_function, ...
 
+For Liquidsoap version 2.x, this function can be written as:
+
+.. code-block:: ocaml
+
+    def auth_function(user, password) =
+        response = http.post("#{SHOWERGEL}/login",
+            headers=[("Content-Type", "application/json")],
+            data=json_of([("username", user), ("password", password)])
+        )
+        if response.status_code == 200 then
+            log("Access granted to #{user}")
+            true
+        else
+            log("Access denied to #{user}")
+            false
+        end
+    end
+
+    harbor = input.harbor(auth=auth_function, ...
