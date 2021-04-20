@@ -5,7 +5,7 @@ from datetime import timedelta, datetime
 from threading import RLock
 from telnetlib import Telnet
 
-from showergel.metadata import to_datetime, FieldFilter
+from showergel.metadata import to_datetime
 
 log = logging.getLogger(__name__)
 
@@ -46,7 +46,6 @@ class TelnetConnector:
             self.timeout = int(config['liquidsoap.timeout'])
         else:
             self.timeout = 10
-        FieldFilter.setup(config)
 
         self._connection = Telnet()
         self._connect()
@@ -158,8 +157,6 @@ class TelnetConnector:
         else:
             metadata = self._find_active_source()
             metadata.update(self._read_output_metadata())
-
-        metadata = dict(FieldFilter.filter(metadata, only_extra=False))
 
         if 'on_air' in metadata:
             metadata['on_air'] = to_datetime(metadata['on_air']).isoformat()
