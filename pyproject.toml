@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "showergel"
-version = "0.2.0-alpha.1"
+version = "0.2.0-alpha.2"
 description = "Companion application for a Liquidsoap radio"
 authors = ["Martin Kirchgessner <martin.kirch@gmail.com>"]
 license = "GPL-3.0-only"
@@ -16,7 +16,7 @@ classifiers = [
     "Topic :: Multimedia :: Sound/Audio",
     "Topic :: Multimedia :: Sound/Audio :: Players"
 ]
-include = ["bottle.py", "bottle_sqlalchemy.py"]
+include = ["bottle/__init__.py", "bottle_sqlalchemy/__init__.py"]
 
 [tool.poetry.scripts]
 showergel = "showergel:serve"
