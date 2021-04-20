@@ -12,6 +12,7 @@ import logging.config
 import json
 from functools import wraps
 
+import click
 from bottle import Bottle, response, HTTPError, request, static_file, redirect, HTTPResponse
 from bottle.ext.sqlalchemy import Plugin as SQLAlchemyPlugin
 from sqlalchemy import engine_from_config
@@ -110,12 +111,14 @@ def read_bool_param(param):
     else:
         return bool(value)
 
-def serve():
-    if len(sys.argv) < 2:
-        print("Missing argument: path to showergel's .ini", file=sys.stderr)
-        sys.exit(1)
-    config_path = sys.argv[1]
+@click.command()
+@click.version_option()
+@click.argument('config_path', type=click.Path(readable=True, allow_dash=False, exists=True))
+@click.option('--verbose', is_flag=True, help="Sets logging level to DEBUG")
+def serve(config_path, verbose):
     logging.config.fileConfig(config_path, disable_existing_loggers=False)
+    if verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
 
     app.config.load_config(config_path)
 
