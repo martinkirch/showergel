@@ -170,7 +170,9 @@ programs_and_jingles = fallback([jingles, programs],
 ##################### LOG TRACKS TO SHOWERGEL ##################################
 
 def post_to_showergel(m)
-    response = http.post("#{SHOWERGEL}/metadata_log", data=json_of(m))
+    response = http.post("#{SHOWERGEL}/metadata_log",
+        headers=[("Content-Type", "application/json")],
+        data=json_of(m))
     log(label="posted_to_showergel", string_of(response))
 end
 
