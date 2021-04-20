@@ -43,7 +43,7 @@ def post_metadata_log(db):
     """
     try:
         if not request.json:
-            raise ValueError()
+            raise ValueError("No JSON data POSTed - maybe headers are missing")
         Log.save_metadata(metadata_log_app.config, db, request.json)
     except ValueError as value_error:
         raise HTTPError(status=400, body=str(value_error))
