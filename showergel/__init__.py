@@ -145,3 +145,6 @@ def serve(config_path, verbose):
         demo=demo,
         debug=debug,
     )
+
+if __name__ == '__main__':
+    serve()
