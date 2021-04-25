@@ -160,14 +160,13 @@ class FieldFilter(object):
     @classmethod
     def setup(cls, config):
         try:
-            raw = config['metadata_log.ignore_fields']
-            splitted = raw.split(',')
+            ignore_fields = config['metadata_log.ignore_fields']
         except KeyError: # if `[metadata_log] ignore_fields`  is not in the config
-            splitted = []
+            ignore_fields = []
         # we ignore at least fields from the log table
         fields = set()
         wildcards = list()
-        for entry in splitted:
+        for entry in ignore_fields:
             if '*' in entry:
                 wildcards.append(re.compile(entry.strip().replace('*', '.*')))
             else:
