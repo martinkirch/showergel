@@ -31,7 +31,7 @@ and to answer queries called from your Liquidsoap script.
 
 Functionally, an instance is the companion of *one* Liquidsoap stream.
 The two programs will communicate with each other to produce and follow this stream.
-An instance relies on some configuration (a ``.ini`` file) and a database (an SQLite file).
+An instance relies on some configuration (a ``.toml`` file) and a database (an SQLite file).
 It can be installed as a system service,
 named after information you provide at set-up time.
 
@@ -56,7 +56,7 @@ If you stick to defaults, the instance's basename will be ``showergel``,
 so the installer will:
 
 * create a database (``showergel.db``)
-  and a configuration file (``showergel.ini``) in the current directory,
+  and a configuration file (``showergel.toml``) in the current directory,
 * create a systemd user service called ``showergel`` ;
   in other words you can ``systemctl --user status|start|stop|restart showergel``.
 * enable the service and systemd's lingering_ so Showergel will start automatically at boot time.
@@ -69,7 +69,7 @@ for example, ``radio_gel`` (Showergel service associated to ``radio``)
 and ``radio_soap`` (wrapper for the Liquidsoap script you provided for ``radio``).
 
 If you choose to not create a service, you will have to (re)start Showergel
-manually by calling ``showergel showergel.ini``.
+manually by calling ``showergel showergel.toml``.
 
 Before exiting, the installer gives a recap of its actions.
 
@@ -101,12 +101,12 @@ activate it, and run ``poetry install`` from a clone of
 
 When developping, your Liquidsoap script and Showergel should be launched manually.
 Run ``showergel_install --dev`` to create an empty database (``showergel.db``)
-and a basic configuration file (``showergel.ini``)
+and a basic configuration file (``showergel.toml``)
 in the current folder.
-Read (and edit, maybe) ``showergel.ini``,
-launch Liqudisoap, then run ``showergel showergel.ini``.
+Read (and edit, maybe) ``showergel.toml``,
+launch Liqudisoap, then run ``showergel showergel.toml``.
 You'll likely want to enable the detailed log by setting ``level=DEBUG``
-in the ``logger_root`` section of the ini file.
+in the ``logger_root`` section of the toml file.
 
 Test with ``pytest``.
 

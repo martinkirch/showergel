@@ -2,11 +2,11 @@
 #### unless you want to spawn Showergel in demo mode with Procfile
 
 
-[db]
-sqlalchemy.url = sqlite:///:memory:
+[db.sqlalchemy]
+url = "sqlite:///:memory:"
 
 [interface]
-name = Showergel demo
+name = "Showergel demo"
 
 ############### Metadata logger ###############
 [metadata_log]
@@ -15,46 +15,41 @@ name = Showergel demo
 # you can use * to represent any characters or nothing
 # for example, "musicbraiz*" will ignore "musicbrainz"
 # but also "musicbrainz_artist_id" or "musicbrainz album type"
-ignore_fields = musicbrainz*, comment*, itunes*, lyrics
-
+ignore_fields = [
+    "musicbrainz*",
+    "comment*",
+    "itunes*",
+    "lyrics"
+]
 
 
 ############## Server configuration ##########
 [listen]
 # Showergel's interface will be available at http://[address]:[port]/
 # As there is no security check, be careful to keep the address on a private network.
-address = 0.0.0.0
-port = PORT
-debug = True
-demo = True
+address = "0.0.0.0"
+port = "PORT"
+debug = true
+demo = true
 
 
 ########### Fake Liquidsoap connection #######
 [liquidsoap]
-method = demo
+method = "demo"
 
 
 ############# Logging configuration ##########
+[logging]
+version = 1
+disable_existing_loggers = false
 
-[loggers]
-keys = root
+[logging.formatters.generic]
+format = "%(asctime)s %(levelname)-5.5s [%(process)d][%(threadName)s][%(name)s:%(lineno)s] %(message)s"
 
-[handlers]
-keys = main
+[logging.handlers.main]
+formatter = "generic"
+class = "logging.StreamHandler"
 
-[formatters]
-keys = generic
-
-[logger_root]
-level = DEBUG
-handlers = main
-
-[handler_main]
-formatter = generic
-level = NOTSET
-class = logging.StreamHandler
-args = (sys.stderr,)
-
-[formatter_generic]
-format = %(asctime)s %(levelname)-5.5s [%(threadName)s][%(name)s:%(lineno)s] %(message)s
-
+[logging.root]
+level = "DEBUG"
+handlers = ["main"]

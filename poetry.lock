@@ -609,7 +609,7 @@ sqlcipher = ["sqlcipher3-binary"]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -726,7 +726,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "cb4656701b9eda5a026b7052a84d5b4305ea370344af0da79e0feefdb87c31eb"
+content-hash = "c72152494b0e1a6a56fc79c7abbefc0d714718489c8b049fb615e537dff43b6d"
 
 [metadata.files]
 alabaster = [

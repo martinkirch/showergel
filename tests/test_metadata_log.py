@@ -4,7 +4,7 @@ from showergel.demo import artistic_generator
 from . import ShowergelTestCase, DBSession
 
 FIELD_FILTER_CONFIG = {
-    'metadata_log.ignore_fields': "lyrics, mb*",
+    'metadata_log.ignore_fields': ["lyrics", "mb*"],
 }
 
 class TestMetadataLog(ShowergelTestCase):

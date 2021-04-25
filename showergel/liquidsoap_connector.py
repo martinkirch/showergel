@@ -26,10 +26,10 @@ class TelnetConnector:
     
     Then Showergel configuration should contain:
 
-    .. code-block:: ini
+    .. code-block:: toml
         [liquidsoap]
-        method = telnet
-        host = 192.168.1.10
+        method = "telnet"
+        host = "192.168.1.10"
         port = 4444
     
     You can also set ``timeout``, in seconds (defaults to 10).

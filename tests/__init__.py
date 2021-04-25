@@ -13,8 +13,8 @@ from showergel.db import Base
 from showergel.liquidsoap_connector import Connection
 
 app.config.load_dict({
-    'db': {
-        "sqlalchemy.url": "sqlite:///:memory:",
+    'db.sqlalchemy': {
+        "url": "sqlite:///:memory:",
         # "echo": True,
     },
     'interface': {

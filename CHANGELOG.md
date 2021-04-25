@@ -1,6 +1,14 @@
 Changes and release history
 ===========================
 
+0.2.x (upcoming)
+================
+
+ - added a front-end.
+ - added `interface.name` parameter
+ - added a Liquidsoap connection . Must be configured in the `liquidsoap` section.
+ - switch to TOML format for configuration file.
+
 0.1.x
 =====
 

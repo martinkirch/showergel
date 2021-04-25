@@ -8,7 +8,7 @@ implemented with the Bottle framework.
 
 Launch by invoking::
 
-    showergel config.ini
+    showergel config.toml
 
 Responses are in JSON, ``PUT`` and ``POST`` requests should attach their data as JSON,
 ``GET`` and ``DELETE`` should bundle parameters in a query string (``application/x-www-form-urlencoded``).

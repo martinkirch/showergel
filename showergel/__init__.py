@@ -12,6 +12,7 @@ import logging.config
 import json
 from functools import wraps
 
+import toml
 import click
 from bottle import Bottle, response, HTTPError, request, static_file, redirect, HTTPResponse
 from bottle.ext.sqlalchemy import Plugin as SQLAlchemyPlugin
@@ -116,11 +117,13 @@ def read_bool_param(param):
 @click.argument('config_path', type=click.Path(readable=True, allow_dash=False, exists=True))
 @click.option('--verbose', is_flag=True, help="Sets logging level to DEBUG")
 def serve(config_path, verbose):
-    logging.config.fileConfig(config_path, disable_existing_loggers=False)
+    with open(config_path, 'r') as f:
+        conf = toml.load(f)
+    logging.config.dictConfig(conf['logging'])
     if verbose:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    app.config.load_config(config_path)
+    app.config.load_dict(conf)
 
     try:
         port = int(app.config['listen.port'])
@@ -142,6 +145,3 @@ def serve(config_path, verbose):
         demo=demo,
         debug=debug,
     )
-
-if __name__ == '__main__':
-    serve()
