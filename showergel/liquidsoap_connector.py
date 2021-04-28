@@ -323,7 +323,7 @@ if __name__ == '__main__':
     conn = TelnetConnector({
         "liquidsoap.host": "192.168.1.33",
         "liquidsoap.port": "1234",
-        'metadata_log.ignore_fields': "lyrics,musicbrainz*,r128*",
+        'metadata_log.extra_fields': [],
     })
     import time
     while True:

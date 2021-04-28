@@ -62,8 +62,8 @@ class Log(Base):
         We enforce uniqueness of the ``on_air`` field ; repeated posts with the
         same date-time will be ignored.
 
-        Fields that do not fit into our ``log`` table are saved to ``log_extra``,
-        except those matching one in the ``ignore_fields`` configuration.
+        Fields that do not fit into our ``log`` table are saved to ``log_extra``
+        if they match one in the ``extra_fields`` configuration.
         Empty values are not saved.
         When ``initial_uri`` is not provided by Liquidsoap, we might use
         ``source_url`` instead (this may happen for example from ``http.input``).
@@ -154,27 +154,26 @@ class FieldFilter(object):
     # will always be called with the same config object, so we don't need much
     # thread-safety
 
-    _fields = None
-    _wildcards = None
+    _fields:set = None
+    _wildcards:list = None
 
     @classmethod
     def setup(cls, config):
         try:
-            ignore_fields = config['metadata_log.ignore_fields']
-        except KeyError: # if `[metadata_log] ignore_fields`  is not in the config
-            ignore_fields = []
-        # we ignore at least fields from the log table
+            extra_fields = config['metadata_log.extra_fields']
+        except KeyError: # if `[metadata_log] extra_fields`  is not in the config
+            extra_fields = []
         fields = set()
         wildcards = list()
-        for entry in ignore_fields:
+        for entry in extra_fields:
             if '*' in entry:
                 wildcards.append(re.compile(entry.strip().replace('*', '.*')))
             else:
                 fields.add(entry.strip())
         cls._fields = fields
         cls._wildcards = wildcards
-        _log.debug("Will ignore metadata fields %r", fields)
-        _log.debug("Will ignore medadata fields matching %r", wildcards)
+        _log.debug("Will keep metadata fields %r", fields)
+        _log.debug("Will keep medadata fields matching %r", wildcards)
 
     @classmethod
     def filter(cls, data:Dict, config:dict=None, only_extra=True) -> List[Tuple[str, str]]:
@@ -184,12 +183,11 @@ class FieldFilter(object):
 
         Parameter:
             data: as provided by Liquidsoap
-            config: daemon configuration ; we search for ``ignore_fields`` in the ``metadata_log`` section.
-            only_extra: tells if it also filters out fields that should be in our ``log`` table.
+            config: daemon configuration ; we search for ``extra_fields`` in the ``metadata_log`` section.
+            only_extra: tells if it should filter out fields that fit in the ``log`` table.
         Returns:
             A list of ``(key, value)`` couples, for each key in the input
-            dictionary that is not included in ``ignore_fields`` or in the main
-            ``log`` table.
+            dictionary that matches ``extra_fields``.
         """
         if cls._fields is None:
             if config is None:
@@ -198,13 +196,13 @@ class FieldFilter(object):
                 cls.setup(config)
         result = list()
         for k, v in data.items():
-            if only_extra and k in [
-                'on_air', 'artist', 'title', 'album', 'source', 'initial_uri']:
-                pass
-            elif k in cls._fields:
-                pass
-            elif any(rule.match(k) for rule in cls._wildcards):
-                pass
-            elif k and v:
+            if k and v and (
+                ((not only_extra) and k in [
+                'on_air', 'artist', 'title', 'album', 'source', 'initial_uri'])
+                or
+                (k in cls._fields)
+                or
+                (any(rule.match(k) for rule in cls._wildcards))
+            ):
                 result.append((k, v))
         return result

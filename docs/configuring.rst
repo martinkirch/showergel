@@ -145,16 +145,22 @@ Other values can be set as ``method``:
 ------------------
 
 This section configures how Showergel stores tracks' metadata.
-It may contain ``ignore_fields``: a list of metadata fields that should *not* be stored:
+It may contain ``extra_fields``: a list of metadata fields that should be stored, when available.
 
 .. code-block:: toml
 
     [metadata_log]
-    ignore_fields = musicbrainz*, comment*, itunes*, lyrics
+    extra_fields = [
+        "genre",
+        "language",
+        "year",
+        "track*",
+    ]
 
 A ``*`` in the field name represents any characters or nothing.
-In the example above, ``musicbraiz*`` will ignore ``musicbrainz``,
-but also ``musicbrainz_artist_id`` or ``musicbrainz album type``.
+In the example above, ``track*`` will match ``track``,
+but also ``track_number`` or ``tracktotal``.
+Field names are stored as they are, so Showergel will store ``track_number`` or ``tracktotal``.
 
 Logging configuration
 ---------------------

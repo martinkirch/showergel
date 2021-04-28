@@ -11,15 +11,12 @@ name = "Showergel demo"
 ############### Metadata logger ###############
 [metadata_log]
 
-# list of metadata fields that should *not* be stored
-# you can use * to represent any characters or nothing
-# for example, "musicbraiz*" will ignore "musicbrainz"
-# but also "musicbrainz_artist_id" or "musicbrainz album type"
-ignore_fields = [
-    "musicbrainz*",
-    "comment*",
-    "itunes*",
-    "lyrics"
+# list of metadata fields that should be stored when available, in addition to
+# artist/title/album. You can use * to represent any characters or nothing.
+# For example, "track*" will include "track" but also "track_number" or "tracktotal"
+extra_fields = [
+    "genre",
+    "year",
 ]
 
 
