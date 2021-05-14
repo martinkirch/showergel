@@ -108,7 +108,7 @@ launch Liqudisoap, then run ``showergel showergel.toml``.
 You'll likely want to enable the detailed log by setting ``level=DEBUG``
 in the ``logger_root`` section of the toml file.
 
-Test with ``pytest``.
+Test with ``pytest``. See also :ref:`releasing`.
 
 Install for front-end development
 ---------------------------------

@@ -252,7 +252,7 @@ backupCount = 10
     def ask_liquid_script(self):
         click.echo("\nIf you would like to also create a systemd service for your Liquidsoap script, enter its path below. Otherwise, leave blank.")
         while True:
-            liq = click.prompt("Path to Liquidsoap script (absolute or relative)")
+            liq = click.prompt("Path to Liquidsoap script (absolute or relative)", default="")
             if liq:
                 if not liq.startswith('/'):
                     liq = os.getcwd() + '/' + liq

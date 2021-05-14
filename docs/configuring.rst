@@ -48,13 +48,13 @@ Showergel's installer creates a basic TOML file you should start with.
 This page's sections match sections in Showergel's config file.
 
 ``[db.sqlalchemy]``
---------
+-------------------
 
 This section should at least include a path to the instance's database file:
 
 .. code-block:: toml
 
-    url = sqlite:////home/me/path/to/showergel.db
+    url = "sqlite:////home/me/path/to/showergel.db"
 
 Yes, that's four ``/``.
 Use only 3 if you prefer a relative path (relative to Showergel's working directory),

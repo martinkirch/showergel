@@ -50,6 +50,7 @@ Therefore we'll keep it small and simple:
    configuring
    liquidsoap
    rest
+   releasing
    
 Showergel is released under the GPL3_ license.
    

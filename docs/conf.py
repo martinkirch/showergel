@@ -19,7 +19,7 @@ copyright = '2021, Martin Kirchgessner'
 author = 'Martin Kirchgessner'
 
 # The full version, including alpha/beta/rc tags
-release = '0.2-alpha1'
+release = '0.2'
 
 
 # -- General configuration ---------------------------------------------------
