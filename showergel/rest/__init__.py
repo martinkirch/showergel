@@ -19,5 +19,6 @@ Responses are in JSON, ``PUT`` and ``POST`` requests should attach their data as
 from .metadata_log import metadata_log_app
 from .users import users_app
 from .live import live_app
+from .schedule import schedule_app
 
-sub_apps = [metadata_log_app, users_app, live_app]
+sub_apps = [metadata_log_app, users_app, live_app, schedule_app]

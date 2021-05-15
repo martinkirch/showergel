@@ -72,24 +72,28 @@ class Scheduler:
         if event.exception:
             _log.exception(event.exception)
 
-    def command(self, command:str, when:Type[datetime]):
+    def command(self, command:str, when:Type[datetime]) -> str:
         """
-        Squedule a Liquidsoap command. It will raise ``ValueError`` if a command
-        was already scheduled at given date, or when given unusable parameters.
+        Squedule a Liquidsoap command. It will raise ``KeyError`` if a command
+        was already scheduled at given date, or ``ValueError`` if given unusable
+        parameters.
         Parameters:
             command (str): a complete Liquidsoap telnet command
             when (datetime):
+        Return
+            (str): job identifier
         """
         if when < datetime.now():
             raise ValueError("Please schedule something in the future, given date is in the past")
         if not command:
             raise ValueError("Please provide a non-empty command")
         try:
-            self.scheduler.add_job(_do_command,
+            job = self.scheduler.add_job(_do_command,
                 id=when.isoformat(),
                 args=[command],
                 trigger='date',
                 run_date=when,
             )
         except ConflictingIdError:
-            raise ValueError("A job is already scheduled at that time. Remove the existing one first")
+            raise KeyError("A job is already scheduled at that time. Remove the existing one first")
+        return job.id
