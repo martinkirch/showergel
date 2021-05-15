@@ -77,7 +77,7 @@ class MainBottle(ShowergelBottle):
             self.add_hook('after_request', send_cors)
 
         Connection.setup(self.config)
-        Scheduler.setup(engine, Connection.get())
+        Scheduler.setup(engine)
 
     def get_engine(self):
         for p in self.plugins:

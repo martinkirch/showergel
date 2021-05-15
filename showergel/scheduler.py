@@ -6,18 +6,27 @@ Showergel's APScheduler wrapper
 All accesses to APScheduler are wrapped here: scheduler creation, but also
 job storage and definition.
 """
+from datetime import datetime
 import logging
 from typing import Type
 
 from sqlalchemy.engine import Engine
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
+from apscheduler.jobstores.base import ConflictingIdError
 from apscheduler.events import EVENT_JOB_ERROR
 
-from showergel.liquidsoap_connector import TelnetConnector
+from showergel.liquidsoap_connector import Connection
 
 _log = logging.getLogger(__name__)
 
+
+# Scheduled "jobs" should be independant functions because APS must be able to
+# serialize all their parameters (that wouldn't work with self:Scheduler)
+def _do_command(command):
+    connection = Connection.get()
+    result = connection.command(command)
+    _log.info("Liquidsoap replied: %s", result)
 
 class Scheduler:
     """
@@ -28,17 +37,24 @@ class Scheduler:
     __instance = None
 
     @classmethod
-    def setup(cls, db_engine:Type[Engine], liquidsoap_connection:Type[TelnetConnector]):
-        cls.__instance = cls(db_engine, liquidsoap_connection)
+    def setup(cls, db_engine:Type[Engine]):
+        """
+        This should be called once, when starting the program.
+        """
+        cls.__instance = cls(db_engine)
 
     @classmethod
     def get(cls):
+        """
+        This is the only accessor of the programs's ``Scheduler`` instance.
+        Return:
+            (Scheduler):
+        """
         if not cls.__instance:
             raise ValueError("Scheduler.setup() has not been called yet")
         return cls.__instance
 
-    def __init__(self, db_engine:Type[Engine], liquidsoap_connection:Type[TelnetConnector]):
-        self.liquidsoap = liquidsoap_connection
+    def __init__(self, db_engine:Type[Engine]):
         jobstores = {
             'default': SQLAlchemyJobStore(engine=db_engine)
         }
@@ -47,7 +63,33 @@ class Scheduler:
         self.scheduler.start()
 
     def _on_job_error(self, event):
+        """
+        Handles APScheduler's ``EVENT_JOB_ERROR`` by logging the job ID and
+        the caught exception, if any.
+        """
         _log.critical("Error caught on job#%s scheduled at %s:",
             event.job_id, event.scheduled_run_time)
         if event.exception:
             _log.exception(event.exception)
+
+    def command(self, command:str, when:Type[datetime]):
+        """
+        Squedule a Liquidsoap command. It will raise ``ValueError`` if a command
+        was already scheduled at given date, or when given unusable parameters.
+        Parameters:
+            command (str): a complete Liquidsoap telnet command
+            when (datetime):
+        """
+        if when < datetime.now():
+            raise ValueError("Please schedule something in the future, given date is in the past")
+        if not command:
+            raise ValueError("Please provide a non-empty command")
+        try:
+            self.scheduler.add_job(_do_command,
+                id=when.isoformat(),
+                args=[command],
+                trigger='date',
+                run_date=when,
+            )
+        except ConflictingIdError:
+            raise ValueError("A job is already scheduled at that time. Remove the existing one first")
