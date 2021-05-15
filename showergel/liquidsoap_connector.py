@@ -74,7 +74,10 @@ class TelnetConnector:
             log.warning("Cannot connect to Liquidsoap. Please check it is running, or check Showergel's configuration.")
         self._lock.release()
 
-    def _command(self, command:str) -> str:
+    def command(self, command:str) -> str:
+        """
+        Run a Liquidsoap command, and return its result.
+        """
         self._lock.acquire()
         response = None
         remaining_attempts = 2
@@ -101,7 +104,7 @@ class TelnetConnector:
 
     def _update_soaps(self):
         self.soap_objects = {}
-        raw = self._command("list")
+        raw = self.command("list")
         if raw:
             for line in raw.split("\r\n"):
                 splitted = line.split(" : ")
@@ -120,7 +123,7 @@ class TelnetConnector:
         :return timedelta: the connected Liquidsoap instance's uptime
         """
         self._lock.acquire()
-        raw_uptime = self._command("uptime")
+        raw_uptime = self.command("uptime")
         if raw_uptime:
             parsed = self.UPTIME_PATTERN.match(raw_uptime)
         else:
@@ -147,9 +150,9 @@ class TelnetConnector:
         :return dict: metadata of what's currently playing
         """
         uptime = self.uptime()
-        current_rid = self._command("request.on_air")
+        current_rid = self.command("request.on_air")
         if current_rid:
-            raw = self._command("request.metadata " + current_rid)
+            raw = self.command("request.metadata " + current_rid)
             if raw:
                 metadata = self._metadata_to_dict(raw)
             else:
@@ -217,7 +220,7 @@ class TelnetConnector:
         """
         source_type = self.soap_objects[source]
         if source_type in self.STATUS_CHECK:
-            status = self._command(source + ".status")
+            status = self.command(source + ".status")
             try:
                 if self.STATUS_CHECK[source_type](status):
                     return status
@@ -235,7 +238,7 @@ class TelnetConnector:
         the only way to fetch current metadata is to ask an output.
         """
         if self._first_output_name:
-            all_metadata = self._command(self._first_output_name + '.metadata')
+            all_metadata = self.command(self._first_output_name + '.metadata')
             separator = "--- 1 ---\n"
             if all_metadata:
                 index = all_metadata.find(separator)
@@ -246,11 +249,11 @@ class TelnetConnector:
 
     def skip(self):
         if self._first_output_name:
-            self._command(self._first_output_name + '.skip')
+            self.command(self._first_output_name + '.skip')
 
     def remaining(self) -> Optional[float]:
         if self._first_output_name:
-            raw = self._command(self._first_output_name + '.remaining')
+            raw = self.command(self._first_output_name + '.remaining')
             if raw:
                 try:
                     return float(raw)
@@ -262,6 +265,9 @@ class TelnetConnector:
 class EmptyConnector(TelnetConnector):
     def __init__(self):
         self.started_at = datetime.now()
+
+    def command(self, command:str) -> str:
+        return ""
 
     def uptime(self):
         return datetime.now() - self.started_at

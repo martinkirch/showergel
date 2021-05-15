@@ -77,6 +77,9 @@ class FakeLiquidsoapConnector:
         self._on_air = now - self._uptime
         self._i = 0
 
+    def command(self, command:str) -> str:
+        return "OK"
+
     def uptime(self) -> Type[timedelta]:
         self._uptime += self.FAKE_TIME_SHIFT
         return self._uptime
