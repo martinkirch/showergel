@@ -21,6 +21,7 @@ from sqlalchemy import engine_from_config
 from showergel.showergel_bottle import ShowergelBottle
 from showergel.rest import sub_apps
 from showergel.liquidsoap_connector import Connection
+from showergel.scheduler import Scheduler
 
 _log = logging.getLogger(__name__)
 
@@ -76,6 +77,7 @@ class MainBottle(ShowergelBottle):
             self.add_hook('after_request', send_cors)
 
         Connection.setup(self.config)
+        Scheduler.setup(engine, Connection.get())
 
     def get_engine(self):
         for p in self.plugins:
