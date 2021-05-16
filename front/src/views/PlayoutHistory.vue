@@ -116,8 +116,6 @@ export default {
       this.results = resultsByDay;
       this.isLoading = false;
     },
-
-    formatDate: format,
   },
   mounted() {
     this.getHistory();
