@@ -8,12 +8,12 @@ job storage and definition.
 """
 from datetime import datetime
 import logging
-from typing import Type
+from typing import Type, List, Dict
 
 from sqlalchemy.engine import Engine
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
-from apscheduler.jobstores.base import ConflictingIdError
+from apscheduler.jobstores.base import ConflictingIdError, JobLookupError
 from apscheduler.events import EVENT_JOB_ERROR
 
 from showergel.liquidsoap_connector import Connection
@@ -80,7 +80,7 @@ class Scheduler:
         Parameters:
             command (str): a complete Liquidsoap telnet command
             when (datetime):
-        Return
+        Return:
             (str): job identifier
         """
         if when < datetime.now():
@@ -97,3 +97,26 @@ class Scheduler:
         except ConflictingIdError:
             raise KeyError("A job is already scheduled at that time. Remove the existing one first")
         return job.id
+
+    def upcoming(self) -> List[Dict]:
+        """
+        Return:
+            (list): upcoming events descriptions
+        """
+        events = [
+            {
+                'event_id': job.id,
+                'when': job.trigger.run_date.isoformat(),
+                'command': job.args[0],
+            } for job in self.scheduler.get_jobs()
+        ]
+        return events
+
+    def delete(self, event_id):
+        """
+        May raise KeyError if ``event_id`` does not exists
+        """
+        try:
+            self.scheduler.remove_job(event_id)
+        except JobLookupError:
+            raise KeyError("Event not found")

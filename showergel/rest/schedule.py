@@ -38,4 +38,27 @@ def put_schedule(db):
     except KeyError as error:
         _log.debug(error)
         raise HTTPError(status=409, body=str(error))
-    
+
+
+@schedule_app.get("/schedule")
+def get_schedule(db):
+    """
+    List upcoming events. For each event, expect:
+     * ``event_id``
+     * ``when`` (ISO 8601)
+     * ``command``
+
+    :>json schedule: list of scheduled events
+    """
+    scheduler = Scheduler.get()
+    return {
+        'schedule': scheduler.upcoming(),
+    }
+
+@schedule_app.delete("/schedule/<event_id>")
+def delete_schedule(db, event_id):
+    scheduler = Scheduler.get()
+    try:
+        scheduler.delete(event_id)
+    except KeyError as error:
+        raise HTTPError(status=404, body=str(error))
