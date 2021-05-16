@@ -30,6 +30,7 @@ Paste = "^3.5.0"
 sphinx-rtd-theme = "^0.5.1"
 toml = "^0.10.2"
 APScheduler = "^3.7.0"
+arrow = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

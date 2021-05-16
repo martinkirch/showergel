@@ -10,8 +10,8 @@ played by Liquidsoap.
 import logging
 import re
 from typing import Type, Dict, List, Tuple
-from datetime import datetime
 
+import arrow
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm.session import Session
 from sqlalchemy.schema import ForeignKey
@@ -23,22 +23,6 @@ from showergel.db import Base
 
 
 _log = logging.getLogger(__name__)
-
-LIQUIDSOAP_DATEFORMAT = r"%Y/%m/%d %H:%M:%S"
-
-def to_datetime(date_string):
-    """
-    Parameters:
-        date_string(str): a string representation, using either Liquidsoap's on_air
-            format (``YYYY/MM/DD HH:MM:SS``) or ISO 8601.
-    Return:
-        (datetime): parsed datetime
-    """
-    try:
-        return datetime.strptime(date_string, LIQUIDSOAP_DATEFORMAT)
-    except ValueError:
-        pass
-    return datetime.fromisoformat(date_string)
 
 
 class Log(Base):
@@ -61,6 +45,8 @@ class Log(Base):
 
         We enforce uniqueness of the ``on_air`` field ; repeated posts with the
         same date-time will be ignored.
+        **``on_air`` is expected in Liquidsoap's format** so it is considered in
+        the local time zone.
 
         Fields that do not fit into our ``log`` table are saved to ``log_extra``
         if they match one in the ``extra_fields`` configuration.
@@ -69,7 +55,7 @@ class Log(Base):
         ``source_url`` instead (this may happen for example from ``http.input``).
         """
         try:
-            log_entry = Log(on_air=to_datetime(data['on_air']))
+            log_entry = Log(on_air=arrow.get(data['on_air'], tzinfo='local').to('utc').datetime)
         except KeyError:
             _log.warning("Missing on_air in %r", data)
             raise ValueError("Metadata should at least contain on_air") from None
@@ -100,9 +86,11 @@ class Log(Base):
         query = db.query(cls)
 
         if start:
-            query = query.filter(cls.on_air >= to_datetime(start))
+            start_dt = arrow.get(start).to('utc').datetime
+            query = query.filter(cls.on_air >= start_dt)
         if end:
-            query = query.filter(cls.on_air <= to_datetime(end))
+            end_dt = arrow.get(end).to('utc').datetime
+            query = query.filter(cls.on_air <= end_dt)
 
         if chronological:
             query = query.order_by(cls.on_air.asc())
@@ -117,7 +105,7 @@ class Log(Base):
         return [l.to_dict() for l in query]
 
     def to_dict(self):
-        d = {'on_air': self.on_air.isoformat()}
+        d = {'on_air': arrow.get(self.on_air, tzinfo='utc').isoformat()}
         if self.artist:
             d['artist'] = self.artist
         if self.title:

@@ -1,9 +1,7 @@
 import unittest
 from datetime import datetime, timedelta
-
-from showergel import scheduler
+import arrow
 from . import ShowergelTestCase
-
 from showergel.scheduler import Scheduler
 
 class TestScheduler(ShowergelTestCase):
@@ -11,10 +9,10 @@ class TestScheduler(ShowergelTestCase):
     def test_scheduler(self):
         scheduler = Scheduler.get()
         with self.assertRaises(ValueError):
-            scheduler.command("", datetime.now())
+            scheduler.command("", datetime.utcnow())
 
         with self.assertRaises(ValueError):
-            scheduler.command("help", datetime.now() - timedelta(days=1.))
+            scheduler.command("help", datetime.utcnow() - timedelta(days=1.))
 
         tomorrow = datetime.now() + timedelta(days=1.)
         scheduler.command("help", tomorrow)
@@ -23,19 +21,24 @@ class TestScheduler(ShowergelTestCase):
 
     def test_invalid_requests(self):
         self.app.put_json('/schedule', {}, status=400)
+        when = arrow.now().shift(hours=1)
         self.app.put_json('/schedule', {
             'command': '',
-            'when': (datetime.now() - timedelta(days=1.)).isoformat(),
+            'when': when.isoformat(),
+        }, status=400)
+        self.app.put_json('/schedule', {
+            'command': 'help',
+            'when': when.shift(days=-1).isoformat(),
         }, status=400)
         self.app.put('/schedule', status=400)
         self.app.delete('/schedule/', status=405)
         self.app.delete('/schedule/2020-07-19T16:56:29', status=404)
 
     def test_basic_scheduler_api(self):
-        tomorrow = (datetime.now() + timedelta(days=1.)).isoformat()
+        tomorrow = arrow.now().shift(days=1)
         help_tomorrow = {
             'command': 'help',
-            'when': tomorrow,
+            'when': tomorrow.isoformat(),
         }
         result = self.app.put_json('/schedule', help_tomorrow).json
         event_id = result['event_id']
@@ -45,8 +48,7 @@ class TestScheduler(ShowergelTestCase):
         self.assertEqual(len(schedule), 1)
         self.assertEqual(schedule[0]['event_id'], event_id)
         self.assertEqual(schedule[0]['command'], help_tomorrow['command'])
-        # APS adds timezone info so we just test the datetime part of "when"
-        self.assertTrue(schedule[0]['when'].startswith(help_tomorrow['when']))
+        self.assertEqual(tomorrow, arrow.get(schedule[0]['when']))
 
         self.app.delete('/schedule/'+event_id)
         schedule = self.app.get('/schedule').json['schedule']

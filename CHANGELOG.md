@@ -1,6 +1,14 @@
 Changes and release history
 ===========================
 
+0.3.x
+=====
+
+Showergel's third experimental release.
+
+ - all times in database are now considered on UTC - this might shift time from previously written data
+ - added a commands scheduler
+
 0.2.x
 =====
 

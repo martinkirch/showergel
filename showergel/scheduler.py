@@ -6,7 +6,6 @@ Showergel's APScheduler wrapper
 All accesses to APScheduler are wrapped here: scheduler creation, but also
 job storage and definition.
 """
-from datetime import datetime
 import logging
 from typing import Type, List, Dict
 
@@ -15,6 +14,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.jobstores.base import ConflictingIdError, JobLookupError
 from apscheduler.events import EVENT_JOB_ERROR
+import arrow
 
 from showergel.liquidsoap_connector import Connection
 
@@ -72,27 +72,28 @@ class Scheduler:
         if event.exception:
             _log.exception(event.exception)
 
-    def command(self, command:str, when:Type[datetime]) -> str:
+    def command(self, command:str, when:str) -> str:
         """
         Squedule a Liquidsoap command. It will raise ``KeyError`` if a command
         was already scheduled at given date, or ``ValueError`` if given unusable
         parameters.
         Parameters:
             command (str): a complete Liquidsoap telnet command
-            when (datetime):
+            when (str): **UTC** time
         Return:
             (str): job identifier
         """
-        if when < datetime.now():
+        run_date = arrow.get(when).to('utc')
+        if run_date < arrow.utcnow():
             raise ValueError("Please schedule something in the future, given date is in the past")
         if not command:
             raise ValueError("Please provide a non-empty command")
         try:
             job = self.scheduler.add_job(_do_command,
-                id=when.isoformat(),
+                id=str(run_date.float_timestamp),
                 args=[command],
                 trigger='date',
-                run_date=when,
+                run_date=run_date.datetime,
             )
         except ConflictingIdError:
             raise KeyError("A job is already scheduled at that time. Remove the existing one first")
@@ -106,7 +107,7 @@ class Scheduler:
         events = [
             {
                 'event_id': job.id,
-                'when': job.trigger.run_date.isoformat(),
+                'when': arrow.get(job.trigger.run_date).isoformat(),
                 'command': job.args[0],
             } for job in self.scheduler.get_jobs()
         ]

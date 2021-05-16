@@ -3,9 +3,9 @@ Schedule RESTful interface
 ==========================
 """
 import logging
-from datetime import datetime
 
 from bottle import request, HTTPError
+import arrow
 
 from showergel.showergel_bottle import ShowergelBottle
 from showergel.scheduler import Scheduler
@@ -21,7 +21,7 @@ def put_schedule(db):
     given date.
 
     :<json command: Liquidsoap command
-    :<json when: Event time (ISO 8601)
+    :<json when: Event time (ISO 8601 with time zone info)
     :>json event_id: created event's ID
     """
     scheduler = Scheduler.get()
@@ -29,14 +29,14 @@ def put_schedule(db):
         return {
             'event_id': scheduler.command(
                 request.json.get('command'),
-                datetime.fromisoformat(request.json.get('when')),
+                request.json.get('when'),
             )
         }
     except (ValueError, TypeError, AttributeError) as error:
-        _log.debug(error)
+        _log.exception(error)
         raise HTTPError(status=400, body=str(error))
     except KeyError as error:
-        _log.debug(error)
+        _log.exception(error)
         raise HTTPError(status=409, body=str(error))
 
 

@@ -5,7 +5,7 @@ from datetime import timedelta, datetime
 from threading import RLock
 from telnetlib import Telnet
 
-from showergel.metadata import to_datetime
+import arrow
 
 log = logging.getLogger(__name__)
 
@@ -264,13 +264,13 @@ class TelnetConnector:
 
 class EmptyConnector(TelnetConnector):
     def __init__(self):
-        self.started_at = datetime.now()
+        self.started_at = datetime.utcnow()
 
     def command(self, command:str) -> str:
         return ""
 
     def uptime(self):
-        return datetime.now() - self.started_at
+        return datetime.utcnow() - self.started_at
 
     def skip(self):
         pass

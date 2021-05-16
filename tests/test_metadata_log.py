@@ -1,11 +1,14 @@
-from datetime import datetime, timedelta
-from showergel.metadata import LIQUIDSOAP_DATEFORMAT, LogExtra, FieldFilter
+import arrow
+
+from showergel.metadata import LogExtra, FieldFilter
 from showergel.demo import artistic_generator
 from . import ShowergelTestCase, DBSession, app
 
 FIELD_FILTER_CONFIG = {
     'metadata_log.extra_fields': ["lyrics", "mb*"],
 }
+
+LIQUIDSOAP_DATEFORMAT = "YYYY/MM/DD HH:mm:ss"
 
 class TestMetadataLog(ShowergelTestCase):
 
@@ -50,11 +53,12 @@ class TestMetadataLog(ShowergelTestCase):
         # don't crash when no JSON is provided
         resp = self.app.post('/metadata_log', status=400)
 
-        tracktime = timedelta(minutes=3)
-        now = datetime.now()
+        # ⚠ beware of two traps in this test ⚠
+        # LIQUIDSOAP_DATEFORMAT does not have microseconds, nor timezone info
+        on_air = arrow.now().replace(microsecond=0)
 
         first_track = {
-            'on_air': now.strftime(LIQUIDSOAP_DATEFORMAT),
+            'on_air': on_air.format(LIQUIDSOAP_DATEFORMAT),
             'artist': artistic_generator(),
             'title': artistic_generator(),
             'source': 'test',
@@ -66,9 +70,9 @@ class TestMetadataLog(ShowergelTestCase):
         found = session.query(LogExtra).all()
         self.assertEqual(0, len(found))
 
-        now += tracktime
+        on_air = on_air.shift(minutes=3)
         last = {
-            'on_air': now.isoformat(),
+            'on_air': on_air.format(LIQUIDSOAP_DATEFORMAT),
             'artist': artistic_generator(),
             'title': artistic_generator(),
             'source': 'test',
@@ -85,15 +89,18 @@ class TestMetadataLog(ShowergelTestCase):
 
         logged = self.app.get('/metadata_log').json['metadata_log']
         self.assertEqual(2, len(logged))
-        # also check source_url is used as initial_uri
-        last['initial_uri'] = last['source_url']
+        self.assertEqual(on_air, arrow.get(logged[0]['on_air']))
+        self.assertEqual(last['title'], logged[0]['title'])
+        self.assertEqual(last['artist'], logged[0]['artist'])
+        self.assertEqual(last['source'], logged[0]['source'])
+        # check renaming to initial_uri
+        self.assertEqual(last['source_url'], logged[0]['initial_uri'])
         del last['source_url']
-        self.assertDictEqual(last, logged[0])
 
-        before_track3 = now
-        now += tracktime
+        before_track3 = on_air
+        on_air = on_air.shift(minutes=3)
         last = {
-            'on_air': now.isoformat(),
+            'on_air': on_air.format(LIQUIDSOAP_DATEFORMAT),
             'artist': artistic_generator(),
             'title': artistic_generator(),
             'source': 'test',
@@ -106,8 +113,7 @@ class TestMetadataLog(ShowergelTestCase):
         }).json['metadata_log']
         self.assertEqual(2, len(logged))
         for log in logged:
-            on_air = datetime.fromisoformat(log["on_air"])
-            self.assertLessEqual(on_air, before_track3)
+            self.assertLessEqual(arrow.get(log["on_air"]), before_track3)
 
         logged = self.app.get('/metadata_log', {
             "start": before_track3.isoformat(),
@@ -120,25 +126,25 @@ class TestMetadataLog(ShowergelTestCase):
         self.assertEqual(2, len(logged))
 
         logged = self.app.get('/metadata_log', {
-            "start": datetime(2021, 1, 1).isoformat(),
-            "end": datetime(2021, 1, 2).isoformat(),
+            "start": arrow.Arrow(2021, 1, 1).isoformat(),
+            "end": arrow.Arrow(2021, 1, 2).isoformat(),
         }).json['metadata_log']
         self.assertEqual(0, len(logged))
 
         # check that limit is ignored when start and end is provided
         # check start and end can be parsed as YYYY-MM-DD
+        on_air = on_air.shift(minutes=3)
         logged = self.app.get('/metadata_log', {
             "limit": 1,
-            "start": datetime(2021, 1, 1).strftime(r"%Y-%m-%d"),
-            "end": (now + tracktime).isoformat(),
+            "start": "2021-01-01",
+            "end": on_air.isoformat(),
         }).json['metadata_log']
         self.assertEqual(3, len(logged))
 
         # put some data to LogExtra... and get it back
         # this is tied to the configuration in tests/__init__.py
-        now += tracktime
         last = {
-            'on_air': now.isoformat(),
+            'on_air': on_air.format(LIQUIDSOAP_DATEFORMAT),
             'artist': artistic_generator(),
             'title': artistic_generator(),
             'source': 'test',

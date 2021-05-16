@@ -2,11 +2,10 @@
 RESTful interface to current playout
 ====================================
 """
-from datetime import datetime
-
 import pkg_resources
-from showergel.showergel_bottle import ShowergelBottle
+import arrow
 
+from showergel.showergel_bottle import ShowergelBottle
 from showergel.liquidsoap_connector import Connection
 
 live_app = ShowergelBottle()
@@ -25,7 +24,7 @@ def get_live():
     """
     connection = Connection.get()
     metadata = connection.current()
-    metadata["server_time"] = datetime.now().isoformat()
+    metadata["server_time"] = arrow.now().isoformat()
     remaining = connection.remaining()
     if remaining is not None:
         metadata["remaining"] = remaining

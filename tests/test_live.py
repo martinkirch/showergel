@@ -1,16 +1,16 @@
-from datetime import datetime
+import arrow
 from . import ShowergelTestCase
 
 
 class TestLive(ShowergelTestCase):
 
     def test_get_live(self):
-        before = datetime.now()
+        before = arrow.now()
         resp = self.app.get('/live').json
 
-        server_time = datetime.fromisoformat(resp['server_time'])
+        server_time = arrow.get(resp['server_time'])
         self.assertLessEqual(before, server_time)
-        self.assertLessEqual(server_time, datetime.now())
+        self.assertLessEqual(server_time, arrow.now())
         self.assertIn('source', resp)
         self.assertIn('on_air', resp)
         self.assertIn('status', resp)
