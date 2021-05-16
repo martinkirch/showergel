@@ -31,6 +31,14 @@
           </router-link>
         </li>
         <li>
+          <router-link to="/schedule" active-class="is-active">
+              <span class="icon is-medium">
+                <i class="mdi mdi-calendar-clock"></i>
+              </span>
+              <span>Schedule</span>
+          </router-link>
+        </li>
+        <li>
           <router-link to="/about" active-class="is-active">
               <span class="icon is-medium">
                 <i class="mdi mdi-information"></i>
