@@ -162,7 +162,7 @@ class TelnetConnector:
             metadata.update(self._read_output_metadata())
 
         if 'on_air' in metadata:
-            metadata['on_air'] = to_datetime(metadata['on_air']).isoformat()
+            metadata['on_air'] = arrow.get(metadata['on_air'], tzinfo='local').isoformat()
 
         metadata['uptime'] = str(uptime)
         return metadata
