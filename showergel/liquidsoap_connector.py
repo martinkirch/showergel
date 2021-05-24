@@ -86,8 +86,10 @@ class TelnetConnector:
             try:
                 response.append(line.strip(b"\r").decode('utf8'))
             except UnicodeDecodeError as error:
-                log.debug("Error while decoding %r", line)
-                log.debug("%s", error)
+                # leave logging for experiments, otherwise it can quickly fill the log
+                #log.debug("Error while decoding %r", line)
+                #log.debug("%s", error)
+                pass
         return response
 
     def command(self, command:str) -> Optional[List[str]]:
