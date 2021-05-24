@@ -16,6 +16,7 @@ const parameters_wrapper = reactive({
   parameters: {
     name: 'Showergel',
     version: '',
+    commands: Array(),
   }
 })
 

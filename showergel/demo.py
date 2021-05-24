@@ -76,6 +76,7 @@ class FakeLiquidsoapConnector:
         now = datetime.now().replace(microsecond=0)
         self._on_air = now - self._uptime
         self._i = 0
+        self.commands = []
 
     def command(self, command:str) -> str:
         return "OK"
@@ -140,6 +141,29 @@ class DemoLiquidsoapConnector(FakeLiquidsoapConnector):
         super().__init__()
         self._started_at = datetime.now().replace(microsecond=0)
         self._metadata = self.generate_metadata()
+        self.commands = [
+            'alsa.autostart',
+            'alsa.metadata',
+            'alsa.remaining',
+            'alsa.skip',
+            'alsa.start',
+            'alsa.status',
+            'alsa.stop',
+            'out_stream.buffer_length',
+            'out_stream.start',
+            'out_stream.status',
+            'out_stream.stop',
+            'out_stream.url [url]',
+            'exit',
+            'help [<command>]',
+            'list',
+            'quit',
+            'uptime',
+            'var.get <variable>',
+            'var.list',
+            'var.set <variable> = <value>',
+            'version',
+        ]
 
     def skip(self):
         self._on_air = datetime.now().replace(microsecond=0)

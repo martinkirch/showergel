@@ -37,7 +37,9 @@ def get_parameters():
 
     :>json name: instance name (appears as interface's title)
     :>json version: showergel's version
+    :>json commands: list of available Liquidsoap commands
     """
+    connection = Connection.get()
     version = None
     try:
         version = pkg_resources.get_distribution("showergel").version
@@ -48,6 +50,7 @@ def get_parameters():
     return {
         "name": live_app.config.get("interface.name", "Showergel"),
         "version": version,
+        "commands": connection.commands,
     }
 
 @live_app.delete("/live")

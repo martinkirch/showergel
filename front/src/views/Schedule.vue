@@ -6,6 +6,10 @@
         <label class="label" for="template">Command template</label>
         <div class="select">
           <select v-model="template" id="template">
+            <option selected disabled value="">Pick a command... </option>
+            <option v-for="command in parameters.commands" :key="command" :value="command">
+              {{ command }}
+            </option>
           </select>
         </div>
       </div>
@@ -38,7 +42,7 @@
         </div>
       </div>
       <div class="field">
-        <button :class="`button is-link ${isLoading ? 'is-loading' : ''}`">
+        <button :class="`button is-link ${isLoading ? 'is-loading' : ''}`" type="submit">
           Add event
         </button>
       </div>
@@ -69,6 +73,7 @@ import { format } from "date-fns";
 import Datepicker from "vue3-datepicker";
 
 export default {
+  props: ['parameters'],
   components: { Datepicker },
   data() {
     return {
@@ -80,6 +85,11 @@ export default {
       isLoading: true,
       isError: false,
     };
+  },
+  watch: {
+    template(selectedTemplate) {
+      this.command = selectedTemplate;
+    }
   },
   methods: {
     onError(error) {

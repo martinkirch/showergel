@@ -19,6 +19,7 @@ class TestLive(ShowergelTestCase):
         resp = self.app.get('/parameters').json
         self.assertEqual(resp['name'], "ShowergelTest")
         self.assertIn('version', resp)
+        self.assertIsInstance(resp['commands'], list)
 
     def test_skip(self):
         resp = self.app.get('/live').json

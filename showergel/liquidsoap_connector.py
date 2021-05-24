@@ -50,6 +50,7 @@ class TelnetConnector:
         self._connection = Telnet()
         self._connect()
 
+        self.commands = []
         self.soap_objects = {}
         self._first_output_name = None
         self._soaps_updated_at = None
@@ -121,12 +122,24 @@ class TelnetConnector:
         return response
 
     def _update_soaps(self):
+        self.commands = []
+        raw = self.command("help")
+        if raw:
+            for line in raw:
+                if line.startswith("|"):
+                    command = line[2:]
+                    if not command.startswith('help ') and command not in (
+                        'exit', 'list', 'quit', 'uptime', 'version'
+                    ):
+                        self.commands.append(command)
+
         self.soap_objects = {}
         raw = self.command("list")
         if raw:
             for line in raw:
                 splitted = line.split(" : ")
                 self.soap_objects[splitted[0]] = splitted[1]
+
         self._first_output_name = None
         for soap_name, soap_type in self.soap_objects.items():
             if soap_type.startswith('output.'):
@@ -283,6 +296,7 @@ class TelnetConnector:
 class EmptyConnector(TelnetConnector):
     def __init__(self):
         self.started_at = datetime.utcnow()
+        self.commands = []
 
     def command(self, command:str) -> str:
         return ""
