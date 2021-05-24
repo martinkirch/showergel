@@ -52,7 +52,7 @@
         {{ event.command }}
         <button
           class="button is-danger icon"
-          @click="deleteEvent(event.id, event.when)"
+          @click="deleteEvent(event.event_id, event.when)"
           title="Remove event"
           >
             <i class="mdi mdi-calendar-remove"></i>
