@@ -4,8 +4,8 @@ Showergel
 
 Showergel is made to live aside Liquidsoap_:
 while a Liquidsoap script creates a radio stream,
-Showergel provides complementary features like logging or occasional scheduling,
-with a (minimalist) Web interface.
+Showergel provides complementary features like playlist logging or occasional
+scheduling, with a (minimalist) Web interface.
 It is made to run on a Linux box (with systemd) dedicated to your radio stream.
 
 Documentation and

@@ -3,6 +3,8 @@
 Package and publish Showergel
 =============================
 
+This is maintainer's check-list.
+
 Pre-publication check-list
 --------------------------
 
