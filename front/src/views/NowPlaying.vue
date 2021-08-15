@@ -5,7 +5,12 @@
     <h2 v-if="remaining">
       Remaining time (estimated): {{remaining}}s.
     </h2>
-    <h2>Since {{ currentOnAirTime }} from {{ currentSource }}[{{ currentStatus }}]</h2>
+    <h2>
+      <span v-if="currentOnAirTime">
+        Since {{ currentOnAirTime }}
+      </span>
+      from {{ currentSource }}[{{ currentStatus }}]
+    </h2>
     <button class="button" @click="confirmSkip()">Skip</button>
   </div>
 </template>
@@ -35,7 +40,11 @@ export default {
       return this.currentArtist + ' - ' + this.currentTitle;
     },
     currentOnAirTime() {
-      return this.currentOnAir.toLocaleTimeString();
+      if (this.currentOnAir && isFinite(this.currentOnAir)) {
+        return this.currentOnAir.toLocaleTimeString();
+      } else {
+        return null;
+      }
     }
   },
 
