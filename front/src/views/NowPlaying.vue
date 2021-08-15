@@ -17,6 +17,8 @@
 
 <script>
 import http from '@/http';
+import _ from 'lodash';
+import axios from 'axios';
 
 export default {
   data () {
@@ -28,7 +30,7 @@ export default {
       currentStatus: 'connecting to Liquidsoap',
       currentOnAir: new Date(),
       remaining: null,
-      timeoutID: null,
+      cancelSource: axios.CancelToken.source(),
     }
   },
 
@@ -49,13 +51,15 @@ export default {
   },
 
   methods: {
-    getLive () {
-      http.get('/live')
+    _getLive () { // always use the throttled this.getLive()
+      http.get('/live', { cancelToken: this.cancelSource.token })
         .then(this.onLiveResponse)
-        .catch(error => { console.log(error) })
+        .catch(error => {
+          console.log(error);
+        })
     },
     onLiveResponse (response) {
-      self.timeoutID = setTimeout(this.getLive, 1000);
+      this.getLive();
       this.currentArtist = response.data.artist || '';
       this.currentTitle = response.data.title || '';
       this.currentSource = response.data.source || '';
@@ -70,7 +74,7 @@ export default {
     },
     skip() {
       http.delete('/live')
-        .then(this.getLive)
+        .then(this.getLive.flush)
         .catch(error => { console.log(error) })
     },
     confirmSkip () {
@@ -80,12 +84,12 @@ export default {
     }
   },
   mounted () {
-    this.getLive();
+    this.getLive = _.throttle(this._getLive, 1000, { leading:false, trailing:true });
+    this._getLive();
   },
   unmounted () {
-    if (self.timeoutID) {
-      clearTimeout(self.timeoutID);
-    }
+    this.getLive.cancel();
+    this.cancelSource.cancel();
   }
 }
 </script>
