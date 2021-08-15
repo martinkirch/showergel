@@ -78,7 +78,7 @@ export default {
   data() {
     return {
       template: "",
-      day: "",
+      day: new Date(),
       time: format(new Date(), "HH:mm:ss"),
       command: "",
       results: null,
