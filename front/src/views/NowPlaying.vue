@@ -11,6 +11,7 @@
       </span>
       from {{ currentSource }}[{{ currentStatus }}]
     </h2>
+    <span id="serveruptime">Stream uptime: {{ serverUptime }}</span>
     <button class="button" @click="confirmSkip()">Skip</button>
   </div>
 </template>
@@ -23,6 +24,7 @@ import axios from 'axios';
 export default {
   data () {
     return {
+      serverUptime: 'unkown',
       serverTime: new Date(),
       currentArtist: '',
       currentTitle: '',
@@ -65,6 +67,7 @@ export default {
       this.currentSource = response.data.source || '';
       this.currentStatus = response.data.status || '';
       this.serverTime = new Date(response.data.server_time);
+      this.serverUptime = response.data.uptime || 'unkown';
       this.currentOnAir = new Date(response.data.on_air);
       if ( response.data.remaining ) {
         this.remaining = Math.round(response.data.remaining);
@@ -98,10 +101,22 @@ export default {
 #servertime {
   float: right;
   font-weight: bold;
+  font-family:monospace;
 }
 
 #currentTrack {
   color: black;
   font-size: 3em;
+}
+
+#currentTrack {
+  margin-top: 0;
+}
+
+#serveruptime {
+  float: right;
+  color: rgb(175, 175, 175);
+  font-family:monospace;
+  font-size: small;
 }
 </style>
