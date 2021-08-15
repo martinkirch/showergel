@@ -183,7 +183,9 @@ class TelnetConnector:
         uptime = self.uptime()
         current_rid = self.command("request.on_air")
         if current_rid:
-            raw = self.command("request.metadata " + current_rid[0])
+            current_rid = current_rid[0].strip()
+        if current_rid:
+            raw = self.command("request.metadata " + current_rid)
             if raw:
                 metadata = self._metadata_to_dict(raw)
             else:
