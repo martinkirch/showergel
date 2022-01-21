@@ -33,7 +33,7 @@ APScheduler = "^3.7.0"
 arrow = "^1.1.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^5.2"
+pytest = "^6.2"
 WebTest = "^2.0.35"
 snooty-lextudio = "^1.8.10-alpha.0"
 Sphinx = "^3.5.2"
