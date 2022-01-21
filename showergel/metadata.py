@@ -43,10 +43,9 @@ class Log(Base):
         """
         Save the metadata provided by Liquidsoap.
 
-        We enforce uniqueness of the ``on_air`` field ; repeated posts with the
-        same date-time will be ignored.
-        **``on_air`` is expected in Liquidsoap's format** so it is considered in
-        the local time zone.
+        Repeated posts with the same artist and title will be ignored.
+        When provided, ``on_air`` is expected in Liquidsoap's format and
+        considered in the local time zone.
 
         Fields that do not fit into our ``log`` table are saved to ``log_extra``
         if they match one in the ``extra_fields`` configuration.
@@ -54,11 +53,11 @@ class Log(Base):
         When ``initial_uri`` is not provided by Liquidsoap, we might use
         ``source_url`` instead (this may happen for example from ``http.input``).
         """
-        try:
-            log_entry = Log(on_air=arrow.get(data['on_air'], tzinfo='local').to('utc').datetime)
-        except KeyError:
-            _log.warning("Missing on_air in %r", data)
-            raise ValueError("Metadata should at least contain on_air") from None
+        if 'on_air' in data:
+            on_air = arrow.get(data['on_air'], tzinfo='local').to('utc').datetime
+        else:
+            on_air = arrow.get(tzinfo='local').to('utc').datetime
+        log_entry = Log(on_air=on_air)
 
         if not data.get('initial_uri') and data.get('source_url'):
             log_entry.initial_uri = data['source_url']
@@ -68,13 +67,13 @@ class Log(Base):
             if data.get(column):
                 setattr(log_entry, column, data[column])
 
-        try:
-            db.add(log_entry)
-            db.flush()
-        except IntegrityError:
-            _log.debug("We already have metadata at given on_air - ignoring %r", data)
-            db.rollback()
-            return
+        if 'artist' in data and 'title' in data:
+            latest = Log.get(db, limit=1)
+            if latest and latest[0]['artist'] == data['artist'] and latest[0]['title'] == data['title']:
+                return
+
+        db.add(log_entry)
+        db.flush()
 
         for couple in FieldFilter.filter(data, config=config):
             db.add(LogExtra(log=log_entry, key=couple[0], value=couple[1]))

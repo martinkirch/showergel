@@ -47,30 +47,32 @@ class TestMetadataLog(ShowergelTestCase):
         FieldFilter.setup(app.config)
 
     def test_metadata_log(self):
-        # at least on_air is required
+        # don't crash when no JSON is provided or empty
         resp = self.app.post_json('/metadata_log', {}, status=400)
-
-        # don't crash when no JSON is provided
         resp = self.app.post('/metadata_log', status=400)
 
-        # ⚠ beware of two traps in this test ⚠
-        # LIQUIDSOAP_DATEFORMAT does not have microseconds, nor timezone info
-        on_air = arrow.now().replace(microsecond=0)
-
+        on_air = arrow.now()
         first_track = {
-            'on_air': on_air.format(LIQUIDSOAP_DATEFORMAT),
             'artist': artistic_generator(),
             'title': artistic_generator(),
             'source': 'test',
         }
         resp = self.app.post_json('/metadata_log', first_track)
 
+        # make it robust to repeated posts...
+        resp = self.app.post_json('/metadata_log', first_track)
+        # we take care of this because many operators (switch, fallback,...)
+        # default `replay_metadata` to true
+
         # ensure there's nothing in log_extra at this point
         session = DBSession()
         found = session.query(LogExtra).all()
         self.assertEqual(0, len(found))
 
-        on_air = on_air.shift(minutes=3)
+        # Liquidsoap >=2 does not POST on_air with metadata, but we keep that
+        # possibility to ease testing. Also, LIQUIDSOAP_DATEFORMAT does not have
+        # microseconds nor timezone info
+        on_air = on_air.replace(microsecond=0).shift(minutes=3)
         last = {
             'on_air': on_air.format(LIQUIDSOAP_DATEFORMAT),
             'artist': artistic_generator(),
@@ -78,14 +80,7 @@ class TestMetadataLog(ShowergelTestCase):
             'source': 'test',
             'source_url': "http://check.its.renamed/to/initial_uri"
         }
-
-        # make it robust to repeated posts...
         resp = self.app.post_json('/metadata_log', last)
-        resp = self.app.post_json('/metadata_log', last)
-        # ... and especially if a liquidsoap operator reposts old data !
-        # we take care of this because many operators (switch, fallback,...)
-        # default `replay_metadata` to true
-        resp = self.app.post_json('/metadata_log', first_track)
 
         logged = self.app.get('/metadata_log').json['metadata_log']
         self.assertEqual(2, len(logged))
