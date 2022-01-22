@@ -153,3 +153,27 @@ class TestMetadataLog(ShowergelTestCase):
         }).json['metadata_log'][0]
         self.assertNotIn('editor', logged)
         self.assertEqual(logged['tracknumber'], '1')
+
+        # check there's no crash when a field is missing
+        on_air = on_air.shift(minutes=3)
+        last = {
+            'on_air': on_air.format(LIQUIDSOAP_DATEFORMAT),
+            'artist': artistic_generator(),
+        }
+        resp = self.app.post_json('/metadata_log', last)
+
+        # check there's no crash when a field is missing
+        on_air = on_air.shift(minutes=3)
+        last = {
+            'on_air': on_air.format(LIQUIDSOAP_DATEFORMAT),
+            'title': artistic_generator(),
+        }
+        resp = self.app.post_json('/metadata_log', last)
+
+        on_air = on_air.shift(minutes=3)
+        last = {
+            'on_air': on_air.format(LIQUIDSOAP_DATEFORMAT),
+            'artist': artistic_generator(),
+            'title': artistic_generator(),
+        }
+        resp = self.app.post_json('/metadata_log', last)

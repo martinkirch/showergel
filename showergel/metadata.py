@@ -104,17 +104,14 @@ class Log(Base):
         return [l.to_dict() for l in query]
 
     def to_dict(self):
-        d = {'on_air': arrow.get(self.on_air, tzinfo='utc').isoformat()}
-        if self.artist:
-            d['artist'] = self.artist
-        if self.title:
-            d['title'] = self.title
-        if self.album:
-            d['album'] = self.album
-        if self.source:
-            d['source'] = self.source
-        if self.initial_uri:
-            d['initial_uri'] = self.initial_uri
+        d = {
+            'on_air': arrow.get(self.on_air, tzinfo='utc').isoformat(),
+            'artist': self.artist,
+            'title': self.title,
+            'album': self.album,
+            'source': self.source,
+            'initial_uri': self.initial_uri,
+        }
 
         for additional in self.extra:
             d[additional.key] = additional.value
