@@ -45,28 +45,28 @@ class TestUsers(ShowergelTestCase):
         self.assertEqual(resp.status_code, 404)
 
         resp = self.app.post_json('/login',
-            {"username": "tester", "password": "lost"},
+            {"user": "tester", "password": "lost"},
             expect_errors=True)
         self.assertEqual(resp.status_code, 404)
         resp = self.app.post_json('/login',
-            {"username": "unkown", "password": "verysecret"},
+            {"user": "unkown", "password": "verysecret"},
             expect_errors=True)
         self.assertEqual(resp.status_code, 404)
         resp = self.app.post_json('/login',
-            {"username": "tester", "password": "verysecret"})
+            {"user": "tester", "password": "verysecret"})
         self.assertEqual(resp.status_code, 200)
 
         resp = self.app.post_json('/users/tester', {"password": "newsecret"})
         self.assertEqual(resp.status_code, 200)
         resp = self.app.post_json('/login',
-            {"username": "tester", "password": "newsecret"})
+            {"user": "tester", "password": "newsecret"})
         self.assertEqual(resp.status_code, 200)
 
         resp = self.app.delete(quote('/users/someone êlse'))
         self.assertEqual(resp.status_code, 200)
 
         resp = self.app.post_json('/login',
-            {"username": "someone êlse", "password": "with pass"},
+            {"user": "someone êlse", "password": "with pass"},
             expect_errors=True)
         self.assertEqual(resp.status_code, 404)
 

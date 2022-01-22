@@ -21,7 +21,7 @@ def post_login(db):
     See :ref:`liq_login`.
     """
     try:
-        username = request.json.get('username')
+        username = request.json.get('user')
         password = request.json.get('password')
     except Exception:
         raise HTTPError(status=404, body=HTTP_CODES[404]) from None
