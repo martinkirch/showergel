@@ -192,7 +192,9 @@ class TelnetConnector:
                 metadata = {}
         else:
             metadata = self._find_active_source()
-            metadata.update(self._read_output_metadata())
+            output_metadata = self._read_output_metadata()
+            if output_metadata.get("source") == metadata.get("source"):
+                metadata.update(output_metadata)
 
         if 'on_air' in metadata:
             metadata['on_air'] = arrow.get(metadata['on_air'], tzinfo='local').isoformat()
@@ -241,7 +243,6 @@ class TelnetConnector:
 
     STATUS_CHECK = {
         'input.http': lambda s: s.startswith("connected"),
-        'input.https': lambda s: s.startswith("connected"),
         'input.harbor': lambda s: s.startswith("source client connected"),
         'input.harbor.ssl': lambda s: s.startswith("source client connected"),
     }

@@ -205,7 +205,7 @@ def post_to_showergel(md)
   log(label="posted_to_showergel", response.status_message)
 end
 
-radio.on_track(fun(m) -> thread.run({post_to_showergel(m)}))
+radio.on_metadata(fun(m) -> thread.run({post_to_showergel(m)}))
 
 
 ############################ ♫ OUTPUT ♫ ########################################
