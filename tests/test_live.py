@@ -20,6 +20,7 @@ class TestLive(ShowergelTestCase):
         self.assertEqual(resp['name'], "ShowergelTest")
         self.assertIn('version', resp)
         self.assertIsInstance(resp['commands'], list)
+        self.assertEqual(resp['liquidsoap_version'], "Stub")
 
     def test_skip(self):
         resp = self.app.get('/live').json

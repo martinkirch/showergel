@@ -77,6 +77,7 @@ class FakeLiquidsoapConnector:
         self._on_air = now - self._uptime
         self._i = 0
         self.commands = []
+        self.connected_liquidsoap_version = "Stub"
 
     def command(self, command:str) -> str:
         return "OK"
@@ -139,6 +140,7 @@ class DemoLiquidsoapConnector(FakeLiquidsoapConnector):
 
     def __init__(self):
         super().__init__()
+        self.connected_liquidsoap_version = "Demo"
         self._started_at = datetime.now().replace(microsecond=0)
         self._metadata = self.generate_metadata()
         self.commands = [

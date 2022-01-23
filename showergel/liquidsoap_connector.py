@@ -54,6 +54,7 @@ class TelnetConnector:
         self.soap_objects = {}
         self._first_output_name = None
         self._soaps_updated_at = None
+        self.connected_liquidsoap_version = None
         self.uptime()
         self._latest_active_source = None
 
@@ -145,6 +146,8 @@ class TelnetConnector:
             if soap_type.startswith('output.'):
                 self._first_output_name = soap_name
                 break
+
+        self.connected_liquidsoap_version = self.command("version")[0]
 
     def uptime(self) -> Type[timedelta]:
         """
@@ -298,6 +301,7 @@ class TelnetConnector:
 
 class EmptyConnector(TelnetConnector):
     def __init__(self):
+        self.connected_liquidsoap_version = "[can't connect - missing configuration]"
         self.started_at = datetime.utcnow()
         self.commands = []
 
@@ -362,11 +366,12 @@ class Connection:
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
     conn = TelnetConnector({
-        "liquidsoap.host": "192.168.1.33",
+        "liquidsoap.host": "127.0.0.1",
         "liquidsoap.port": "1234",
         'metadata_log.extra_fields': [],
     })
     import time
+    print(f"connected to {conn.connected_liquidsoap_version}")
     while True:
         print(conn.current())
         time.sleep(1.)

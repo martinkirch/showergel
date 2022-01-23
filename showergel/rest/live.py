@@ -51,6 +51,7 @@ def get_parameters():
         "name": live_app.config.get("interface.name", "Showergel"),
         "version": version,
         "commands": connection.commands,
+        "liquidsoap_version": connection.connected_liquidsoap_version,
     }
 
 @live_app.delete("/live")
