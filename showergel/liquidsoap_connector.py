@@ -108,7 +108,7 @@ class TelnetConnector:
                 if not self._connection.sock:
                     raise BrokenPipeError()
                 self._connection.write(command.encode('utf8') + b'\n')
-                raw = self._connection.read_until(b'END').rstrip(b"END").strip(b"\r\n")
+                raw = self._connection.read_until(b'END\r\n').rstrip(b"END\r\n").strip(b"\r\n")
                 if raw == LIQUIDSOAP_CLOSING:
                     raise EOFError()
                 response = self._decode(raw)
@@ -209,11 +209,12 @@ class TelnetConnector:
     def _metadata_to_dict(cls, raw) -> dict:
         metadata = {}
         for line in raw:
-            parsed = cls.METADATA_PATTERN.match(line)
-            if parsed:
-                metadata[parsed.group(1)] = parsed.group(2)
-            else:
-                log.warning("Can't parse metadata item: %r", line)
+            if line:
+                parsed = cls.METADATA_PATTERN.match(line)
+                if parsed:
+                    metadata[parsed.group(1)] = parsed.group(2)
+                else:
+                    log.warning("Can't parse metadata item: %r", line)
         return metadata
 
     def _find_active_source(self) -> dict:
