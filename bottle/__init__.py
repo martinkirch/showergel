@@ -1169,7 +1169,7 @@ class BaseRequest(object):
     __slots__ = ('environ', )
 
     #: Maximum size of memory buffer for :attr:`body` in bytes.
-    MEMFILE_MAX = 102400
+    MEMFILE_MAX = 10240000
 
     def __init__(self, environ=None):
         """ Wrap a WSGI environ dictionary. """

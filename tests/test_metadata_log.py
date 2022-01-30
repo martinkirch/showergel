@@ -177,3 +177,14 @@ class TestMetadataLog(ShowergelTestCase):
             'title': artistic_generator(),
         }
         resp = self.app.post_json('/metadata_log', last)
+
+        # sometimes Liquidsoap lets huge fields get in the query
+        # in that case Bottle blocks and returns 413 Request Entity Too Large
+        on_air = on_air.shift(minutes=3)
+        last = {
+            'on_air': on_air.format(LIQUIDSOAP_DATEFORMAT),
+            'artist': artistic_generator(),
+            'title': artistic_generator(),
+            'apic': "like a big big picture in metadata" * 100000,
+        }
+        resp = self.app.post_json('/metadata_log', last)
