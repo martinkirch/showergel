@@ -143,7 +143,7 @@ def serve(config_path, verbose):
         host=app.config['listen.address'],
         port=port,
         reloader=debug,
-        quiet=True,
+        quiet=not debug,
         demo=demo,
         debug=debug,
     )
