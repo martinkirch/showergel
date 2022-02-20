@@ -4,13 +4,127 @@ from typing import Type, Optional, List
 from datetime import timedelta, datetime
 from threading import RLock
 from telnetlib import Telnet
+from time import sleep
 
 import arrow
 
 log = logging.getLogger(__name__)
 
-# Liquidsoap's message before it closes the connection because of inactivity
-LIQUIDSOAP_CLOSING = b"Connection timed out.. Bye!"
+from telnetlib import Telnet, theNULL, IAC, DO, DONT, WILL, WONT, SE, SB, NOOPT, _TelnetSelector, selectors
+class FasterTelnet(Telnet):
+    """This is needed for Python versions affected by https://bugs.python.org/issue46740
+    """
+
+    def fill_rawq(self):
+        """Fill raw queue from exactly one recv() system call.
+
+        Block if no data is immediately available.  Set self.eof when
+        connection is closed.
+
+        """
+        if self.irawq >= len(self.rawq):
+            self.rawq = b''
+            self.irawq = 0
+        buf = self.sock.recv(4096)
+        self.msg("recv %r", buf)
+        self.eof = (not buf)
+        self.rawq = buf
+
+    def process_rawq(self):
+        """Transfer from raw queue to cooked queue.
+
+        Set self.eof when connection is closed.  Don't block unless in
+        the midst of an IAC sequence.
+
+        """
+        buf = [b'', b'']
+        try:
+            while self.rawq:
+                if not self.iacseq:
+                    slice = self._next_nonIAC_slice()
+                    if slice:
+                        buf[self.sb] = buf[self.sb] + slice
+                    else:
+                        c = self.rawq_getchar()
+                        if c == theNULL:
+                            continue
+                        elif c == b"\021":
+                            continue
+                        else:
+                            self.iacseq += c
+                elif len(self.iacseq) == 1:
+                    c = self.rawq_getchar()
+                    # 'IAC: IAC CMD [OPTION only for WILL/WONT/DO/DONT]'
+                    if c in (DO, DONT, WILL, WONT):
+                        self.iacseq += c
+                        continue
+
+                    self.iacseq = b''
+                    if c == IAC:
+                        buf[self.sb] = buf[self.sb] + c
+                    else:
+                        if c == SB: # SB ... SE start.
+                            self.sb = 1
+                            self.sbdataq = b''
+                        elif c == SE:
+                            self.sb = 0
+                            self.sbdataq = self.sbdataq + buf[1]
+                            buf[1] = b''
+                        if self.option_callback:
+                            # Callback is supposed to look into
+                            # the sbdataq
+                            self.option_callback(self.sock, c, NOOPT)
+                        else:
+                            # We can't offer automatic processing of
+                            # suboptions. Alas, we should not get any
+                            # unless we did a WILL/DO before.
+                            self.msg('IAC %d not recognized' % ord(c))
+                elif len(self.iacseq) == 2:
+                    c = self.rawq_getchar()
+                    cmd = self.iacseq[1:2]
+                    self.iacseq = b''
+                    opt = c
+                    if cmd in (DO, DONT):
+                        self.msg('IAC %s %d',
+                            cmd == DO and 'DO' or 'DONT', ord(opt))
+                        if self.option_callback:
+                            self.option_callback(self.sock, cmd, opt)
+                        else:
+                            self.sock.sendall(IAC + WONT + opt)
+                    elif cmd in (WILL, WONT):
+                        self.msg('IAC %s %d',
+                            cmd == WILL and 'WILL' or 'WONT', ord(opt))
+                        if self.option_callback:
+                            self.option_callback(self.sock, cmd, opt)
+                        else:
+                            self.sock.sendall(IAC + DONT + opt)
+        except EOFError: # raised by self.rawq_getchar()
+            self.iacseq = b'' # Reset on EOF
+            self.sb = 0
+        self.cookedq = self.cookedq + buf[0]
+        self.sbdataq = self.sbdataq + buf[1]
+
+    def _next_nonIAC_slice(self):
+        """Return next non-IAC characters from raw queue.
+        Assumes the caller checked the raw queue is not empty.
+        """
+        next_i = self.irawq
+        max_i = len(self.rawq)
+        while next_i < max_i:
+            c = self.rawq[next_i]
+            if c == theNULL[0] or c == 0x11 or c == IAC[0]:
+                break
+            next_i += 1
+
+        if next_i == self.irawq:
+            return None
+        else:
+            slice = self.rawq[self.irawq:next_i]
+            self.irawq = next_i
+            if next_i == max_i:
+                self.rawq = b''
+                self.irawq = 0
+            return slice
 
 class TelnetConnector:
     """
@@ -47,7 +161,7 @@ class TelnetConnector:
         else:
             self.timeout = 10
 
-        self._connection = Telnet()
+        self._connection = FasterTelnet()
         self._connect()
 
         self.commands = []
@@ -62,7 +176,7 @@ class TelnetConnector:
         self._lock.acquire()
         if reconnect:
             self._connection.close()
-            self._connection = Telnet()
+            self._connection = FasterTelnet()
         log.info("Attempting to contact Liquidsoap over telnet @%s:%s",
             self.host, self.port)
         try:
@@ -109,7 +223,7 @@ class TelnetConnector:
                     raise BrokenPipeError()
                 self._connection.write(command.encode('utf8') + b'\n')
                 raw = self._connection.read_until(b'END\r\n').rstrip(b"END\r\n").strip(b"\r\n")
-                if raw == LIQUIDSOAP_CLOSING:
+                if raw == b"Connection timed out.. Bye!":
                     raise EOFError()
                 response = self._decode(raw)
                 # log.debug("Telnet response: %r", response)
