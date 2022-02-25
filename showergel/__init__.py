@@ -68,6 +68,7 @@ class MainBottle(ShowergelBottle):
             sub_app.install(plugin)
             sub_app.config.update(self.config)
 
+        Scheduler.setup(engine, store_in_memory=demo)
         if demo:
             self.add_hook('after_request', send_cors)
             from showergel.demo import stub_all
@@ -77,7 +78,6 @@ class MainBottle(ShowergelBottle):
             self.add_hook('after_request', send_cors)
 
         Connection.setup(self.config)
-        Scheduler.setup(engine)
 
     def get_engine(self):
         for p in self.plugins:

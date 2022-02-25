@@ -37,11 +37,14 @@ class Scheduler:
     __instance = None
 
     @classmethod
-    def setup(cls, db_engine:Type[Engine]):
+    def setup(cls, db_engine:Type[Engine], store_in_memory=False):
         """
         This should be called once, when starting the program.
+
+        `store_in_memory` may be activated when you don't want to persist
+        the schedule (this happens in demo mode).
         """
-        cls.__instance = cls(db_engine)
+        cls.__instance = cls(db_engine, store_in_memory)
 
     @classmethod
     def get(cls):
@@ -54,11 +57,14 @@ class Scheduler:
             raise ValueError("Scheduler.setup() has not been called yet")
         return cls.__instance
 
-    def __init__(self, db_engine:Type[Engine]):
-        jobstores = {
-            'default': SQLAlchemyJobStore(engine=db_engine)
-        }
-        self.scheduler = BackgroundScheduler(jobstores=jobstores)
+    def __init__(self, db_engine:Type[Engine], store_in_memory):
+        if store_in_memory:
+            self.scheduler = BackgroundScheduler()
+        else:
+            jobstores = {
+                'default': SQLAlchemyJobStore(engine=db_engine)
+            }
+            self.scheduler = BackgroundScheduler(jobstores=jobstores)
         self.scheduler.add_listener(self._on_job_error, EVENT_JOB_ERROR)
         self.scheduler.start()
 

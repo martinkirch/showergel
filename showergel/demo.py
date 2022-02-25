@@ -7,9 +7,11 @@ from datetime import datetime, timedelta
 from typing import Type
 
 from sqlalchemy.orm import sessionmaker
+import arrow
 
 from showergel.users import User
 from showergel.metadata import Log
+from showergel.scheduler import Scheduler
 
 try:
     with open("/usr/share/dict/words") as words_file:
@@ -52,6 +54,21 @@ def stub_users(session):
     User.create(session, "Radio Showergel", "yayradi0")
     User.create(session, "Debuggers", "blablabla")
 
+def stub_scheduler():
+    """
+    Create a few commands in the near future, so demo mode will have a few events to show
+    """
+    when = arrow.utcnow()
+    scheduler = Scheduler.get()
+    when = when.shift(days=1)
+    scheduler.command("stream_source.url https://live.campusgrenoble.org/rcg112", when)
+    when = when.shift(seconds=1)
+    scheduler.command("stream_source.start", when)
+    when = when.shift(hours=1)
+    scheduler.command("stream_source.stop", when)
+    when = when.shift(days=3)
+    scheduler.command("request_queue.push /home/radio/tmp/special_show.wav", when)
+
 def stub_all(engine, config):
     from showergel.db import Base
     Base.metadata.create_all(engine)
@@ -59,6 +76,7 @@ def stub_all(engine, config):
     session = Session()
     stub_users(session)
     stub_log_data(session, config)
+    stub_scheduler()
     session.commit()
     session.close()
 
