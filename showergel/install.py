@@ -54,9 +54,9 @@ port = {port:d}
 # display "now playing" information, or for scheduling.
 # If your Liquidsoap script contains the following settings:
 #
-# set("server.telnet",true)
-# set("server.telnet.bind_addr","127.0.0.1")
-# set("server.telnet.port",1234)
+# settings.server.telnet.set(true)
+# settings.server.telnet.bind_addr.set("127.0.0.1")
+# settings.server.telnet.port.set(1234)
 #
 # then change "method" from "none" to "telnet".
 
@@ -101,11 +101,11 @@ WantedBy=default.target
 LIQUID_TEMPLATE = """
 #!{liquidsoap_binary}
 
-set("log.file",true)
-set("log.file.path","{log_path}")
-set("init.daemon",true)
-set("init.daemon.pidfile",true)
-set("init.daemon.pidfile.path","{pid_path}")
+settings.log.file.set(true)
+settings.log.file.path.set("{log_path}")
+settings.init.daemon.set(true)
+settings.init.daemon.pidfile.set(true)
+settings.init.daemon.pidfile.path.set("{pid_path}")
 %include "{liq_path}"
 """
 
