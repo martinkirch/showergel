@@ -84,38 +84,36 @@ class FakeLiquidsoapConnector:
     """
     mocks ``TelnetConnector`` when no configuration exists at all - as in unit tests.
 
-    returns something different each time it's called.
+    Shifts in time and generates new metadata every time ``skip()`` is called.
     """
 
     FAKE_TIME_SHIFT = timedelta(minutes=3)
 
     def __init__(self):
         self._uptime = timedelta(hours=10)
-        now = datetime.now().replace(microsecond=0)
-        self._on_air = now - self._uptime
+        self._on_air = datetime.now().replace(microsecond=0)
         self._i = 0
         self.commands = []
         self.connected_liquidsoap_version = "Stub"
+        self._metadata = self.generate_metadata()
 
     def command(self, command:str) -> str:
         return "OK"
 
     def uptime(self) -> Type[timedelta]:
-        self._uptime += self.FAKE_TIME_SHIFT
         return self._uptime
 
     def skip(self):
+        self._uptime += self.FAKE_TIME_SHIFT
+        self._on_air += self.FAKE_TIME_SHIFT
+        self._metadata = self.generate_metadata()
         pass
 
     def remaining(self):
         return self.FAKE_TIME_SHIFT.total_seconds()
 
     def current(self) -> dict:
-        metadata = self.generate_metadata()
-        metadata["uptime"] = str(self.uptime())
-        self._on_air += self.FAKE_TIME_SHIFT
-        metadata["on_air"] = self._on_air.isoformat()
-        return metadata
+        return self._metadata
 
     def generate_metadata(self) -> dict:
         """
@@ -139,7 +137,9 @@ class FakeLiquidsoapConnector:
             'album': album,
             'editor': "Pytest",
             'year': self._on_air.year - (self._i % 10),
-            'tracknumber': self._i % 8,
+            'tracknumber': str(self._i % 8),
+            'uptime': str(self._uptime),
+            'on_air': self._on_air.isoformat(),
         }
 
 class DemoLiquidsoapConnector(FakeLiquidsoapConnector):

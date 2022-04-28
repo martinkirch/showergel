@@ -434,7 +434,7 @@ class EmptyConnector(TelnetConnector):
 
     def current(self):
         return {
-            'on_air': self.started_at.isoformat(),
+            'on_air': datetime.utcnow().isoformat(),
             'uptime': str(self.uptime()),
             'source': "unknown",
             'status': "please configure Showergel's [liquidsoap] section",

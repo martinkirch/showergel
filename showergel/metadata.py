@@ -20,6 +20,7 @@ from sqlalchemy.dialects.sqlite import DATETIME
 from sqlalchemy.exc import IntegrityError
 
 from showergel.db import Base
+from showergel.liquidsoap_connector import Connection
 
 
 _log = logging.getLogger(__name__)
@@ -44,15 +45,23 @@ class Log(Base):
         Save the metadata provided by Liquidsoap.
 
         Repeated posts with the same artist and title will be ignored.
-        When provided, ``on_air`` is expected in Liquidsoap's format and
-        considered in the local time zone.
+
+        Some fields are not posted as metadata by Liquidsoap (starting from v2),
+        especially ``initial_uri``, ``source``, ``on_air``, and many possible
+        things that the user might have set in ``extra_fields``.
+        So we also query for more metadata via ``Connection``, and keep it only
+        if artist and title match.
 
         Fields that do not fit into our ``log`` table are saved to ``log_extra``
         if they match one in the ``extra_fields`` configuration.
         Empty values are not saved.
-        When ``initial_uri`` is not provided by Liquidsoap, we might use
-        ``source_url`` instead (this may happen for example from ``http.input``).
         """
+        connection = Connection.get()
+        if connection:
+            current = connection.current()
+            if current and data.get('title') == current.get('title') and data.get('artist') == current.get('artist'):
+                data.update(current)
+
         if 'on_air' in data:
             on_air = arrow.get(data['on_air'], tzinfo='local').to('utc').datetime
         else:
