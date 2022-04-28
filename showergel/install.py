@@ -127,7 +127,7 @@ WantedBy=default.target
 
 class Installer(object):
     def __init__(self):
-        self.basename = 'showergel'
+        self.basename = 'radio'
         self.port = 2345
         self.liquid_service_name = None
         self.service_name = None
