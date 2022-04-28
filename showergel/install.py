@@ -31,16 +31,16 @@ name = "{basename}"
 
 # list of metadata fields that should be stored when available, in addition to
 # artist/title/album. You can use * to represent any characters or nothing.
-# For example, "track*" will include "track" but also "track_number" or "tracktotal"
+# For example, "track*" will include "track" but also "track_number" or "tracktotal"
 extra_fields = [
     "genre",
     "year",
 ]
 
-############## Server configuration ##########
+############## Server configuration ##########
 [listen]
-# Showergel's interface will be available at http://[address]:[port]/
-# As there is no security check, be careful to keep the address on a private network.
+# Showergel's interface will be available at http://[address]:[port]/
+# As there is no security check, be careful to keep the address on a private network.
 # If port is not a number, we assume it is the name of an environment variable
 # that contains the required port number (like, Heroku's $PORT).
 address = "localhost"
