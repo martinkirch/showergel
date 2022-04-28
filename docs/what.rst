@@ -1,26 +1,22 @@
-.. _design:
+.. _what:
 
-Design considerations
-=====================
+What is Showergel ?
+===================
 
 Showergel is made for community and benevolent radios,
-so it is meant to stay small and simple.
-This is why we assume it runs on the same machine as Liquidsoap,
-and make it as self-contained as possible.
-Moreover, Showergel is made for Liquidsoap users.
-That is, people programming their own radio scripts.
-Because if you need a Web interface to schedule 100% of your programs without writing a
-line of code, you already have good options as free software [#]_.
+so it is meant to stay small, simple, and as self-contained as possible.
+Showergel is made for Liquidsoap users,
+programming their own radio scripts.
+If you need a Web interface to schedule your programs without writing a line of code, 
+you might consider other free softwares [#]_.
 
-This page presents the modelling and components choices implied by these principles,
-and their consequences.
+This page discusses Showergel's design and components.
 
 What's inside Showergel - and what's not
 ----------------------------------------
 
 The REST/Web interface is served by the Bottle_ framework,
 because it's enough and allows keeping everything in a single process.
-Bottle.py is bundled with Showergel as long as https://github.com/bottlepy/bottle/issues/1125 is not fixed.
 
 Showergel's data is stored in SQLite_ because its more than enough and lets us
 store everything in a single, local file.
@@ -33,25 +29,28 @@ For that matter we suggest Beets_.
 You can find examples of its integration with Liquidsoap in
 `Liquidsoap's documentation <https://www.liquidsoap.info/doc-dev/beets.html>`_.
 
+Showergel is here to schedule what cannot be implemented with Liquidsoap's
+scheduling functions, ie. *occasional* actions/programs.
+Liquidsoap's `switch <https://www.liquidsoap.info/doc-dev/cookbook.html#scheduling>`_
+is a better fit for regular programs.
+
 
 Predicting Liquidsoap is hard
 -----------------------------
 
-Showergel is here to schedule what cannot be implemented with Liquidsoap's
-scheduling functions, ie. *occasional* actions/programs
-(Liquidsoap's `switch <https://www.liquidsoap.info/doc-dev/cookbook.html#scheduling>`_
-is a better fit for regular programs).
-And Showergel is meant to let you do anything allowed by Liquidsoap.
+Showergel is meant to let you do anything allowed by Liquidsoap.
 This implies that Showergel can't predict Liquidsoap's playlist.
 
-This property of the Showergel-Liquidsoap couple 
-might be the most surprising if you've ever worked with radio automation software:
-*none of these two can predict what will be played at some point in time*.
-Liquidsoap does not pre-compute its playlist, and neither does Showergel.
+.. note::
 
-This boils down to the fact that, fundamentally,
-Liquidsoap lets you write a stream generation function.
-Predicting what will play out would require reverse-engineering users' scripts.
+    This property of the Showergel-Liquidsoap couple 
+    might be the most surprising if you've ever worked with radio automation software:
+    *none of these two can predict what will be played at some point in time*.
+    Liquidsoap does not pre-compute its playlist, and neither does Showergel.
+
+
+Indeed, Liquidsoap lets you write a stream generation function.
+Predicting what will play out would require reverse-engineering users' scripts - automatically!
 On its side, Showergel has a scheduler so it can predict what it will do, but that's not enough.
 For example, even if you have scheduled
 `remote_radio.start <https://www.liquidsoap.info/doc-dev/reference.html#input.http>`_
@@ -60,7 +59,10 @@ what will play instead depends on what's in the Liquidsoap script.
 As a user you're responsible not only for preparing fallback content for such case,
 but also its conditions of appearance in the stream
 (using `fallback <https://www.liquidsoap.info/doc-dev/reference.html#fallback>`_,
-probably).
+typically).
+Some pieces of Liquidsoap scripts may also block Showergel:
+for example, putting a `buffer` before your outputs might block Showergel's ability
+to display the current track's remaining time.
 
 Most automation softwares relying on Liquidsoap try to hide this.
 Indeed it is much simpler to let the user click on a weekly calendar.

@@ -1,10 +1,10 @@
-Welcome to Showergel's documentation!
-=====================================
+Showergel: a helper for Liquidsoap-based radios
+===============================================
 
 Showergel is made to live aside Liquidsoap_:
 while a Liquidsoap script creates a radio stream,
 Showergel provides complementary features like playlist logging or occasional
-scheduling, with a (minimalist) Web interface.
+scheduling, with a Web interface.
 It is made to run on a Linux box (with systemd) dedicated to your radio stream.
 
 .. note::
@@ -20,16 +20,14 @@ It is made to run on a Linux box (with systemd) dedicated to your radio stream.
     `fallback <https://www.liquidsoap.info/doc-dev/reference.html#fallback>`_,
     ...)
     that fits your programs and schedule.
-    This documentation only provides :ref:`quickstart`,
+    This documentation provides a :ref:`quickstart` script,
     covering Liquidsoap's basics and Showergel's integration.
-    Please take some time to experiment with Liquidsoap alone before
-    considering Showergel.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
    
-   design
+   what
    installing
    configuring
    liquidsoap

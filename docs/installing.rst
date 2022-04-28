@@ -3,48 +3,19 @@ Installing Showergel
 
 Installing Showergel requires
  * a Linux box relying on systemd (ie. a recent mainstream distribution),
-   with only user access,
  * Python, at least v3.7,
  * check pip_ is available, by calling ``pip3 --version`` (or ``pip --version``)
- * a running Liquidsoap radio - `version 1.4.4 <https://www.liquidsoap.info/doc-1.4.4/install.html>`_
+ * a running Liquidsoap radio - `version 2.x <https://www.liquidsoap.info/doc-2.0.0/install.html>`_
    is Showergel's best friend.
 
 .. note::
   
   We assume you already know the basics of Liquidsoap and its script language.
   If you have never played with only Liquidsoap, we advise you read at least
-  `its quick start guide <https://www.liquidsoap.info/doc-1.4.4/quick_start.html>`_.
-  Then you might jump to :ref:`quickstart`.
+  `its quick start guide <https://www.liquidsoap.info/doc-2.0.0/quick_start.html>`_.
+  Then you might use our :ref:`quickstart` script.
 
 Install Showergel by running ``pip3 install showergel`` (maybe replace ``pip3`` by ``pip``).
-
-Then you'll need to set-up your first instance.
-Before that, let's explain briefly what it means.
-
-What's a Showergel instance ?
------------------------------
-
-Technically, it is an instance of the ``showergel`` program.
-It's an HTTP server:
-it is able to serve an interface you can open in your browser,
-and to answer queries called from your Liquidsoap script.
-
-Functionally, an instance is the companion of *one* Liquidsoap stream.
-The two programs will communicate with each other to produce and follow this stream.
-An instance relies on some configuration (a ``.toml`` file) and a database (an SQLite file).
-It can be installed as a system service,
-named after information you provide at set-up time.
-
-If you are running multiple Liquidsoap streams on the same machine,
-you'll have to set up one Showergel instance per stream.
-In that case,
-
-* each instance should have a different name
-* each instance should run on a different port number
-
-We advise you to put all instance's files (configuration, DB, logs)
-in the same folder as the corresponding ``.liq`` file.
-When running multiple Liquidsoaps, create a folder per instance.
 
 
 Create an instance with the interactive installer
@@ -52,13 +23,12 @@ Create an instance with the interactive installer
 
 Run the interactive installer by calling ``showergel_install``.
 It will explain on the terminal what is happening and what to do from here.
-If you stick to defaults, the instance's basename will be ``showergel``,
+If you stick to defaults, the instance's basename will be ``radio``,
 so the installer will:
 
-* create a database (``showergel.db``)
-  and a configuration file (``showergel.toml``) in the current directory,
-* create a systemd user service called ``showergel`` ;
-  in other words you can ``systemctl --user status|start|stop|restart showergel``.
+* create a database (``radio.db``)
+  and a configuration file (``radio.toml``) in the current directory,
+* create a systemd user service,
 * enable the service and systemd's lingering_ so Showergel will start automatically at boot time.
 
 The installer allows you to create another systemd user service, for your Liquidsoap script.
@@ -69,7 +39,7 @@ for example, ``radio_gel`` (Showergel service associated to ``radio``)
 and ``radio_soap`` (wrapper for the Liquidsoap script you provided for ``radio``).
 
 If you choose to not create a service, you will have to (re)start Showergel
-manually by calling ``showergel showergel.toml``.
+manually by calling ``showergel radio.toml``.
 
 Before exiting, the installer gives a recap of its actions.
 
@@ -88,6 +58,27 @@ don't forget to restart showergel's service after editing its configuration file
 If you installed your Liquidsoap script as a system service,
 restart this service after editing the script - and after running ``liquidsoap --check my_script.liq`` !
 In both cases, log files are in the same folder as instance's other files.
+
+
+Running multiple Liquidsoap scripts
+-----------------------------------
+
+An instance of the ``showergel`` program is the companion of *one* Liquidsoap stream.
+The two programs will communicate with each other to produce and follow this stream.
+An instance relies on a configuration file (``something.toml``) and a database (an SQLite file).
+It can be installed as a system service,
+named after information you provide at set-up time.
+
+If you are running multiple Liquidsoap streams on the same machine,
+you'll have to set up one Showergel instance per stream.
+In that case,
+
+* each instance should have a different name
+* each instance should run on a different port number
+
+We advise you to put all instance's files (configuration, DB, logs)
+in the same folder as the corresponding ``.liq`` file.
+When running multiple Liquidsoaps, create a folder per instance.
 
 
 Install for back-end development

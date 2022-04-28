@@ -11,8 +11,13 @@
 #
 # ⚠ Always call `liquidsoap --check quickstart.liq` before (re)starting ⚠
 #
-# Copyright 2022 Martin Kirchgessner
+# Copyright 2021-2022 Martin Kirchgessner
 # https://github.com/martinkirch/showergel
+
+
+
+# anything after a # will be ignored by Liquidsoap
+
 
 
 ############################### BASIC SETTINGS #################################
@@ -29,13 +34,13 @@ settings.server.telnet.port.set(1234)
 # just drop/remove it in the folder, or one of its sub-folders.
 
 # Path to your Music folder
-MUSIC = "/home/martin/radio/liquidsoap/Music"
+MUSIC = "/home/radio/Music"
 
 # Path to your Jingles folder
-JINGLES = "/home/martin/radio/liquidsoap/Jingles"
+JINGLES = "/home/radio/Jingles"
 
 # Path to pre-recorded shows - we assume there will be a sub-folder per show
-SHOWS = "/home/martin/radio/liquidsoap/Shows"
+SHOWS = "/home/radio/Shows"
 
 
 ################################# TOOLING #####################################
@@ -69,11 +74,11 @@ def recorded_show(name)
   )
 end
 
-# auth_function ensures we use Showergel's users directory for their authentication.
+# auth_function ensures incoming streams are authenticated against Showergel's users directory
 def auth_function(login) =
   response = http.post("#{SHOWERGEL}/login",
     headers=[("Content-Type", "application/json")],
-    data=json_of(login)
+    data=json.stringify(login)
   )
   if response.status_code == 200 then
     log("Access granted to #{login.user}")
@@ -84,7 +89,7 @@ def auth_function(login) =
   end
 end
 
-# First define a 3s crossfade operator that skips the cutted track.
+# a 3-seconds crossfade operator that skips the cutted track.
 # Skipping avoids getting back in the middle of a music track after a live show,
 # but it requires a weird implementation. See https://github.com/savonet/liquidsoap/issues/1548
 def crossfade_3s(a,b)
@@ -96,16 +101,19 @@ def crossfade_3s(a,b)
   faded
 end
 
+
+
 ############################### END OF TOOLING ##################################
 
 
 ################################### MUSIC ######################################
 
-# When nothing else is playing, thi script will play music. It is the most basic
+# When nothing else is playing, thi script will play music. We use the most basic
 # auto-DJ, picking random files from the MUSIC folder defined above.
 #
 # If you want a finer music selection depending on the time of day/day of week,
-# we advise you create sources and combine them in a `switch` as recorded shows below.
+# we advise you create additional sources and combine them in a `switch` as
+# recorded shows below.
 
 music = blank.eat(id="music", start_blank=true, max_blank=1.0, threshold=-45.0,
   playlist(MUSIC, id="music_pl", mode="random", reload_mode="watch")
@@ -118,12 +126,16 @@ music = blank.eat(id="music", start_blank=true, max_blank=1.0, threshold=-45.0,
 # Each recorded show will have its folder in `SHOWS`, as defined at the
 # beginning of this file.
 
-# Now we create per-show sources.
+# We create on source per recorded show - define one per line, give them
+# different names, without spaces.
 # This example will read files from the /home/radio/Shows/Example/ folder.
 example = recorded_show("Example")
 
-# and here comes your programs grid.
+# Then we implement the programs grid with time conditions in a `switch` operator.
 # in this example, "Example" is broadcasted on Monday and Saturday mornings.
+# The time interval on the left only defines when the program can start - if one
+# file is longer than the given interval it will not be stopped.
+# Add `track_sensitive=false` to the `switch` arguments if you prefer cutting.
 
 shows = switch(id="shows", replay_metadata=false, [
   ({1w08h00-1w09h00}, example),
@@ -146,8 +158,8 @@ jingles = delay(780., id="jingles",
 # We set-up an HTTP source, to maybe relay another stream.
 #
 # Note that, because of `start=false`, this source will never play unless
-# activated by a "external.start" command from Showergel's scheduler (don't
-# forget to schedule "external.stop" later) !
+# activated by a "external.start" command from Showergel's scheduler. Don't
+# forget to schedule "external.stop" later.
 # If you want to play the stream as soon as it appears online, remove `start=false,`
 
 external = input.http(id="external", "https://live.campusgrenoble.org/rcg112",
@@ -169,7 +181,7 @@ live = input.harbor(
   "live"  # mountpoint name
 )
 
-########################### COMBINING SOURCES ##################################
+########################### FILE REQUESTS QUEUE ################################
 
 # we add an `ondemand` source so you can play something one by scheduling the command:
 # ondemand.push /path/to/file.mp3
@@ -202,25 +214,28 @@ def post_to_showergel(md)
     headers=[("Content-Type", "application/json; charset=UTF-8")],
     data=metadata.json.stringify(metadata.cover.remove(md))
   )
-  log(label="posted_to_showergel", response.status_message)
+  if response.status_code != 200
+  then
+    log(label="Warning", "Error while posting metadata to Showergel: #{response} #{response.status_code} #{response.status_message}")
+  end
 end
 
-radio.on_metadata(fun(m) -> thread.run({post_to_showergel(m)}))
+radio.on_metadata(fun(m) -> thread.run(fast=false, {post_to_showergel(m)}))
 
 
 ############################ ♫ OUTPUT ♫ ########################################
-# Keep/tune your favorite output(s) !
+# Add/remove/tune your favorite outputs !
 
-# Output to pulseaudio, which is usually abailable on Linux desktops.
-# You can also try `output(radio)` or `output.alsa(radio)` 
-output.pulseaudio(radio)
+# Output to the first available sound card
+output(radio)
+# On Linux you can also try `output.pulseaudio(radio)` or `output.alsa(radio)` 
 
-# Stream to Icecast - maybe change values below
+# Uncomment below to stream to Icecast
 # output.icecast(%vorbis, # see https://www.liquidsoap.info/doc-2.0.0/encoding_formats.html
 # 	id="icecast",
-#       host = "localhost",
-#       port = 9000,
-#       password = "secretsecret",
-#       mount = "radio.ogg",
-#       mksafe(buffer(radio))
-#     )
+#   host = "localhost",
+#   port = 9000,
+#   password = "secretsecret",
+#   mount = "radio.ogg",
+#   radio
+# )
