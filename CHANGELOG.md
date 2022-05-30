@@ -6,6 +6,7 @@ Changes and release history
 
 Showergel's third experimental release.
 
+ - **from here Showergel is only tested against Liquidsoap version 2**
  - all times in database are now considered on UTC - this might shift time from previously written data
  - added a commands scheduler
 

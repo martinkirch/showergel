@@ -3,8 +3,8 @@ Installing Showergel
 
 Installing Showergel requires
  * a Linux box relying on systemd (ie. a recent mainstream distribution),
- * Python, at least v3.7,
- * check pip_ is available, by calling ``pip3 --version`` (or ``pip --version``)
+ * Python, at least version 3.7,
+ * pip_, check it is available by calling ``pip --version`` or ``pip3 --version``
  * a running Liquidsoap radio - `version 2.x <https://www.liquidsoap.info/doc-2.0.0/install.html>`_
    is Showergel's best friend.
 
@@ -15,7 +15,7 @@ Installing Showergel requires
   `its quick start guide <https://www.liquidsoap.info/doc-2.0.0/quick_start.html>`_.
   Then you might use our :ref:`quickstart` script.
 
-Install Showergel by running ``pip3 install showergel`` (maybe replace ``pip3`` by ``pip``).
+Install Showergel by running ``pip install showergel`` (maybe replace ``pip`` by ``pip3``).
 
 
 Create an instance with the interactive installer
@@ -32,8 +32,8 @@ so the installer will:
 * enable the service and systemd's lingering_ so Showergel will start automatically at boot time.
 
 The installer allows you to create another systemd user service, for your Liquidsoap script.
-This is recommended, because then systemd will automatically launch both Showergel and Liquidsoap,
-and restart them when a crash happens.
+This is recommended, because systemd will automatically launch both Showergel and Liquidsoap.
+Systemd will also restart them when a crash happens - which is great for your radio's uptime.
 If you do so, the installer creates two systemd services with the same basename:
 for example, ``radio_gel`` (Showergel service associated to ``radio``)
 and ``radio_soap`` (wrapper for the Liquidsoap script you provided for ``radio``).
@@ -56,7 +56,8 @@ see :ref:`configuring` and :ref:`liquidsoap`.
 If you installed Showergel as a system service,
 don't forget to restart showergel's service after editing its configuration file.
 If you installed your Liquidsoap script as a system service,
-restart this service after editing the script - and after running ``liquidsoap --check my_script.liq`` !
+restart this service after editing the script -
+and, of course, after running ``liquidsoap --check my_script.liq`` !
 In both cases, log files are in the same folder as instance's other files.
 
 

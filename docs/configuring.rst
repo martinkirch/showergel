@@ -8,9 +8,8 @@ It tells the program what to do,
 where data should be written,
 how to contact Liquidsoap, etc.
 Showergel's installer creates a minimal configuration,
-(including comments if you're hurried to tweak it)
-but you may need more or hesitate:
-this section will tell you all configuration details and their implications, if any.
+including comments if you're hurried to tweak it.
+This section will tell you all configuration details and their implications, if any.
 
 What's a ``.toml`` configuration file
 -------------------------------------
@@ -18,15 +17,14 @@ What's a ``.toml`` configuration file
 Showergel uses the TOML_ format.
 If you have never encountered it, let's start by describing *how* this configuration is written.
 It is a text file, encoded in UTF-8,
-that you can edit with the same program as your Liquidsoap script
-(Notepad, gedit, vim, Eclipse, etc.).
+that you can edit with the same program as your Liquidsoap script.
 
 Configuration properties have a *key* (usually a word)
 and a *value* (a character string, a list, number, ...).
 Properties are grouped by sections, like ``[listen]`` or ``[db.sqlalchemy]``.
 
 Do not mix properties between sections:
-usually, the program will look for a property below one perticular section.
+the program will look for a property below one perticular section.
 *Comments* are notes that will be ignored by the program: they start with a ``#``.
 
 A TOML file looks like this:
@@ -36,7 +34,7 @@ A TOML file looks like this:
     [section]
     property = "value"
     somelist = ["foo", "bar", "baz"]
-    secret = 9876
+    somenumber = 9876
 
     [another_section]
     # this line starts with a sharp : programs will ignore it
@@ -44,8 +42,6 @@ A TOML file looks like this:
     # or to put aside old configuration values
     debug = true  # comments can be at end of lines too
 
-Showergel's installer creates a basic TOML file you should start with.
-This page's sections match sections in Showergel's config file.
 
 ``[db.sqlalchemy]``
 -------------------
@@ -60,22 +56,19 @@ Yes, that's four ``/``.
 Use only 3 if you prefer a relative path (relative to Showergel's working directory),
 for example ``sqlite:///showergel.db``.
 
-If you do not want to write a file, just use ``sqlite:///:memory:``.
-However with that setting Showergel will always forget its data when restarting.
-This will disrupt metadata logging and users authentication,
-but can be enough for a short test.
-It is supported for unit testing and the online demo.
+In demo mode, you might want to set ``sqlite:///:memory:``
+to avoid writing a file.
 
-If you already have a DB server at hand,
+If you have a DB server at hand,
 you can use it for Showergel too.
 You will have to install the DBAPI package youself,
 and refer to SQLAlchemy's documentation for the URL format -
 see pages about
-`PostGreSQL <https://docs.sqlalchemy.org/en/14/dialects/postgresql.html#module-sqlalchemy.dialects.postgresql.psycopg2>`_
+`PostgreSQL <https://docs.sqlalchemy.org/en/14/dialects/postgresql.html#module-sqlalchemy.dialects.postgresql.psycopg2>`_
 or `MySQL <https://docs.sqlalchemy.org/en/14/dialects/mysql.html#dialect-mysql>`_.
 
-You may display DB requests in Showergel's log by setting the property ``echo = true``.
-This can be useful when debugging.
+When debugging, you may display DB requests in Showergel's log
+by setting the property ``echo = true``.
 
 
 ``[interface]``

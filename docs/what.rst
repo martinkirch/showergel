@@ -18,11 +18,11 @@ What's inside Showergel - and what's not
 The REST/Web interface is served by the Bottle_ framework,
 because it's enough and allows keeping everything in a single process.
 
-Showergel's data is stored in SQLite_ because its more than enough and lets us
+Showergel's data is stored in SQLite_ because it lets us
 store everything in a single, local file.
 
 Scheduling is delegated to APScheduler_, who also needs SQLAlchemy_ to
-access SQLite, so we use SQLAlchemy too.
+access SQLite, so we use SQLAlchemy too (also because it's a great ORM).
 
 Showergel does not hold your music and shows collection.
 For that matter we suggest Beets_.
@@ -49,7 +49,7 @@ This implies that Showergel can't predict Liquidsoap's playlist.
     Liquidsoap does not pre-compute its playlist, and neither does Showergel.
 
 
-Indeed, Liquidsoap lets you write a stream generation function.
+A more theoretical explanation is that Liquidsoap lets you write a stream generation function.
 Predicting what will play out would require reverse-engineering users' scripts - automatically!
 On its side, Showergel has a scheduler so it can predict what it will do, but that's not enough.
 For example, even if you have scheduled

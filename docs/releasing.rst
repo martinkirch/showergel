@@ -1,9 +1,9 @@
 .. _releasing:
 
-Package and publish Showergel
-=============================
+Packaging and publishing Showergel
+==================================
 
-This is maintainer's check-list.
+This is the maintainer's check-list.
 
 Pre-publication check-list
 --------------------------

@@ -203,6 +203,16 @@ radio = fallback([jingles, programs],
   replay_metadata=false
 )
 
+########################### OPTIONAL : NORMALIZATION ##################################
+
+# remove the # at the beginning of next line to enable normalization
+
+# radio = normalize(target=-13., lufs=true, gain_max=12., gain_min=-12., down=0.1, up=1., window=1., radio)
+
+# This is one of the many ways to normalize with liquidsoap
+# see https://www.liquidsoap.info/doc-dev/reference.html#normalize
+# you may apply it to only on source : live, show(s), jingles...
+# Or tag tracks with replay gain information.
 
 ######################## PLAYOUT LOG TO SHOWERGEL ##############################
 

@@ -35,14 +35,14 @@ Sections below discuss implementation details on integrating each Showergel feat
 Display/skip current track
 --------------------------
 
-You just need to enable `Liquidsoap's telnet server <https://www.liquidsoap.info/doc-1.4.4/server.html>`_.
+You just need to enable `Liquidsoap's telnet server <https://www.liquidsoap.info/doc-2.0.0/server.html>`_.
 For example:
 
 .. code-block:: ocaml
 
-    set("server.telnet",true)
-    set("server.telnet.bind_addr","127.0.0.1")
-    set("server.telnet.port",1234)
+    settings.server.telnet.set(true)
+    settings.server.telnet.bind_addr.set("127.0.0.1")
+    settings.server.telnet.port.set(1234)
 
 ``127.0.0.1`` is the IP address of ``localhost``.
 The ``port`` value should match the one in Showergel's configuration's
@@ -60,47 +60,27 @@ be careful to set a different ``port`` for each one.
 Logging metadata
 ----------------
 
-You need to define a function that will post metadata to Showergel.
-
-For Liquidsoap version 1.x,
-you have to insert this function in your stream using the
-`on_metadata <https://www.liquidsoap.info/doc-1.4.4/reference.html#on_metadata>`_
-or
-`on_track <https://www.liquidsoap.info/doc-1.4.4/reference.html#on_track>`_
-operators, as follows:
+You need to define a function that will post metadata to Showergel:
 
 .. code-block:: ocaml
 
-    def post_to_showergel(m)
+    def post_to_showergel(md)
         response = http.post("#{SHOWERGEL}/metadata_log",
-            headers=[("Content-Type", "application/json")],
-            data=json_of(m))
-        log(label="posted_to_showergel", string_of(response))
+            headers=[("Content-Type", "application/json; charset=UTF-8")],
+            data=metadata.json.stringify(metadata.cover.remove(md))
+        )
+        if response.status_code != 200
+        then
+            log(label="Warning", "Error while posting metadata to Showergel: #{response} #{response.status_code} #{response.status_message}")
+        end
     end
 
-    radio = on_track(post_to_showergel, source)
+    radio.on_metadata(fun(m) -> thread.run(fast=false, {post_to_showergel(m)}))
 
-Once this is defined, be careful to use ``radio`` as your outputs' source (instead of ``source``).
-Otherwise ``post_to_showergel`` will never be called and nothing will be logged.
-
-For Liquidsoap version 2.x, you just have to call
-`source.on_track <https://www.liquidsoap.info/doc-dev/reference.html#source.on_track>`_
-or `source.on_metadata <https://www.liquidsoap.info/doc-dev/reference.html#source.on_track>`_
-:
-
-.. code-block:: ocaml
-
-    def post_to_showergel(m)
-        response = http.post("#{SHOWERGEL}/metadata_log",
-            headers=[("Content-Type", "application/json")],
-            data=json_of(m))
-        log(label="posted_to_showergel", string_of(response))
-    end
-
-    source.on_track(radio, post_to_showergel)
-
-The line that starts with ``log`` is optional,
-it may help when debugging.
+We advise to plug the function with
+`source.on_metadata <https://www.liquidsoap.info/doc-dev/reference.html#source.on_track>`_,
+but `source.on_track <https://www.liquidsoap.info/doc-dev/reference.html#source.on_track>`_
+may work too.
 
 .. warning::
     Many Liquidsoap operators repeat previous track's metadata when switching
@@ -120,7 +100,7 @@ it may help when debugging.
 Authenticating users on harbor
 ------------------------------
 
-Liquidsoap's `input.harbor <https://www.liquidsoap.info/doc-1.4.4/reference.html#input.harbor>`_
+Liquidsoap's `input.harbor <https://www.liquidsoap.info/doc-2.0.0/reference.html#input.harbor>`_
 can require authentication by giving ``user`` and ``password`` parameters.
 But this implies
 
@@ -128,48 +108,27 @@ But this implies
 * sharing those credentials
 * restarting the Liquidsoap stream when you want to update those credentials
 
-This is not enough secured and unconvenient.
+This is unconvenient and not enough secured.
 
-Instead, you can rely on Showergel to hold the list of users and their (encrypted) passwords.
+Instead, you can rely on Showergel to hold the list of users and their passwords - encrypted.
 Then you will be able to add/edit crendentials from Showergel's web interface.
 This method requires creating an authentication function (in your ``.liq``)
 passed to ``intput.harbor``'s ``auth`` parameter (instead of ``user`` and ``password``).
 
-For Liquidsoap version 1.x, this function can be written as:
+This function can be written as:
 
 .. code-block:: ocaml
 
-    def auth_function(user, password) =
-        let (status, _, _) = http.post("#{SHOWERGEL}/login",
-            headers=[("Content-Type", "application/json")],
-            data=json_of([("username", user), ("password", password)])
-        )
-        let (_, code, _) = status
-        if code == 200 then
-            log("Access granted to #{user}")
-            true
-        else
-            log("Access denied to #{user}")
-            false
-        end
-    end
-
-    harbor = input.harbor(auth=auth_function, ...
-
-For Liquidsoap version 2.x, this function can be written as:
-
-.. code-block:: ocaml
-
-    def auth_function(user, password) =
+    def auth_function(login) =
         response = http.post("#{SHOWERGEL}/login",
             headers=[("Content-Type", "application/json")],
-            data=json_of([("username", user), ("password", password)])
+            data=json.stringify(login)
         )
         if response.status_code == 200 then
-            log("Access granted to #{user}")
+            log("Access granted to #{login.user}")
             true
         else
-            log("Access denied to #{user}")
+            log("Access denied to #{login.user}")
             false
         end
     end

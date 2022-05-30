@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "showergel"
-version = "0.3.0-alpha.0"
+version = "0.3.0-alpha.4"
 description = "Companion application for a Liquidsoap radio"
 authors = ["Martin Kirchgessner <martin.kirch@gmail.com>"]
 license = "GPL-3.0-only"
@@ -10,7 +10,7 @@ repository = "https://github.com/martinkirch/showergel.git"
 documentation = "https://showergel.readthedocs.io/"
 keywords = ["radio", "liquidsoap"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: POSIX :: Linux",
     "Topic :: Multimedia :: Sound/Audio",
@@ -36,7 +36,7 @@ arrow = "^1.1.0"
 pytest = "^6.2"
 WebTest = "^2.0.35"
 snooty-lextudio = "^1.8.10-alpha.0"
-Sphinx = "^3.5.2"
+Sphinx = "^4.5"
 sphinxcontrib-httpdomain = "^1.7.0"
 
 [build-system]
