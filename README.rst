@@ -23,12 +23,8 @@ License: GPL3_.
 News
 ====
 
-Right after the 0.1.0 release, 
-Showergel has been presented at `Liquidshop 1.0 <http://www.liquidsoap.info/liquidshop/>`_, 
-the very first Liquidsoap workshop !
-You can watch the 15-minutes presentation on `Youtube <https://www.youtube.com/watch?v=9U2xsAhz_dU>`_,
-and read/download sides
-`from this repository <https://github.com/martinkirch/showergel/blob/main/docs/2021-01-17-liquidshop-presentation.pdf>`_.
+*30/05/2022:* Showergel version 0.3, the first version compliant with Liquidsoap 2.x,
+is coming soon with an all-inclusive installer script.
 
 .. _Liquidsoap: https://www.liquidsoap.info/
 .. _GPL3: https://www.gnu.org/licenses/gpl-3.0.html
