@@ -300,23 +300,18 @@ class TelnetConnector:
 
     def current(self) -> dict:
         """
+        **Note**: `request.on_air` seems to provide an RID usable with
+        `request.metadata RID`, but it may also provide *multiple* RIDs (like
+        `4 9`), including one that is not playing. So we only rely on the first
+        output's `metadata` command.
+
         :return dict: metadata of what's currently playing
         """
         uptime = self.uptime()
-        current_rid = self.command("request.on_air")
-        if current_rid:
-            current_rid = current_rid[0].strip()
-        if current_rid:
-            raw = self.command("request.metadata " + current_rid)
-            if raw:
-                metadata = self._metadata_to_dict(raw)
-            else:
-                metadata = {}
-        else:
-            metadata = self._find_active_source()
-            output_metadata = self._read_output_metadata()
-            if output_metadata.get("source") == metadata.get("source"):
-                metadata.update(output_metadata)
+        # FIXME this is really inefficient - linked to #37
+        metadata = self._find_active_source()
+        output_metadata = self._read_output_metadata()
+        metadata.update(output_metadata)
 
         if 'on_air' in metadata:
             metadata['on_air'] = arrow.get(metadata['on_air'], tzinfo='local').isoformat()
@@ -385,8 +380,6 @@ class TelnetConnector:
                     return None
             except Exception as exc:
                 log.debug(exc)
-        else:
-            log.debug("Don't know how to check %s", source_type)
         return None
 
     def _read_output_metadata(self) -> dict:
