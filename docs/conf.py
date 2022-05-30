@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'Showergel'
-copyright = '2021, Martin Kirchgessner'
+copyright = '2022, Martin Kirchgessner'
 author = 'Martin Kirchgessner'
 
 # The full version, including alpha/beta/rc tags
