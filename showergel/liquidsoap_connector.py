@@ -253,7 +253,12 @@ class TelnetConnector:
         if raw:
             for line in raw:
                 splitted = line.split(" : ")
-                self.soap_objects[splitted[0]] = splitted[1]
+                try:
+                    self.soap_objects[splitted[0]] = splitted[1]
+                except IndexError:
+                    # might happen with LS>2.0.3 #37
+                    log.error("can't split %s", line)
+                    break
 
         self._first_output_name = None
         for soap_name, soap_type in self.soap_objects.items():
