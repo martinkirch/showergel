@@ -6,15 +6,11 @@ Showergel
 
 from os import environ
 import os.path
-import sys
 import logging
 import logging.config
-import json
 from functools import wraps
 
-import toml
-import click
-from bottle import Bottle, response, HTTPError, request, static_file, redirect, HTTPResponse
+from bottle import response, request, static_file, redirect
 from bottle.ext.sqlalchemy import Plugin as SQLAlchemyPlugin
 from sqlalchemy import engine_from_config
 
@@ -106,47 +102,3 @@ def enable_cors_generic_route():
     CORS headers will be returned iff ``send_cors`` is enabled.
     """
     return {}
-
-def read_bool_param(param):
-    value = app.config.get('listen.'+param)
-    if value in ('False', 'false'):
-        return False
-    else:
-        return bool(value)
-
-@click.command()
-@click.version_option()
-@click.argument('config_path', type=click.Path(readable=True, allow_dash=False, exists=True))
-@click.option('--verbose', is_flag=True, help="Sets logging level to DEBUG")
-def serve(config_path, verbose):
-    with open(config_path, 'r') as f:
-        conf = toml.load(f)
-    logging.config.dictConfig(conf['logging'])
-    if verbose:
-        logging.getLogger().setLevel(logging.DEBUG)
-
-    app.config.load_dict(conf)
-
-    try:
-        port = int(app.config['listen.port'])
-    except ValueError:
-        port = int(environ[app.config['listen.port']])
-
-    demo = read_bool_param('demo')
-    debug = read_bool_param('debug')
-    server = 'paste'
-    if demo:
-        # stubbing to :memory: works better with the default, mono-threaded server
-        server = 'wsgiref'
-    app.run(
-        server=server,
-        host=app.config['listen.address'],
-        port=port,
-        reloader=debug,
-        quiet=not debug,
-        demo=demo,
-        debug=debug,
-    )
-
-if __name__ == '__main__':
-    serve()

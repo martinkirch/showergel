@@ -14,6 +14,7 @@ import click
 import toml
 from sqlalchemy import engine_from_config
 
+from .main import showergel_cli
 
 
 _log = logging.getLogger(__name__)
@@ -118,7 +119,7 @@ After=network.target
 Type=simple
 Restart=always
 WorkingDirectory={base_dir}
-ExecStart={showergel} {toml_path}
+ExecStart={showergel} serve {toml_path}
 
 [Install]
 WantedBy=default.target
@@ -358,9 +359,9 @@ backupCount = 10
             click.echo("\nOnce started, you can access Showergel's interface at http://localhost:{}/".format(self.port))
         else:
             click.echo("You can start showergel by invoking:")
-            click.echo("showergel "+self.path_toml)
+            click.echo("showergel serve "+self.path_toml)
 
-        click.echo("\nBe careful to restart Showergel after editing the .ini file")
+        click.echo("\nBe careful to restart Showergel after editing the .toml file")
 
         click.secho("\nWe advise you backup regularly the following files by copying them to an external support:",
             bold=True)
@@ -371,40 +372,56 @@ backupCount = 10
             bold=True)
         click.echo("")
 
-@click.command()
-# TODO : currently --help shows "--update TEXT" - how to change TEXT ?
-@click.option('--update', help="Check/update the DB schema after a software update")
-@click.option('--dev', is_flag=True, help="If you want to develop/debug Showergel")
+
+@showergel_cli.command()
 @click.option('--no-revert-on-failure', is_flag=True, help="If you want to develop/debug this installer")
-def main(update, dev, no_revert_on_failure):
+def install(no_revert_on_failure):
+    """
+    Set-up a new Showergel/Liquidsoap installation
+    """
     installer = Installer()
-    if (update):
-        installer.create_db_schema(path_toml=update)
-        click.secho("DB is up-to-date", fg='green', bold=True)
-    elif (dev):
+    try:
+        installer.hello()
+        installer.ask_basename()
+        installer.ask_port()
         installer.check_no_overwriting()
-        installer.create_toml_and_db(dev=True)
-        installer.recap()
-    else:
-        try:
-            installer.hello()
-            installer.ask_basename()
-            installer.ask_port()
-            installer.check_no_overwriting()
 
-            if click.confirm("\nShould we install {} as a system service ?"
-                .format(installer.basename), default=True):
-                installer.ask_liquid_script()
-                installer.create_systemd_unit()
+        if click.confirm("\nShould we install {} as a system service ?"
+            .format(installer.basename), default=True):
+            installer.ask_liquid_script()
+            installer.create_systemd_unit()
 
-            # do this now because adding Liquidsoap script as a service changes the log path
-            installer.create_toml_and_db()
-            if installer.service_name and click.confirm("\nStart the service(s) at boot ?"
-                , default=True):
-                installer.enable_systemd_unit()
-        except Exception:
-            if not no_revert_on_failure:
-                installer.revert()
-            raise
+        # do this now because adding Liquidsoap script as a service changes the log path
+        installer.create_toml_and_db()
+        if installer.service_name and click.confirm("\nStart the service(s) at boot ?"
+            , default=True):
+            installer.enable_systemd_unit()
+    except Exception:
+        if not no_revert_on_failure:
+            installer.revert()
+        raise
 
-        installer.recap()
+    installer.recap()
+
+
+@showergel_cli.command()
+@click.argument('config_path')
+def update(config_path):
+    """
+    Update/restore a Showergel installation
+    """
+    installer = Installer()
+    installer.create_db_schema(path_toml=config_path)
+    click.secho("DB is up-to-date", fg='green', bold=True)
+    # TODO support restore: re-create/re-enable systemd units
+
+
+@showergel_cli.command()
+def develop():
+    """
+    Set-up a new Showergel installation, for development or debugging
+    """
+    installer = Installer()
+    installer.check_no_overwriting()
+    installer.create_toml_and_db(dev=True)
+    installer.recap()
