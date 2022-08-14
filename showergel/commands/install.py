@@ -213,7 +213,7 @@ class Installer(object):
 
     def create_toml_and_db(self, dev=False):
         if dev:
-            handler = 'class = "logging.StreamHandler"'
+            handler = 'class = "rich.logging.RichHandler"'
             debug = "debug = true"
             log_level = "DEBUG"
         else:

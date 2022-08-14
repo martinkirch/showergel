@@ -22,7 +22,7 @@ include = ["bottle/__init__.py", "bottle_sqlalchemy/__init__.py"]
 showergel = "showergel.commands.main:showergel_cli"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.7.2"
 sqlalchemy = "^1.3.19"
 click = "^7.1.2"
 Paste = "^3.5.0"
@@ -37,6 +37,8 @@ WebTest = "^2.0.35"
 snooty-lextudio = "^1.8.10-alpha.0"
 Sphinx = "^4.5"
 sphinxcontrib-httpdomain = "^1.7.0"
+rich = "^12.5.1"
+pylint = "^2.14.5"
 
 [build-system]
 requires = ["poetry>=0.12"]
