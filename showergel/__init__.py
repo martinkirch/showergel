@@ -13,6 +13,7 @@ from functools import wraps
 from bottle import response, request, static_file, redirect
 from bottle.ext.sqlalchemy import Plugin as SQLAlchemyPlugin
 from sqlalchemy import engine_from_config
+from sqlalchemy.pool import StaticPool
 
 from showergel.showergel_bottle import ShowergelBottle
 from showergel.rest import sub_apps
@@ -57,18 +58,29 @@ class MainBottle(ShowergelBottle):
         """
         Showergel's initialization function
         """
-        engine = engine_from_config(self.config, prefix="db.sqlalchemy.")
+        store_scheduler_in_memory = demo
+        if ":memory:" in self.config['db.sqlalchemy.url']: # unit tests !
+            store_scheduler_in_memory = True
+            # see https://docs.sqlalchemy.org/en/20/dialects/sqlite.html#using-a-memory-database-in-multiple-threads
+            engine = engine_from_config(self.config,
+                prefix="db.sqlalchemy.",
+                connect_args={'check_same_thread':False},
+                poolclass=StaticPool
+            )
+        else:
+            engine = engine_from_config(self.config, prefix="db.sqlalchemy.")
         plugin = SQLAlchemyPlugin(engine)
         self.install(plugin)
         for sub_app in sub_apps:
             sub_app.install(plugin)
             sub_app.config.update(self.config)
 
-        Scheduler.setup(engine, store_in_memory=demo)
+        Scheduler.setup(engine, store_in_memory=store_scheduler_in_memory)
+
         if demo:
             self.add_hook('after_request', send_cors)
             from showergel.demo import stub_all
-            stub_all(self.get_engine(), self.config)
+            stub_all(engine, self.config)
         elif debug:
             _log.warning("Running in development mode - don't do this on a broadcasting machine")
             self.add_hook('after_request', send_cors)
