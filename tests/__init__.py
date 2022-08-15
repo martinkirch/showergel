@@ -10,6 +10,7 @@ from bottle.ext import sqlalchemy
 
 from showergel import app
 from showergel.db import Base
+from showergel.metadata import Log, LogExtra
 from showergel.liquidsoap_connector import Connection
 
 APP_CONFIG = {
@@ -43,3 +44,11 @@ class ShowergelTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.app = TestApp(app)
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        session = DBSession()
+        session.query(LogExtra).delete(synchronize_session=False)
+        session.query(Log).delete(synchronize_session=False)
+        session.commit()
