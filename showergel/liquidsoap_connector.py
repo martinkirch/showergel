@@ -5,6 +5,7 @@ from datetime import timedelta, datetime
 from threading import RLock
 from telnetlib import Telnet
 from time import sleep
+from itertools import groupby
 
 import arrow
 
@@ -137,7 +138,7 @@ class TelnetConnector:
         set("server.telnet",true)
         set("server.telnet.bind_addr","192.168.1.10")
         set("server.telnet.port",4444)
-    
+
     Then Showergel configuration should contain:
 
     .. code-block:: toml
@@ -145,12 +146,18 @@ class TelnetConnector:
         method = "telnet"
         host = "192.168.1.10"
         port = 4444
-    
+
     You can also set ``timeout``, in seconds (defaults to 10).
+
+    If your script Liquidsoap script uses multiple outputs, Showergel might fail
+    to identify the main output - the one polled from Showergel's "now playing"
+    page. In that case, you can also set ``output`` in this section, giving the
+    ID of the main output.
     """
-    
+
     UPTIME_PATTERN = re.compile(r"([0-9]+)d ([0-9]+)h ([0-9]+)m ([0-9]+)s")
     METADATA_PATTERN = re.compile(r"^([^=]+)=\"(.*)\"$")
+    _REQUIRED_OUTPUT_COMMANDS = set(['remaining', 'skip', 'metadata'])
 
     def __init__(self, config:dict):
         self._lock = RLock()
@@ -160,12 +167,13 @@ class TelnetConnector:
             self.timeout = int(config['liquidsoap.timeout'])
         else:
             self.timeout = 10
+        self._favorite_output = config.get('liquidsoap.output')
 
         self._connection = FasterTelnet()
         self._connect()
 
         self.commands = []
-        self.soap_objects = {}
+        self._status_commands = []
         self._first_output_name = None
         self._soaps_updated_at = None
         self.connected_liquidsoap_version = None
@@ -236,38 +244,6 @@ class TelnetConnector:
         self._lock.release()
         return response
 
-    def _update_soaps(self):
-        self.commands = []
-        raw = self.command("help")
-        if raw:
-            for line in raw:
-                if line.startswith("|"):
-                    command = line[2:]
-                    if not command.startswith('help ') and command not in (
-                        'exit', 'list', 'quit', 'uptime', 'version'
-                    ):
-                        self.commands.append(command)
-
-        self.soap_objects = {}
-        raw = self.command("list")
-        if raw:
-            for line in raw:
-                splitted = line.split(" : ")
-                try:
-                    self.soap_objects[splitted[0]] = splitted[1]
-                except IndexError:
-                    # might happen with LS>2.0.3 #37
-                    log.error("can't split %s", line)
-                    break
-
-        self._first_output_name = None
-        for soap_name, soap_type in self.soap_objects.items():
-            if soap_type.startswith('output.'):
-                self._first_output_name = soap_name
-                break
-
-        self.connected_liquidsoap_version = self.command("version")[0]
-
     def uptime(self) -> Type[timedelta]:
         """
         Observing a decreasing uptime is interpreted as an instance reboot ;
@@ -298,26 +274,84 @@ class TelnetConnector:
         self._lock.release()
         return uptime
 
+    def _update_soaps(self):
+        self.commands = []
+        raw = self.command("help")
+        if raw:
+            for line in raw:
+                if line.startswith("|"):
+                    command = line[2:]
+                    if not command.startswith('help ') and \
+                        not command.startswith('request.') and \
+                        command not in ('exit', 'list', 'quit', 'uptime', 'version'):
+                        self.commands.append(command)
+
+        if self._favorite_output:
+            self._first_output_name = self._favorite_output
+            expected = self._first_output_name + '.metadata'
+            if expected not in self.commands:
+                log.error("It seems the %s command is not available - please check the 'output' value in the [liquidsoap] section of Showergel's configuration", expected)
+        else:
+            self._first_output_name = None
+            # we assume only outputs have the three commands we need: .remaining
+            # .skip and .metadata - we also assume that help is sorted
+            for liq_id, commands in groupby(self.commands, lambda c: c.split('.')[0]):
+                parsed_commands = set(c.split('.')[-1] for c in commands)
+                if self._REQUIRED_OUTPUT_COMMANDS <= parsed_commands:
+                    self._first_output_name = liq_id
+                    break
+        if self._first_output_name:
+            log.info("Using %s as the main output", self._first_output_name)
+
+        self._status_commands = []
+        for command in self.commands:
+            if command.endswith('.status'):
+                self._status_commands.append(command)
+
+        self.connected_liquidsoap_version = self.command("version")[0]
+
     def current(self) -> dict:
         """
         **Note**: `request.on_air` seems to provide an RID usable with
         `request.metadata RID`, but it may also provide *multiple* RIDs (like
         `4 9`), including one that is not playing. So we only rely on the first
         output's `metadata` command.
+        This may not work well either with harbor or input.http so we might also
+        poll their `.status` command.
 
         :return dict: metadata of what's currently playing
         """
         uptime = self.uptime()
-        # FIXME this is really inefficient - linked to #37
-        metadata = self._find_active_source()
-        output_metadata = self._read_output_metadata()
-        metadata.update(output_metadata)
+
+        metadata = self._read_output_metadata()
+        request_on_air = self.command("request.on_air")
+        log.debug("%r", request_on_air)
+        if request_on_air: #FIXME may not happen
+            request_on_air = request_on_air[0]
+
+        if 'source' not in metadata or not request_on_air:
+            polled = self._poll_status()
+            if polled:
+                if polled['source'] != metadata.get('source'):
+                    metadata = polled
+                else:
+                    metadata.update()
 
         if 'on_air' in metadata:
             metadata['on_air'] = arrow.get(metadata['on_air'], tzinfo='local').isoformat()
 
         metadata['uptime'] = str(uptime)
         return metadata
+
+    def _poll_status(self) -> dict:
+        for command in self._status_commands:
+            response = self.command(command)
+            if response and "connected" in response[0]:
+                return {
+                    'source': command[0:-len('.status')],
+                    'status': response[0],
+                }
+        return {}
 
     @classmethod
     def _metadata_to_dict(cls, raw) -> dict:
@@ -331,62 +365,7 @@ class TelnetConnector:
                     log.warning("Can't parse metadata item: %r", line)
         return metadata
 
-    def _find_active_source(self) -> dict:
-        """
-        May return an empty dict when nothing is found
-        """
-        metadata = {}
-        active_source = None
-        status = None
-        self._lock.acquire()
-        if self._latest_active_source:
-            # the most common case: it's still playing
-            status = self._get_active_status(self._latest_active_source)
-            if status:
-                active_source = self._latest_active_source
-                log.debug("re-using _latest_active_source")
-        if not active_source:
-            for src in self.soap_objects:
-                status = self._get_active_status(src)
-                if status:
-                    active_source = src
-                    break
-        if active_source:
-            self._latest_active_source = active_source
-            metadata['source'] = active_source
-            metadata['status'] = status
-
-        self._lock.release()
-        return metadata
-
-    STATUS_CHECK = {
-        'input.http': lambda s: s.startswith("connected"),
-        'input.harbor': lambda s: s.startswith("source client connected"),
-        'input.harbor.ssl': lambda s: s.startswith("source client connected"),
-    }
-
-    def _get_active_status(self, source:str) -> Optional[str]:
-        """
-        :param source:str: source name
-        :return str: result of source's ``status`` command / ``None`` if source is not active.
-        """
-        source_type = self.soap_objects[source]
-        if source_type in self.STATUS_CHECK:
-            status = self.command(source + ".status")
-            try:
-                if self.STATUS_CHECK[source_type](status[0]):
-                    return status
-                else:
-                    return None
-            except Exception as exc:
-                log.debug(exc)
-        return None
-
     def _read_output_metadata(self) -> dict:
-        """
-        Some inputs don't have a ``.metadata`` command. When they're playing,
-        the only way to fetch current metadata is to ask an output.
-        """
         if self._first_output_name:
             all_metadata = self.command(self._first_output_name + '.metadata')
             if all_metadata:
