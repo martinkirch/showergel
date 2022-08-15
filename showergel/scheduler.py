@@ -10,6 +10,7 @@ import logging
 from typing import Type, List, Dict
 
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import sessionmaker
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.jobstores.base import ConflictingIdError, JobLookupError
@@ -17,6 +18,7 @@ from apscheduler.events import EVENT_JOB_ERROR
 import arrow
 
 from showergel.liquidsoap_connector import Connection
+from showergel.metadata import Log
 
 _log = logging.getLogger(__name__)
 
@@ -25,8 +27,15 @@ _log = logging.getLogger(__name__)
 # serialize all their parameters (that wouldn't work with self:Scheduler)
 def _do_command(command):
     connection = Connection.get()
+    _log.info("Running scheduled command: %s", command)
     result = connection.command(command)
     _log.info("Liquidsoap replied: %s", result)
+    Scheduler.dbsession.add(Log(
+        on_air=arrow.get(tzinfo='local').to('utc').datetime,
+        source="showergel_scheduler",
+        initial_uri=command,
+    ))
+    Scheduler.dbsession.commit()
 
 class Scheduler:
     """
@@ -35,6 +44,7 @@ class Scheduler:
     """
 
     __instance = None
+    dbsession = None
 
     @classmethod
     def setup(cls, db_engine:Type[Engine], store_in_memory=False):
@@ -42,9 +52,11 @@ class Scheduler:
         This should be called once, when starting the program.
 
         `store_in_memory` may be activated when you don't want to persist
-        the schedule (this happens in demo mode).
+        the schedule (this happens in demo mode or unit tests).
         """
         cls.__instance = cls(db_engine, store_in_memory)
+        factory = sessionmaker(bind=db_engine)
+        cls.dbsession = factory()
 
     @classmethod
     def get(cls):

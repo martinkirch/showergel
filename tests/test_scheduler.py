@@ -1,7 +1,8 @@
 import unittest
+import time
 from datetime import datetime, timedelta
 import arrow
-from . import ShowergelTestCase
+from tests import ShowergelTestCase
 from showergel.scheduler import Scheduler
 
 class TestScheduler(ShowergelTestCase):
@@ -53,6 +54,20 @@ class TestScheduler(ShowergelTestCase):
         self.app.delete('/schedule/'+event_id)
         schedule = self.app.get('/schedule').json['schedule']
         self.assertEqual(len(schedule), 0)
+
+    def test_commands_are_logged(self):
+        now = arrow.now()
+        right_now = arrow.now().shift(seconds=0.5)
+        command = "help blablablalba"
+        posted = self.app.put_json('/schedule', {
+            'command': command,
+            'when': right_now.isoformat(),
+        }).json
+        time.sleep(1) #sorry
+        logged = self.app.get('/metadata_log', {'start': now.isoformat()}).json['metadata_log']
+        self.assertEqual(logged[0]['source'], "showergel_scheduler")
+        self.assertEqual(logged[0]['initial_uri'], command)
+        self.assertLess(arrow.get(logged[0]['on_air']) - right_now, timedelta(milliseconds=10.))
 
 if __name__ == '__main__':
     unittest.main(failfast=True)
