@@ -23,8 +23,8 @@ License: GPL3_.
 News
 ====
 
-*30/05/2022:* Showergel version 0.3, the first version compliant with Liquidsoap 2.x,
-is coming soon with an all-inclusive installer script.
+*17/08/2022:* We've just pusbluished a pre-release of Showergel version 0.3,
+the first version compliant with Liquidsoap 2.x. Install it with `pip install --pre showergel`.
 
 .. _Liquidsoap: https://www.liquidsoap.info/
 .. _GPL3: https://www.gnu.org/licenses/gpl-3.0.html
