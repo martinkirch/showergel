@@ -49,7 +49,7 @@ SHOWS = "/home/radio/Shows"
 # Liquidsoap you can skip this section and scroll directly to `MUSIC` !
 
 
-def recorded_show(name)
+def prerecorded_show(name)
   show_folder = "#{SHOWS}/#{name}"
   # let's check show_folder exists - if not, the folder is created so the script can start
   if not file.exists(show_folder) then
@@ -129,7 +129,7 @@ music = blank.eat(id="music", start_blank=true, max_blank=1.0, threshold=-45.0,
 # We create on source per recorded show - define one per line, give them
 # different names, without spaces.
 # This example will read files from the /home/radio/Shows/Example/ folder.
-example = recorded_show("Example")
+example = prerecorded_show("Example")
 
 # Then we implement the programs grid with time conditions in a `switch` operator.
 # in this example, "Example" is broadcasted on Monday and Saturday mornings.
