@@ -19,7 +19,7 @@ copyright = '2022, Martin Kirchgessner'
 author = 'Martin Kirchgessner'
 
 # The full version, including alpha/beta/rc tags
-release = '0.3.0-alpha.0'
+release = '0.3.0-alpha.7'
 
 
 # -- General configuration ---------------------------------------------------
