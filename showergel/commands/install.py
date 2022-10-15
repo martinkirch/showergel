@@ -177,28 +177,42 @@ class Installer(object):
             fg='green', bold=True)
         click.echo("\nWe will ask for a few parameters.\n\nWhen in doubt, just press Enter and we'll use the default value (shown between square brackets).\nHit Ctlr+C to abort.")
 
-    def ask_basename(self):
-        click.secho("\nHow should we call the installation ?", bold=True)
-        click.echo("We need a simple name (use only letters and numbers) for the future files and service.")
-        while True:
-            basename = click.prompt("Installation basename", default=self.basename)
-            if basename.isalnum():
-                self.basename = basename
-                break
+    def choose_basename(self, cliprovided=None):
+        if cliprovided:
+            if cliprovided.isalnum():
+                self.basename = cliprovided
             else:
-                click.secho("Use only letters and numbers", color='red')
+                raise click.ClickException("The basename must only contain letters and numbers")
+        else:
+            click.secho("\nHow should we call the installation ?", bold=True)
+            click.echo("We need a simple name (use only letters and numbers) for the future files and service.")
+            while True:
+                basename = click.prompt("Installation basename", default=self.basename)
+                if basename.isalnum():
+                    self.basename = basename
+                    return
+                else:
+                    click.secho("Use only letters and numbers", color='red')
 
-    def ask_port(self):
-        click.echo("\nWhich port should we use for Showergel's interface ? Just ensure nothing else is already using it.")
-        while True:
-            port = click.prompt("Showergel port", default=self.port, type=int)
-            if self.port_is_open(port):
-                click.secho(f"Port {port} is already held by another application, please pick another one.", fg='red')
+    def choose_port(self, cliprovided=None):
+        if cliprovided:
+            if self.port_is_open(cliprovided):
+                raise click.ClickException(f"Port {cliprovided} is already held by another application, please pick another one.")
             else:
-                if port < 1024:
+                if cliprovided < 1024:
                     click.secho("Warning: showergel will run as a normal user, it will unlikely be able to open a port below 1024", fg='yellow')
-                self.port = port
-                return
+                self.port = cliprovided
+        else:
+            click.echo("\nWhich port should we use for Showergel's interface ? Just ensure nothing else is already using it.")
+            while True:
+                port = click.prompt("Showergel port", default=self.port, type=int)
+                if self.port_is_open(port):
+                    click.secho(f"Port {port} is already held by another application, please pick another one.", fg='red')
+                else:
+                    if port < 1024:
+                        click.secho("Warning: showergel will run as a normal user, it will unlikely be able to open a port below 1024", fg='yellow')
+                    self.port = port
+                    return
 
     def port_is_open(self, port):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -250,21 +264,28 @@ backupCount = 10
         engine = engine_from_config(config['db']['sqlalchemy'], prefix='')
         Base.metadata.create_all(engine)
 
-    def ask_liquid_script(self):
-        click.echo("\nIf you would like to also create a systemd service for your Liquidsoap script, enter its path below. Otherwise, leave blank.")
-        while True:
-            liq = click.prompt("Path to Liquidsoap script (absolute or relative)", default="")
-            if liq:
-                if not liq.startswith('/'):
-                    liq = os.getcwd() + '/' + liq
-                if os.path.exists(liq):
-                    self.create_liquidsoap_systemd_unit(liq)
-                    break
+    def choose_liquid_script(self, cliprovided=None):
+        if cliprovided:
+            if not cliprovided.startswith('/'):
+                raise click.ClickException("Please provide an absolute path to the Liquidsoap script")
+            if not os.path.exists(cliprovided):
+                raise click.ClickException("Please check the path to the Liquidsoap script : file not found")
+            self.create_liquidsoap_systemd_unit(cliprovided)
+        else:
+            click.echo("\nIf you would like to also create a systemd service for your Liquidsoap script, enter its path below. Otherwise, leave blank.")
+            while True:
+                liq = click.prompt("Path to Liquidsoap script (absolute or relative)", default="")
+                if liq:
+                    if not liq.startswith('/'):
+                        liq = os.getcwd() + '/' + liq
+                    if os.path.exists(liq):
+                        self.create_liquidsoap_systemd_unit(liq)
+                        break
+                    else:
+                        click.secho("{} not found".format(liq), fg='red')
                 else:
-                    click.secho("{} not found".format(liq), fg='red')
-            else:
-                self.liquid_service_name = None
-                break
+                    self.liquid_service_name = None
+                    break
 
     def create_liquidsoap_systemd_unit(self, liq_path):
         os.makedirs(self.path_systemd_units, exist_ok=True)
@@ -375,27 +396,36 @@ backupCount = 10
 
 @showergel_cli.command()
 @click.option('--no-revert-on-failure', is_flag=True, help="If you want to develop/debug this installer")
-def install(no_revert_on_failure):
+@click.option('--basename', help="Service's name (use only letters and numbers)")
+@click.option('--port', help="Showergel's port", type=int)
+@click.option('--bind-with-script', help="Absolute path to the Liquidsoap script this instance will connect to")
+@click.option('--enable-at-boot/--no-boot', default=None, help="Enable service at boot time")
+def install(no_revert_on_failure, basename, port, bind_with_script, enable_at_boot):
     """
     Set-up a new Showergel/Liquidsoap installation
     """
     installer = Installer()
     try:
-        installer.hello()
-        installer.ask_basename()
-        installer.ask_port()
+        # without command-line options, we'll go interactive so start by greeting
+        if not (basename, port, bind_with_script, enable_at_boot):
+            installer.hello()
+
+        installer.choose_basename(basename)
+        installer.choose_port(port)
         installer.check_no_overwriting()
 
-        if click.confirm("\nShould we install {} as a system service ?"
+        if bind_with_script or click.confirm("\nShould we install {} as a system service ?"
             .format(installer.basename), default=True):
-            installer.ask_liquid_script()
+            installer.choose_liquid_script(bind_with_script)
             installer.create_systemd_unit()
 
         # do this now because adding Liquidsoap script as a service changes the log path
         installer.create_toml_and_db()
-        if installer.service_name and click.confirm("\nStart the service(s) at boot ?"
-            , default=True):
-            installer.enable_systemd_unit()
+        if installer.service_name:
+            if enable_at_boot is None:
+                enable_at_boot = click.confirm("\nStart the service(s) at boot ?" , default=True)
+            if enable_at_boot:
+                installer.enable_systemd_unit()
     except Exception:
         if not no_revert_on_failure:
             installer.revert()
