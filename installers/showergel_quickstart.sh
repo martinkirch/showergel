@@ -29,7 +29,7 @@ if [[ "${DEBUG-0}" == "1" ]] # call with DEBUG=1 in the env to debug this script
 then
     set -o xtrace
 fi
-if [[ ! "$(which dpkg-architecture)" ]]
+if [[ ! "$(which dpkg)" ]]
 then
     printf "\n\nThis installer only works on Ubuntu or Debian (or its derivatives).\n\n"
     exit 1
@@ -48,7 +48,7 @@ install_liquidsoap() {
     sudo apt install -y curl wget ffmpeg
     sudo -v
 
-    local ARCH="$(dpkg-architecture -q DEB_BUILD_ARCH)" # amd64, etc.
+    local ARCH="$(dpkg --print-architecture)" # amd64, etc.
     source /etc/os-release # comes with a few variables : we'll use ID and VERSION_CODENAME
 
     # workaround GitHub's redirection and javascripts
