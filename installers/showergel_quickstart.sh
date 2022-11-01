@@ -38,6 +38,7 @@ printf "This installer needs admin rights to install Liquidsoap and related pack
 if ! sudo -v
 then
     printf "\nWe need to be able to 'sudo' - aborting install.\n"
+    exit 1
 fi
 export DEBIAN_FRONTEND=noninteractive
 cd
