@@ -89,16 +89,18 @@ setup_instance() {
 
     wget https://raw.githubusercontent.com/martinkirch/showergel/main/docs/_static/quickstart.liq
     mv quickstart.liq radio.liq
-    mkdir Music
-    sed -i "/MUSIC = /c\MUSIC = \"$SHOWERGEL_FOLDER/Music\"" radio.liq
-    mkdir Jingles
-    sed -i "/JINGLES = /c\JINGLES = \"$SHOWERGEL_FOLDER/Jingles\"" radio.liq
-    mkdir Shows
-    sed -i "/SHOWS = /c\SHOWS = \"$SHOWERGEL_FOLDER/Shows\"" radio.liq
+    sed -i "/MUSIC = /c\MUSIC = \"$HOME/Music\"" radio.liq
+    sed -i "/JINGLES = /c\JINGLES = \"$HOME/Jingles\"" radio.liq
+    sed -i "/SHOWS = /c\SHOWS = \"$HOME/Shows\"" radio.liq
 
     showergel install --basename radio --port 2345 --bind-with-script "$SHOWERGEL_FOLDER/radio.liq" --enable-at-boot
 
     sed -i "/method = /c\method = \"telnet\"" radio.toml
+
+    cd
+    mkdir Music
+    mkdir Jingles
+    mkdir Shows
 
     systemctl --user start radio_gel
     systemctl --user start radio_soap
