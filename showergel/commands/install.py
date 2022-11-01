@@ -350,7 +350,7 @@ backupCount = 10
         self.enabled = True
 
     def recap(self):
-        click.secho("\nAll done ! Keep information below for future reference:",
+        click.secho("\nAll done !",
             fg='green', bold=True)
         click.echo("Current folder will contain Showergel and Liquidsoap's log files, with a '.log' extension.")
 
@@ -365,6 +365,7 @@ backupCount = 10
             click.echo(" * systemctl --user status "+self.liquid_service_name)
             click.echo(" * systemctl --user disable "+self.liquid_service_name)
             click.echo(" * systemctl --user enable "+self.liquid_service_name)
+            click.echo("\nBe careful to restart after editing the .liq file.")
 
         if self.service_name:
             click.secho("\nShowergel has been installed as a system service", bold=True)
@@ -378,20 +379,13 @@ backupCount = 10
             click.echo(" * systemctl --user disable "+self.service_name)
             click.echo(" * systemctl --user enable "+self.service_name)
             click.echo("\nOnce started, you can access Showergel's interface at http://localhost:{}/".format(self.port))
+            click.echo(f"\nShowergel's configuration file is {self.path_toml}: be careful to restart the service after editing it.")
         else:
             click.echo("You can start showergel by invoking:")
             click.echo("showergel serve "+self.path_toml)
 
-        click.echo("\nBe careful to restart Showergel after editing the .toml file")
-
-        click.secho("\nWe advise you backup regularly the following files by copying them to an external support:",
-            bold=True)
-        click.echo(" * "+self.path_db)
-        click.echo(" * "+self.path_toml)
-        click.echo("")
-        click.secho("\nWe advise you to read and tune Showergel's configuration: "+self.path_toml,
-            bold=True)
-        click.echo("")
+        click.secho("\nPlease keep the information above for future reference.", bold=True)
+        click.secho("We advise you backup regularly all files and folders on this machine.\n", bold=True)
 
 
 @showergel_cli.command()

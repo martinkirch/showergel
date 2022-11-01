@@ -33,10 +33,10 @@ export DEBIAN_FRONTEND=noninteractive
 cd
 
 install_liquidsoap() {
-    # TODO 
+    # TODO
     # detect system, architecture
     # exploit the redirection from https://github.com/savonet/liquidsoap/releases/tag/v2.1.2 (maybe wget -r -l 1 -A *.deb with filters on release/arch ?)
-    
+
     # install on ubuntu 22 LTS (jammy jellyfish)
     echo "https://github.com/savonet/liquidsoap/releases/download/v2.1.2/liquidsoap_2.1.2-ubuntu-jammy-1_amd64.deb"
 
@@ -54,6 +54,7 @@ install_showergel() {
     echo "export PATH=\"$HOME/.local/bin:\$PATH\"" >> .bashrc
     export PATH="$HOME/.local/bin:$PATH"
 
+    # TODO remove --pre !
     pip install --pre showergel
 }
 
@@ -83,7 +84,7 @@ setup_instance() {
     echo ""
     echo "  🧴 Showergel is installed and running on http://localhost:2345/ 🚀"
     echo ""
-    echo "  Put some files in the Music, Jingles and Shows folders : it should start playing."
+    echo "  Put some files in the Music, Jingles and Shows folders : they should playing right away."
     echo ""
     echo "  ${bold}Please note and keep all the lines above, you will need them."
     echo ""
