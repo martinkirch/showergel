@@ -46,6 +46,8 @@ cd
 
 install_liquidsoap() {
     # just to be sure
+    sudo apt-get update
+    sudo -v
     sudo apt install -y curl wget ffmpeg
     sudo -v
 
