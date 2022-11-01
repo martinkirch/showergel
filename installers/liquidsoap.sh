@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-################  Liquidsoap & Showergel installer script #####################
+###################  Liquidsoap installer script ########################
 #
 #   Copyright © 2022 Martin Kirchgessner <martin.kirch@gmail.com>
 #
@@ -64,52 +64,4 @@ install_liquidsoap() {
     liquidsoap --version
 }
 
-install_showergel() {
-    sudo apt -y install python3 python3-pip python-is-python3
-
-    mkdir -p $HOME/.local/bin
-    echo "export PATH=\"$HOME/.local/bin:\$PATH\"" >> .bashrc
-    export PATH="$HOME/.local/bin:$PATH"
-
-    # TODO remove --pre !
-    pip install --pre showergel
-}
-
-setup_instance() {
-    mkdir -p showergel
-    cd showergel
-    SHOWERGEL_FOLDER="$PWD"
-
-    wget https://raw.githubusercontent.com/martinkirch/showergel/main/docs/_static/quickstart.liq
-    mv quickstart.liq radio.liq
-    mkdir Music
-    sed -i "/MUSIC = /c\MUSIC = \"$SHOWERGEL_FOLDER/Music\"" radio.liq
-    mkdir Jingles
-    sed -i "/JINGLES = /c\JINGLES = \"$SHOWERGEL_FOLDER/Jingles\"" radio.liq
-    mkdir Shows
-    sed -i "/SHOWS = /c\SHOWS = \"$SHOWERGEL_FOLDER/Shows\"" radio.liq
-
-    showergel install --basename radio --port 2345 --bind-with-script "$SHOWERGEL_FOLDER/radio.liq" --enable-at-boot
-
-    sed -i "/method = /c\method = \"telnet\"" radio.toml
-
-    systemctl --user start radio_gel
-    systemctl --user start radio_soap
-
-    # TODO note about output tuning ?
-    bold=$(tput bold)
-    echo ""
-    echo "  🧴 Showergel is installed and running on http://localhost:2345/ 🚀"
-    echo ""
-    echo "  Put some files in the Music, Jingles and Shows folders : they should playing right away."
-    echo ""
-    echo "  ${bold}Please note and keep all the lines above, you will need them."
-    echo ""
-}
-
-
-main () {
-    install_liquidsoap
-    install_showergel
-    setup_instance
-}
+install_liquidsoap
