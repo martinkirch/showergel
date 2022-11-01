@@ -44,6 +44,10 @@ cd
 
 
 install_liquidsoap() {
+    # just to be sure
+    sudo apt install -y curl wget ffmpeg
+    sudo -v
+
     local ARCH="$(dpkg-architecture -q DEB_BUILD_ARCH)" # amd64, etc.
     source /etc/os-release # comes with a few variables : we'll use ID and VERSION_CODENAME
 
