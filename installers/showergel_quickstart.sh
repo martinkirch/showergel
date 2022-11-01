@@ -111,9 +111,6 @@ setup_instance() {
     echo ""
 }
 
-
-main () {
-    install_liquidsoap
-    install_showergel
-    setup_instance
-}
+install_liquidsoap
+install_showergel
+setup_instance
