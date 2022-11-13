@@ -21,6 +21,9 @@ def read_bool_param(param):
 @click.argument('config_path', type=click.Path(readable=True, allow_dash=False, exists=True))
 @click.option('--verbose', is_flag=True, help="Sets logging level to DEBUG")
 def serve(config_path, verbose):
+    """
+    Start a Showergel process (useful mostly when testing)
+    """
     with open(config_path, 'r') as f:
         conf = toml.load(f)
     logging.config.dictConfig(conf['logging'])
