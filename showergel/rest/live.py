@@ -2,11 +2,11 @@
 RESTful interface to current playout
 ====================================
 """
-import pkg_resources
 import arrow
 
 from showergel.showergel_bottle import ShowergelBottle
 from showergel.liquidsoap_connector import Connection
+from showergel.version import get_version
 
 live_app = ShowergelBottle()
 
@@ -40,16 +40,9 @@ def get_parameters():
     :>json commands: list of available Liquidsoap commands
     """
     connection = Connection.get()
-    version = None
-    try:
-        version = pkg_resources.get_distribution("showergel").version
-    except Exception as excn:
-        log.warning(excn)
-    if not version:
-        version = "demo"
     return {
         "name": live_app.config.get("interface.name", "Showergel"),
-        "version": version,
+        "version": get_version(),
         "commands": connection.commands,
         "liquidsoap_version": connection.connected_liquidsoap_version,
     }
