@@ -3,7 +3,7 @@ from os import environ
 
 import toml
 import click
-from .main import showergel_cli
+from . import showergel_cli
 
 from showergel import app
 

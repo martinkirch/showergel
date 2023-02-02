@@ -14,7 +14,7 @@ import click
 import toml
 from sqlalchemy import engine_from_config
 
-from .main import showergel_cli
+from . import showergel_cli
 
 
 _log = logging.getLogger(__name__)

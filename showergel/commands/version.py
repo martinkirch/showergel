@@ -1,5 +1,5 @@
 from showergel.version import get_version
-from .main import showergel_cli
+from . import showergel_cli
 
 @showergel_cli.command()
 def version():
