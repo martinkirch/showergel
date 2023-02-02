@@ -76,6 +76,7 @@ class MainBottle(ShowergelBottle):
             sub_app.config.update(self.config)
 
         Scheduler.setup(engine, store_in_memory=store_scheduler_in_memory)
+        Connection.setup(self.config)
 
         if demo:
             self.add_hook('after_request', send_cors)
@@ -85,7 +86,6 @@ class MainBottle(ShowergelBottle):
             _log.warning("Running in development mode - don't do this on a broadcasting machine")
             self.add_hook('after_request', send_cors)
 
-        Connection.setup(self.config)
 
     def get_engine(self):
         for p in self.plugins:
