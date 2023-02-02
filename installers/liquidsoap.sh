@@ -2,7 +2,7 @@
 
 ###################  Liquidsoap installer script ########################
 #
-#   Copyright © 2022 Martin Kirchgessner <martin.kirch@gmail.com>
+#   Copyright © 2023 Martin Kirchgessner <martin.kirch@gmail.com>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -46,12 +46,18 @@ cd
 install_liquidsoap() {
     # just to be sure
     sudo apt-get update
-    sudo -v
     sudo apt install -y curl wget ffmpeg
-    sudo -v
 
     local ARCH="$(dpkg --print-architecture)" # amd64, etc.
     source /etc/os-release # comes with a few variables : we'll use ID and VERSION_CODENAME
+
+    if [[ "$ID" == "debian" ]]
+    then
+        # the package depends on `libfdk-aac2`, which is in Debian's non-free repo
+        sudo apt install -y software-properties-common
+        sudo apt-add-repository non-free
+        sudo apt-get update
+    fi
 
     # workaround GitHub's redirection and javascripts
     local LATEST=$(curl -w '%{redirect_url}' https://github.com/savonet/liquidsoap/releases/latest)
@@ -62,7 +68,6 @@ install_liquidsoap() {
     printf "\n\n************ downloaded $PACKAGE **************\n"
 
     sudo dpkg --force-depends -i ./$PACKAGE
-    sudo -v
     # add -o Debug::pkgProblemResolver=true if something goes wrong below. APT can decide to *remove* liquidsoap if a dependency is not available.
     sudo apt -y install -f
 
