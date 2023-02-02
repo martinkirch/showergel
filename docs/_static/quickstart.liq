@@ -11,7 +11,7 @@
 #
 # ⚠ Always call `liquidsoap --check quickstart.liq` before (re)starting ⚠
 #
-# Copyright 2021-2022 Martin Kirchgessner
+# Copyright 2021-2023 Martin Kirchgessner
 # https://github.com/martinkirch/showergel
 
 
