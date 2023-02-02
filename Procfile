@@ -1,1 +1,1 @@
-web: python showergel/commands/main.py serve procfile.toml
+web: python -m showergel.commands.main serve procfile.toml
