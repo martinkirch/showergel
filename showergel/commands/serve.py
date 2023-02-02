@@ -51,4 +51,5 @@ def serve(config_path, verbose):
         quiet=not debug,
         demo=demo,
         debug=debug,
+        conf=conf,
     )

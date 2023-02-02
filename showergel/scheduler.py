@@ -6,11 +6,10 @@ Showergel's APScheduler wrapper
 All accesses to APScheduler are wrapped here: scheduler creation, but also
 job storage and definition.
 """
+from typing import List, Dict
 import logging
-from typing import Type, List, Dict
 
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.jobstores.base import ConflictingIdError, JobLookupError
@@ -47,16 +46,15 @@ class Scheduler:
     dbsession = None
 
     @classmethod
-    def setup(cls, db_engine:Type[Engine], store_in_memory=False):
+    def setup(cls, dbsession:Session, store_in_memory=False):
         """
         This should be called once, when starting the program.
 
         `store_in_memory` may be activated when you don't want to persist
         the schedule (this happens in demo mode or unit tests).
         """
-        cls.__instance = cls(db_engine, store_in_memory)
-        factory = sessionmaker(bind=db_engine)
-        cls.dbsession = factory()
+        cls.__instance = cls(dbsession, store_in_memory)
+        cls.dbsession = dbsession
 
     @classmethod
     def get(cls):
@@ -69,12 +67,12 @@ class Scheduler:
             raise ValueError("Scheduler.setup() has not been called yet")
         return cls.__instance
 
-    def __init__(self, db_engine:Type[Engine], store_in_memory):
+    def __init__(self, dbsession:Session, store_in_memory):
         if store_in_memory:
             self.scheduler = BackgroundScheduler()
         else:
             jobstores = {
-                'default': SQLAlchemyJobStore(engine=db_engine)
+                'default': SQLAlchemyJobStore(engine=dbsession.get_bind())
             }
             self.scheduler = BackgroundScheduler(jobstores=jobstores)
         self.scheduler.add_listener(self._on_job_error, EVENT_JOB_ERROR)

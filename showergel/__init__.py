@@ -14,11 +14,13 @@ from bottle import response, request, static_file, redirect
 from bottle.ext.sqlalchemy import Plugin as SQLAlchemyPlugin
 from sqlalchemy import engine_from_config
 from sqlalchemy.pool import StaticPool
+from sqlalchemy.orm import sessionmaker
 
 from showergel.showergel_bottle import ShowergelBottle
 from showergel.rest import sub_apps
 from showergel.liquidsoap_connector import Connection
 from showergel.scheduler import Scheduler
+from showergel.cartfolders import CartFolders
 
 _log = logging.getLogger(__name__)
 
@@ -48,13 +50,13 @@ class MainBottle(ShowergelBottle):
         http://bottlepy.org/docs/dev/tutorial.html#auto-reloading
         """
         if not kwargs['reloader'] or environ.get('BOTTLE_CHILD'):
-            self.init(demo=kwargs['demo'], debug=kwargs['debug'])
+            self.init(demo=kwargs['demo'], debug=kwargs['debug'], conf=kwargs['conf'])
         elif kwargs['reloader']:
             _log.info("Showergel starting with auto reloader...")
         del kwargs['demo']
         super().run(**kwargs)
 
-    def init(self, demo=False, debug=False):
+    def init(self, demo=False, debug=False, conf={}):
         """
         Showergel's initialization function
         """
@@ -75,8 +77,12 @@ class MainBottle(ShowergelBottle):
             sub_app.install(plugin)
             sub_app.config.update(self.config)
 
-        Scheduler.setup(engine, store_in_memory=store_scheduler_in_memory)
+        factory = sessionmaker(bind=engine)
+        dbsession = factory()
+
+        Scheduler.setup(dbsession, store_in_memory=store_scheduler_in_memory)
         Connection.setup(self.config)
+        CartFolders.setup(dbsession, conf)
 
         if demo:
             self.add_hook('after_request', send_cors)
