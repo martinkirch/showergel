@@ -1,9 +1,7 @@
 import logging
-import sys
 from unittest import TestCase
 
 from webtest import TestApp
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import bottle
 from bottle.ext import sqlalchemy
@@ -11,7 +9,6 @@ from bottle.ext import sqlalchemy
 from showergel import app
 from showergel.db import Base
 from showergel.metadata import Log, LogExtra
-from showergel.liquidsoap_connector import Connection
 
 APP_CONFIG = {
     'db.sqlalchemy': {
@@ -23,7 +20,10 @@ APP_CONFIG = {
     },
     'metadata_log': {
         'extra_fields': ["track*"],
-    }
+    },
+    'liquidsoap': {
+        'cartfolders_queue': 'stubbedqueue',
+    },
 }
 app.config.load_dict(APP_CONFIG)
 app.init()

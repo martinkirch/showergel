@@ -53,7 +53,9 @@ class MainBottle(ShowergelBottle):
             self.init(demo=kwargs['demo'], debug=kwargs['debug'], conf=kwargs['conf'])
         elif kwargs['reloader']:
             _log.info("Showergel starting with auto reloader...")
+        # delete arguments that Bottle doesn't know
         del kwargs['demo']
+        del kwargs['conf']
         super().run(**kwargs)
 
     def init(self, demo=False, debug=False, conf={}):
