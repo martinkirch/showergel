@@ -31,11 +31,12 @@ your existing script (it also contain a few Liquidsoap tricks!).
 
 Sections below discuss implementation details on integrating each Showergel feature.
 
+.. _liq_current:
 
 Display/skip current track
 --------------------------
 
-You just need to enable `Liquidsoap's telnet server <https://www.liquidsoap.info/doc-2.0.0/server.html>`_.
+You need to enable `Liquidsoap's telnet server <https://www.liquidsoap.info/doc-2.0.0/server.html>`_.
 For example:
 
 .. code-block:: ocaml
@@ -54,6 +55,10 @@ be careful to set a different ``port`` for each one.
     Do not use a public IP address as ``bind_addr``.
     This would open your Liquidsoap instance to the Internet,
     and someone might connect and mess up your programs.
+
+**If your script has multiple outputs**, ensure the main one has an identifier
+by setting its ``id="identifier"`` parameter.
+This identifier should be copied as ``output`` in the :ref:`configuration_liquidsoap` section.
 
 .. _liq_metadata:
 
