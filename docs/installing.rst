@@ -136,8 +136,9 @@ Deploy the demo to Fly.io
 In demo mode, the application starts by putting fake data in the database.
 It's enabled by putting ``demo = True`` in the configuration file's ``[listen]`` section.
 
-Source repository includes a configuration that can be pushed to Fly_,
-so right after cloning you can `fly deploy`
+Source repository includes a configuration that can be pushed to Fly_
+(thanks to ``fly.toml``, ``Procfile`` and ``procfile.toml``),
+so right after cloning you can ``flyctl launch`` (only the first time) then ``fly deploy``.
 
 We might need to update ``requirements.txt`` from time to time:
 

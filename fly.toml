@@ -6,7 +6,7 @@ kill_timeout = 5
 processes = []
 
 [build]
-  builder = "paketobuildpacks/builder:base"
+  builder = "paketobuildpacks/builder:full"
 
 [env]
   PORT = "8080"
