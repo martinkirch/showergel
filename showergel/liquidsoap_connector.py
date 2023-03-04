@@ -325,7 +325,6 @@ class TelnetConnector:
 
         metadata = self._read_output_metadata()
         request_on_air = self.command("request.on_air")
-        log.debug("%r", request_on_air)
         if request_on_air: #FIXME may not happen
             request_on_air = request_on_air[0]
 
