@@ -241,7 +241,7 @@ output(radio)
 # On Linux you can also try `output.pulseaudio(radio)` or `output.alsa(radio)` 
 
 # Uncomment below to stream to Icecast
-# output.icecast(%vorbis, # see https://www.liquidsoap.info/doc-2.0.0/encoding_formats.html
+# output.icecast(%vorbis, # see https://www.liquidsoap.info/doc-dev/encoding_formats.html
 # 	id="icecast",
 #   host = "localhost",
 #   port = 9000,

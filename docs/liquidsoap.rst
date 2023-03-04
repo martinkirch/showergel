@@ -36,7 +36,7 @@ Sections below discuss implementation details on integrating each Showergel feat
 Display/skip current track
 --------------------------
 
-You need to enable `Liquidsoap's telnet server <https://www.liquidsoap.info/doc-2.0.0/server.html>`_.
+You need to enable `Liquidsoap's telnet server <https://www.liquidsoap.info/doc-dev/server.html>`_.
 For example:
 
 .. code-block:: ocaml
@@ -83,7 +83,7 @@ You need to define a function that will post metadata to Showergel:
     radio.on_metadata(fun(m) -> thread.run(fast=false, {post_to_showergel(m)}))
 
 We advise to plug the function with
-`source.on_metadata <https://www.liquidsoap.info/doc-dev/reference.html#source.on_track>`_,
+`source.on_metadata <https://www.liquidsoap.info/doc-dev/reference.html#source.on_metadata>`_,
 but `source.on_track <https://www.liquidsoap.info/doc-dev/reference.html#source.on_track>`_
 may work too.
 
@@ -105,7 +105,7 @@ may work too.
 Authenticating users on harbor
 ------------------------------
 
-Liquidsoap's `input.harbor <https://www.liquidsoap.info/doc-2.0.0/reference.html#input.harbor>`_
+Liquidsoap's `input.harbor <https://www.liquidsoap.info/doc-dev/reference.html#input.harbor>`_
 can require authentication by giving ``user`` and ``password`` parameters.
 But this implies
 

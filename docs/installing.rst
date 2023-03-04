@@ -5,14 +5,14 @@ Installing Showergel requires
  * a Linux box relying on systemd (ie. a recent mainstream distribution),
  * Python, at least version 3.7,
  * pip_, check it is available by calling ``pip --version`` or ``pip3 --version``
- * a running Liquidsoap radio - `version 2.x <https://www.liquidsoap.info/doc-2.0.0/install.html>`_
+ * a running Liquidsoap radio - `version 2.x <https://www.liquidsoap.info/doc-2.1.4/install.html>`_
    is Showergel's best friend.
 
 .. note::
   
   We assume you already know the basics of Liquidsoap and its script language.
   If you have never played with only Liquidsoap, we advise you read at least
-  `its quick start guide <https://www.liquidsoap.info/doc-2.0.0/quick_start.html>`_.
+  `its quick start guide <https://www.liquidsoap.info/doc-dev/quick_start.html>`_.
   Then you might use our :ref:`quickstart` script.
 
 Install Showergel by running ``pip install showergel`` (maybe replace ``pip`` by ``pip3``).
