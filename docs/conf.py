@@ -15,11 +15,11 @@ sys.path.insert(0, os.path.abspath('../'))
 # -- Project information -----------------------------------------------------
 
 project = 'Showergel'
-copyright = '2023, Martin Kirchgessner'
+copyright = 'Martin Kirchgessner'
 author = 'Martin Kirchgessner'
 
 # The full version, including alpha/beta/rc tags
-release = '0.3.0-alpha.7'
+release = '0.3.0'
 
 
 # -- General configuration ---------------------------------------------------

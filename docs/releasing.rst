@@ -29,7 +29,7 @@ Package
 -------
 
  * From the ``front`` folder, run ``yarn build``
- * ``poetry export --dev --without-hashes -f requirements.txt --output requirements.txt``
+ * ``poetry export --with dev --without-hashes -f requirements.txt --output requirements.txt``
  * ``git commit,push,tag``
  * ``poetry build``
  * ``poetry publish``
