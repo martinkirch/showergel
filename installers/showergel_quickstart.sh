@@ -83,8 +83,7 @@ install_showergel() {
     echo "export PATH=\"$HOME/.local/bin:\$PATH\"" >> .bashrc
     export PATH="$HOME/.local/bin:$PATH"
 
-    # TODO remove --pre !
-    pip install --pre showergel
+    pip install showergel
 }
 
 setup_instance() {
