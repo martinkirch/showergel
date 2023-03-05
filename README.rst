@@ -8,29 +8,36 @@ Showergel provides complementary features like playlist logging or occasional
 scheduling, with a (minimalist) Web interface.
 It is made to run on a Linux box (with systemd) dedicated to your radio stream.
 
-Documentation and
-`installation instructions <https://showergel.readthedocs.io/en/latest/installing.html>`_
-are hosted
-on https://showergel.readthedocs.io/. 
-
-**This is work in progress!** We'll welcome both contributions
-and comments, feel free to start a disucssion in the Issues tab.
-
-Showergel have only been tested under Linux.
+**This is work in progress!** We'll welcome both contributions and comments,
+feel free to write in the Issues or Discussions tabs.
 
 License: GPL3_.
 
-News
-====
+Take a look
+-----------
 
-*1/11/2022:* Installer scripts are coming ! Right now it works on the latest Ubuntu, open a terminal and launch
+If you'd like to see what it looks like,
+check out our `demo installation <https://showergel.fly.dev>`_.
+It is only the visible part of Showergel,
+running on fake data.
+You can also use it as a stub back-end
+`when developping that interface <https://showergel.readthedocs.io/en/latest/installing.html#install-for-front-end-development>`_.
 
-.. code-block:: bash
+
+Quick install
+-------------
+
+Our automated script can install Liquidsoap and Showergel on an Ubuntu or Debian machine::
 
     wget https://raw.githubusercontent.com/martinkirch/showergel/main/installers/showergel_quickstart.sh && chmod +x showergel_quickstart.sh && ./showergel_quickstart.sh
 
-*17/08/2022:* We've just pusbluished a pre-release of Showergel version 0.3,
-the first version compliant with Liquidsoap 2.x. Install it with `pip install --pre showergel`.
+The script will need to run `sudo`.
+It will start the radio, you should hear it as soon as you put sound files in the `~/Music` folder.
+It will also register the radio as a system service, so the radio and its interface will start when the machine reboots, too.
+
+This script installs our "quickstart" LiquidSoap script.
+After a first try we advise you to have a closer look to Showergel's documentation on https://showergel.readthedocs.io/. 
+
 
 .. _Liquidsoap: https://www.liquidsoap.info/
 .. _GPL3: https://www.gnu.org/licenses/gpl-3.0.html

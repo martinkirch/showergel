@@ -19,7 +19,7 @@ Showergel's quickstart.liq
 
 We showcase the complete Showergel integration in a "quick-start script" you can download
 :download:`here <_static/quickstart.liq>`.
-It is tested against Liquidsoap 2.0.x.
+It is tested against Liquidsoap 2.1.x.
 This ``.liq`` file defines typical radio sources and is heavily commented:
 you can use it to start your first stream, or pick portions that would improve
 your existing script (it also contain a few Liquidsoap tricks!).
