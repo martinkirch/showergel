@@ -1,6 +1,6 @@
 import arrow
 
-from showergel.metadata import LogExtra, FieldFilter
+from showergel.metadata import Log, LogExtra, FieldFilter
 from showergel.demo import artistic_generator
 from showergel.liquidsoap_connector import Connection
 from . import ShowergelTestCase, DBSession, app
@@ -10,6 +10,13 @@ FIELD_FILTER_CONFIG = {
 }
 
 class TestMetadataLog(ShowergelTestCase):
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        session = DBSession()
+        session.query(LogExtra).delete()
+        session.query(Log).delete()
 
     def test_field_filter(self):
         """
