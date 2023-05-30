@@ -33,8 +33,10 @@ from os import scandir, makedirs
 from sqlalchemy.orm import Session
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+import arrow
 
 from showergel.liquidsoap_connector import Connection
+from showergel.metadata import Log
 
 _log = logging.getLogger(__name__)
 
@@ -42,6 +44,8 @@ class EmptyCartException(Exception):
     """
     Raised by ``Cart.next()`` when the cart is empty
     """
+
+RELOAD_INITIAL_URI = '__cart reload__'
 
 class Cart:
     def __init__(self, path) -> None:
@@ -79,10 +83,27 @@ class Cart:
         self.current = 0
 
     def find_current_from_log(self, dbsession:Session):
-        pass # TODO
+        if not self.content:
+            return
+        latest = (dbsession.query(Log)
+            .filter(Log.source == CartFolders.liquidsoap_queue)
+            .filter(
+                Log.initial_uri.in_(self.content) |
+                (Log.initial_uri == RELOAD_INITIAL_URI))
+            .order_by(Log.on_air.desc())
+            .first()
+        )
+        if latest and latest.initial_uri != RELOAD_INITIAL_URI:
+            self.current = self.content.index(latest.initial_uri)
+            self.next()
 
     def log_reload(self, dbsession:Session):
-        pass # TODO
+        dbsession.add(Log(
+            on_air=arrow.utcnow().datetime,
+            source=CartFolders.liquidsoap_queue,
+            initial_uri=RELOAD_INITIAL_URI,
+        ))
+        dbsession.flush()
 
 class CartReloadingHandler(FileSystemEventHandler):
     def __init__(self, name, cart:Cart, dbsession:Session) -> None:
@@ -104,7 +125,7 @@ class CartFolders:
     __instance = None
 
     @classmethod
-    def setup(cls, dbsession:Session, config:dict):
+    def setup(cls, dbsession:Session, config:dict) -> CartFolders:
         """
         This should be called once, when starting the program.
         """
@@ -114,6 +135,7 @@ class CartFolders:
         except KeyError:
             _log.warning("Missing 'cartfolders_queue' in the [liquidsoap] section of the configuration.")
             cls.liquidsoap_queue = None
+        return cls.__instance
 
     @classmethod
     def get(cls) -> CartFolders:
@@ -125,6 +147,15 @@ class CartFolders:
         if not cls.__instance:
             raise ValueError("CartFolders.setup() has not been called yet")
         return cls.__instance
+
+    @classmethod
+    def test_reset(cls):
+        """
+        This should only be used when unit testing, to ensure updates are not
+        triggered when the test folder is cleaned up
+        """
+        cls.__instance.observer.stop()
+        cls.__instance = None
 
     def __init__(self, dbsession:Session, config:dict):
         if 'cartfolders' not in config:
@@ -140,13 +171,6 @@ class CartFolders:
             self.observer.schedule(handler, cart.path)
 
         self.observer.start()
-
-    def stop_watching(self):
-        """
-        This should only be used when unit testing, to ensure updates are not
-        triggered when the test folder is cleaned up
-        """
-        self.observer.stop()
 
     def __getitem__(self, cartname:str) -> Cart:
         return self._carts[cartname]
