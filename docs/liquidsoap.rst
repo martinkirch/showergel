@@ -19,7 +19,7 @@ Showergel's quickstart.liq
 
 We showcase the complete Showergel integration in a "quick-start script" you can download
 :download:`here <_static/quickstart.liq>`.
-It is tested against Liquidsoap 2.0.x.
+It is tested against Liquidsoap 2.1.x.
 This ``.liq`` file defines typical radio sources and is heavily commented:
 you can use it to start your first stream, or pick portions that would improve
 your existing script (it also contain a few Liquidsoap tricks!).
@@ -31,11 +31,12 @@ your existing script (it also contain a few Liquidsoap tricks!).
 
 Sections below discuss implementation details on integrating each Showergel feature.
 
+.. _liq_current:
 
 Display/skip current track
 --------------------------
 
-You just need to enable `Liquidsoap's telnet server <https://www.liquidsoap.info/doc-2.0.0/server.html>`_.
+You need to enable `Liquidsoap's telnet server <https://www.liquidsoap.info/doc-dev/server.html>`_.
 For example:
 
 .. code-block:: ocaml
@@ -54,6 +55,10 @@ be careful to set a different ``port`` for each one.
     Do not use a public IP address as ``bind_addr``.
     This would open your Liquidsoap instance to the Internet,
     and someone might connect and mess up your programs.
+
+**If your script has multiple outputs**, ensure the main one has an identifier
+by setting its ``id="identifier"`` parameter.
+This identifier should be copied as ``output`` in the :ref:`configuration_liquidsoap` section.
 
 .. _liq_metadata:
 
@@ -78,7 +83,7 @@ You need to define a function that will post metadata to Showergel:
     radio.on_metadata(fun(m) -> thread.run(fast=false, {post_to_showergel(m)}))
 
 We advise to plug the function with
-`source.on_metadata <https://www.liquidsoap.info/doc-dev/reference.html#source.on_track>`_,
+`source.on_metadata <https://www.liquidsoap.info/doc-dev/reference.html#source.on_metadata>`_,
 but `source.on_track <https://www.liquidsoap.info/doc-dev/reference.html#source.on_track>`_
 may work too.
 
@@ -100,7 +105,7 @@ may work too.
 Authenticating users on harbor
 ------------------------------
 
-Liquidsoap's `input.harbor <https://www.liquidsoap.info/doc-2.0.0/reference.html#input.harbor>`_
+Liquidsoap's `input.harbor <https://www.liquidsoap.info/doc-dev/reference.html#input.harbor>`_
 can require authentication by giving ``user`` and ``password`` parameters.
 But this implies
 

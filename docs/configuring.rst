@@ -134,6 +134,10 @@ Other values can be set as ``method``:
    connection by generating different data each time it's called.
    This should only be used for Showergel's unit tests.
 
+You can also add a line stating ``ouput = "identifier"`` to force Showergel to
+get its "Now playing" information from the output having ``id="identifier"``
+in your Liquidsoap script (see :ref:`liq_current`).
+
 ``[metadata_log]``
 ------------------
 

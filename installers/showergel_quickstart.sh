@@ -68,9 +68,7 @@ install_liquidsoap() {
     local PACKAGE=$(ls -tr liquidsoap*.deb |tail)
     printf "\n\n************ downloaded $PACKAGE **************\n"
 
-    sudo dpkg --force-depends -i ./$PACKAGE
-    # add -o Debug::pkgProblemResolver=true if something goes wrong below. APT can decide to *remove* liquidsoap if a dependency is not available.
-    sudo apt -y install -f
+    sudo apt-get install -y --install-recommends ./$PACKAGE
 
     printf "Installed "
     liquidsoap --version
@@ -83,8 +81,7 @@ install_showergel() {
     echo "export PATH=\"$HOME/.local/bin:\$PATH\"" >> .bashrc
     export PATH="$HOME/.local/bin:$PATH"
 
-    # TODO remove --pre !
-    pip install --pre showergel
+    pip install showergel
 }
 
 setup_instance() {

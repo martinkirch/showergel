@@ -26,7 +26,7 @@ extra_fields = [
 # As there is no security check, be careful to keep the address on a private network.
 address = "0.0.0.0"
 port = "PORT"
-debug = true
+debug = false
 demo = true
 
 

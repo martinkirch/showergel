@@ -23,19 +23,6 @@ It is made to run on a Linux box (with systemd) dedicated to your radio stream.
     This documentation provides a :ref:`quickstart` script,
     covering Liquidsoap's basics and Showergel's integration.
 
-Quick install
--------------
-
-Our automated script can install Liquidsoap and Showergel on an Ubuntu or Debian
-machine::
-
-    wget https://raw.githubusercontent.com/martinkirch/showergel/main/installers/showergel_quickstart.sh && chmod +x showergel_quickstart.sh && ./showergel_quickstart.sh
-
-
-It will start the radio, although it will steam silence until you drop
-sounds in `~/Music`, for example. This script will also register the radio as a
-system service, so it will start when the machine reboots, too.
-This installer is based on our :ref:`quickstart` script.
 
 .. toctree::
    :maxdepth: 2

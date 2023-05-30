@@ -65,6 +65,10 @@ method = "none"
 host = "127.0.0.1"
 port = 1234
 
+# to ensure Showergel gets its "Now playing" information from the correct output,
+# you can add the following line with that output's `id`:
+# output = "id"
+
 ############# Logging configuration ##########
 [logging]
 version = 1
