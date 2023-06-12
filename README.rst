@@ -8,8 +8,8 @@ Showergel provides complementary features like playlist logging or occasional
 scheduling, with a (minimalist) Web interface.
 It is made to run on a Linux box (with systemd) dedicated to your radio stream.
 
-**This is work in progress!** We'll welcome both contributions and comments,
-feel free to write in the Issues or Discussions tabs.
+**This is experimental! Major changes are coming over 2023-2024. Do not use it for production**.
+See the introduction and conclusion of our `Liquidshop 3 presentation <https://www.youtube.com/watch?v=_STnqvCSzlU>`_.
 
 License: GPL3_.
 
