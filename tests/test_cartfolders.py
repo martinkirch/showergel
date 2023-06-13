@@ -2,7 +2,6 @@ from tempfile import TemporaryDirectory
 from os.path import join, isdir, split
 from os import mkdir, remove
 import time
-from datetime import timedelta
 
 import arrow
 
@@ -18,16 +17,14 @@ class CartFoldersTestCase(ShowergelTestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.tmpdir = TemporaryDirectory()
-        APP_CONFIG['cartfolders'] = {
-            'testcart': join(cls.tmpdir.name, "cartfolder"),
-        }
+        APP_CONFIG['cartfolders']['testcart'] = join(cls.tmpdir.name, "cartfolder")
         cls.session = DBSession()
 
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
         cls.tmpdir.cleanup()
-        del APP_CONFIG['cartfolders']
+        APP_CONFIG['cartfolders']['testcart'] = '/tmp/TBA'
         cls.session.query(LogExtra).delete()
         cls.session.query(Log).delete()
 

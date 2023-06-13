@@ -157,6 +157,11 @@ class CartFolders:
         cls.__instance.observer.stop()
         cls.__instance = None
 
+    def names(self) -> list[str]:
+        names = list(self._carts.keys())
+        names.sort()
+        return names
+
     def __init__(self, dbsession:Session, config:dict):
         if 'cartfolders' not in config:
             return

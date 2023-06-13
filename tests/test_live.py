@@ -1,8 +1,20 @@
 import arrow
-from . import ShowergelTestCase
+from showergel.cartfolders import CartFolders
+from . import ShowergelTestCase, APP_CONFIG, DBSession
 
 
 class TestLive(ShowergelTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.session = DBSession()
+        CartFolders.setup(cls.session, APP_CONFIG)
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        CartFolders.test_reset()
 
     def test_get_live(self):
         before = arrow.now()
@@ -21,6 +33,7 @@ class TestLive(ShowergelTestCase):
         self.assertIn('version', resp)
         self.assertIsInstance(resp['commands'], list)
         self.assertEqual(resp['liquidsoap_version'], "Stub")
+        self.assertListEqual(resp['cartfolders'], list(APP_CONFIG['cartfolders'].keys()))
 
     def test_skip(self):
         resp = self.app.get('/live').json

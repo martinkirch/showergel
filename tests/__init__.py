@@ -21,12 +21,15 @@ APP_CONFIG = {
     'metadata_log': {
         'extra_fields': ["track*"],
     },
+    'cartfolders': {
+        'testcart': '/tmp/TBA',
+    },
     'liquidsoap': {
         'cartfolders_queue': 'stubbedqueue',
     },
 }
 app.config.load_dict(APP_CONFIG)
-app.init()
+app.init(conf=APP_CONFIG)
 
 __engine = app.get_engine()
 Base.metadata.create_all(__engine)
