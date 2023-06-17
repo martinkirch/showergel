@@ -1,52 +1,7 @@
 <template>
   <div id="schedule" class="content my-4">
-    <form @submit.prevent="addEvent()" class="box">
-      <h2>Add an event</h2>
-      <div class="field">
-        <label class="label" for="template">Command template</label>
-        <div class="select">
-          <select v-model="template" id="template">
-            <option selected disabled value="">Pick a command... </option>
-            <option v-for="command in parameters.commands" :key="command" :value="command">
-              {{ command }}
-            </option>
-          </select>
-        </div>
-      </div>
-      <div class="field">
-        <label class="label" for="command">Command</label>
-          <div class="control">
-            <input
-              type="text"
-              class="input"
-              v-model="command"
-            />
-          </div>
-      </div>
-      <label class="label" for="day">When</label>
-      <div class="field has-addons">
-        <div class="control">
-          <Datepicker
-            class="input"
-            placeholder="2021-01-01"
-            v-model="day"
-          />
-        </div>
-        <div class="control">
-          <input
-            type="text"
-            class="input"
-            size="8"
-            v-model="time"
-          />
-        </div>
-      </div>
-      <div class="field">
-        <button :class="`button is-link ${isLoading ? 'is-loading' : ''}`" type="submit">
-          Add event
-        </button>
-      </div>
-    </form>
+    <h2>Add an event</h2>
+    <ScheduleCommand />
     <h2>Upcoming events</h2>
     <div v-for="event in results" :key="event.id">
       <p>
@@ -70,13 +25,14 @@
 import http from "@/http";
 import notifications from '@/notifications';
 import { format } from "date-fns";
+import ScheduleCommand from "../components/ScheduleCommand.vue";
 import Datepicker from "vue3-datepicker";
 
 // TODO: when adding cartfolders, pick the timezone from Intl.DateTimeFormat().resolvedOptions().timeZone
 
 export default {
   props: ['parameters'],
-  components: { Datepicker },
+  components: { Datepicker, ScheduleCommand },
   data() {
     return {
       template: "",
@@ -137,7 +93,7 @@ export default {
       if(confirm(`Really remove event of ${when_hint}?`)) {
         http.delete('/schedule/'+evendId)
           .then(this.getSchedule)
-          .catch(notifications.error_handler);
+          .catch(this.onError);
       }
     }
   },
