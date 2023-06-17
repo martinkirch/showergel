@@ -53,7 +53,7 @@
         <span class="when">
           {{ new Date(event.when).toLocaleString() }}
         </span>
-        {{ event.command }}
+        {{ event.what }}
         <button
           class="button is-danger icon"
           @click="deleteEvent(event.event_id, event.when)"
@@ -71,6 +71,8 @@ import http from "@/http";
 import notifications from '@/notifications';
 import { format } from "date-fns";
 import Datepicker from "vue3-datepicker";
+
+// TODO: when adding cartfolders, pick the timezone from Intl.DateTimeFormat().resolvedOptions().timeZone
 
 export default {
   props: ['parameters'],

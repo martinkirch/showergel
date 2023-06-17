@@ -18,13 +18,18 @@ import arrow
 
 from showergel.liquidsoap_connector import Connection
 from showergel.metadata import Log
+from showergel.cartfolders import CartFolders, EmptyCartException
 
 _log = logging.getLogger(__name__)
 
 
 # Scheduled "jobs" should be independant functions because APS must be able to
 # serialize all their parameters (that wouldn't work with self:Scheduler)
+
 def _do_command(command):
+    """
+    One-time scheduled Liquidsoap command
+    """
     connection = Connection.get()
     _log.info("Running scheduled command: %s", command)
     result = connection.command(command)
@@ -35,6 +40,28 @@ def _do_command(command):
         initial_uri=command,
     ))
     Scheduler.dbsession.commit()
+
+def _do_enqueue_cart(cartname):
+    """
+    Function called each time a cart is scheduled. Pushes the next file to queue.
+    """
+    if not CartFolders.liquidsoap_queue:
+        return
+    try:
+        nextpath = CartFolders.get()[cartname].next()
+    except KeyError:
+        _log.critical("A cart called %s has been scheduled now, but does not appear in Showergel's configuration. Please clean the schedule.", cartname)
+        return
+    except EmptyCartException:
+        _log.info("Cart %s should play now, but its folder is empty", cartname)
+        return
+    connection = Connection.get()
+    command = f"{CartFolders.liquidsoap_queue}.push {nextpath}"
+    _log.debug("Enqueuing cart folder: %s", command)
+    result = connection.command(command)
+    _log.debug("Liquidsoap replied: %s", result)
+
+
 
 class Scheduler:
     """
@@ -107,6 +134,7 @@ class Scheduler:
         try:
             job = self.scheduler.add_job(_do_command,
                 id=str(run_date.float_timestamp),
+                name='command',
                 args=[command],
                 trigger='date',
                 run_date=run_date.datetime,
@@ -115,18 +143,54 @@ class Scheduler:
             raise KeyError("A job is already scheduled at that time. Remove the existing one first")
         return job.id
 
+    def cartfolder(self, name:str, day_of_week:str, hour:int, minute:int, timezone:str) -> str:
+        """
+        Schedule a cartfolder to play weekly at a given time.
+
+        Raises ``KeyError`` if given cartfolder name does not exists,
+        or ``IndexError`` if a cartfolder has the same schedule.
+        Parameters:
+            name (str): Cartfolder name
+            day_of_week (str):  Weekday(s), starting from 0 for Monday - if given a few, write them as 0,2,6
+            hour (int):
+            minute (int):
+            timezone (str): for example "Europe/Paris"
+        """
+        _ = CartFolders.get()[name] # checks it exists
+        try:
+            h = str(hour).zfill(2)
+            m = str(minute).zfill(2)
+            job = self.scheduler.add_job(_do_enqueue_cart,
+                id=f"{day_of_week}{h}{m}{timezone}".replace('/', '_'),
+                name='cartfolder',
+                args=[name],
+                trigger='cron',
+                day_of_week=day_of_week,
+                hour=hour,
+                minute=minute,
+            )
+        except ConflictingIdError:
+            raise IndexError("A cartfolder already has the same schedule. Remove the existing one first")
+        return job.id
+
+
     def upcoming(self) -> List[Dict]:
         """
         Return:
             (list): upcoming events descriptions
         """
-        events = [
-            {
+        events = []
+        for job in self.scheduler.get_jobs():
+            event = {
                 'event_id': job.id,
-                'when': arrow.get(job.trigger.run_date).isoformat(),
-                'command': job.args[0],
-            } for job in self.scheduler.get_jobs()
-        ]
+                'type': job.name,
+                'what': job.args[0],
+            }
+            if job.name == 'cartfolder':
+                event['when'] = arrow.get(job.trigger.get_next_fire_time(None, arrow.utcnow().datetime)).isoformat()
+            else: # job.name == 'command' or legacy jobs
+                event['when'] = arrow.get(job.trigger.run_date).isoformat()
+            events.append(event)
         return events
 
     def delete(self, event_id):

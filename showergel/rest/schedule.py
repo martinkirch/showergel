@@ -5,7 +5,6 @@ Schedule RESTful interface
 import logging
 
 from bottle import request, HTTPError
-import arrow
 
 from showergel.showergel_bottle import ShowergelBottle
 from showergel.scheduler import Scheduler
@@ -36,6 +35,39 @@ def put_schedule(db):
         _log.exception(error)
         raise HTTPError(status=400, body=str(error))
     except KeyError as error:
+        _log.exception(error)
+        raise HTTPError(status=409, body=str(error))
+
+
+@schedule_app.put("/schedule/cartfolder")
+def put_schedule_cartfolder(db):
+    """
+    Cartfolders can be scheduled to play weekly ; this action will schedule
+    a cartfolder to play at a given time on one or a few weekdays.
+
+    :<json name: Cartfolder name
+    :<json day_of_week: Weekday(s), starting from 0 for Monday - if given a few, write them as 0,2,6
+    :<json hour: Hour of day (0-23)
+    :<json minute:
+    :<json timezone: for example "Europe/Paris"
+    :>json event_id: created event's ID
+    """
+    scheduler = Scheduler.get()
+    try:
+        p = request.json
+        return {
+            'event_id': scheduler.cartfolder(
+                p['name'],
+                p['day_of_week'],
+                int(p['hour']),
+                int(p['minute']),
+                p['timezone']
+            )
+        }
+    except (ValueError, TypeError, KeyError) as error:
+        _log.exception(error)
+        raise HTTPError(status=400, body=str(error))
+    except IndexError as error:
         _log.exception(error)
         raise HTTPError(status=409, body=str(error))
 

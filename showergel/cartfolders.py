@@ -154,8 +154,9 @@ class CartFolders:
         This should only be used when unit testing, to ensure updates are not
         triggered when the test folder is cleaned up
         """
-        cls.__instance.observer.stop()
-        cls.__instance = None
+        if cls.__instance:
+            cls.__instance.observer.stop()
+            cls.__instance = None
 
     def names(self) -> list[str]:
         names = list(self._carts.keys())
@@ -179,24 +180,3 @@ class CartFolders:
 
     def __getitem__(self, cartname:str) -> Cart:
         return self._carts[cartname]
-
-
-def do_enqueue_cart(cartname):
-    """
-    Function called each time a cart is scheduled. Pushes the next file to queue.
-    """
-    if not CartFolders.liquidsoap_queue:
-        return
-    try:
-        nextpath = CartFolders.get()[cartname].next()
-    except KeyError:
-        _log.critical("A cart called %s has been scheduled now, but does not appear in Showergel's configuration. Please clean the schedule.", cartname)
-        return
-    except EmptyCartException:
-        _log.info("Cart %s should play now, but its folder is empty", cartname)
-        return
-    connection = Connection.get()
-    command = f"{CartFolders.liquidsoap_queue}.push {nextpath}"
-    _log.debug("Enqueuing cart folder: %s", command)
-    result = connection.command(command)
-    _log.debug("Liquidsoap replied: %s", result)
