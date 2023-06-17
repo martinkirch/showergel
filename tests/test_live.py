@@ -1,20 +1,8 @@
 import arrow
-from showergel.cartfolders import CartFolders
-from . import ShowergelTestCase, APP_CONFIG, DBSession
+from . import ShowergelTestCase, APP_CONFIG
 
 
 class TestLive(ShowergelTestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        cls.session = DBSession()
-        CartFolders.setup(cls.session, APP_CONFIG)
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        CartFolders.test_reset()
 
     def test_get_live(self):
         before = arrow.now()

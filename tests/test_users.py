@@ -4,15 +4,14 @@ from urllib.parse import quote
 from showergel.users import User
 import arrow
 
-from . import ShowergelTestCase, DBSession
+from . import ShowergelTestCase
 
 class TestUsers(ShowergelTestCase):
 
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
-        session = DBSession()
-        session.query(User).delete()
+        cls.session.query(User).delete()
 
     def test_user_creation(self):
         resp = self.app.get('/users')

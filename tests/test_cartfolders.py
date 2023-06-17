@@ -6,9 +6,9 @@ import time
 import arrow
 
 from showergel.cartfolders import CartFolders, EmptyCartException
-from showergel.metadata import Log, LogExtra
+from showergel.metadata import Log
 
-from . import ShowergelTestCase, DBSession, APP_CONFIG
+from . import ShowergelTestCase, APP_CONFIG
 
 
 class CartFoldersTestCase(ShowergelTestCase):
@@ -16,17 +16,17 @@ class CartFoldersTestCase(ShowergelTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        CartFolders.test_reset()
         cls.tmpdir = TemporaryDirectory()
         APP_CONFIG['cartfolders']['testcart'] = join(cls.tmpdir.name, "cartfolder")
-        cls.session = DBSession()
 
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
         cls.tmpdir.cleanup()
         APP_CONFIG['cartfolders']['testcart'] = '/tmp/TBA'
-        cls.session.query(LogExtra).delete()
-        cls.session.query(Log).delete()
+        CartFolders.test_reset()
+        CartFolders.setup(cls.session, APP_CONFIG)
 
     def stub_playout(self, path):
         _, filename = split(path)

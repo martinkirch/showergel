@@ -47,11 +47,11 @@ class ShowergelTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.app = TestApp(app)
+        cls.session = DBSession()
 
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
-        session = DBSession()
-        session.query(LogExtra).delete(synchronize_session=False)
-        session.query(Log).delete(synchronize_session=False)
-        session.commit()
+        cls.session.query(LogExtra).delete(synchronize_session=False)
+        cls.session.query(Log).delete(synchronize_session=False)
+        cls.session.commit()
