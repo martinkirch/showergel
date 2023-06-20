@@ -57,7 +57,7 @@ import Datepicker from "vue3-datepicker";
 
 export default {
   props: ['parameters'],
-  components: { Datepicker, ScheduleCommand },
+  components: { Datepicker },
   data() {
     return {
       template: "",
