@@ -40,7 +40,7 @@
       </div>
     </div>
     <div class="field">
-      <button :class="`button is-link ${isLoading ? 'is-loading' : ''}`" type="submit">
+      <button class="button is-link" type="submit">
         Add event
       </button>
     </div>
@@ -91,8 +91,7 @@ export default {
           command: this.command,
           when: when.toISOString(),
         })
-          .then(this.getSchedule) // TODO trigger reloadSchedule event
-          .catch(notifications.error_handler(error));
+          .catch(notifications.error_handler(error)); // TODO trigger model update here
     }
   },
 };

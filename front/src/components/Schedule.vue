@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-for="event in events" :key="event.id">
+    <div v-for="event in events" :key="event.id" :class="`${isLoading ? 'is-loading' : ''}`">
       <p>
         <span class="when">
           {{ new Date(event.when).toLocaleString() }}
