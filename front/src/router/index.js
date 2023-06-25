@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import NowPlaying from '../views/NowPlaying.vue'
+import NowPlaying from '@/views/NowPlaying.vue'
 
 const routes = [
   {
@@ -11,30 +11,27 @@ const routes = [
   {
     path: '/playout_history',
     name: 'Playout History',
-    component: () => import(/* webpackChunkName: "playout_history" */ '../views/PlayoutHistory.vue')
+    component: () => import('@/views/PlayoutHistory.vue')
   },
   {
     path: '/users',
     name: 'Users',
-    component: () => import(/* webpackChunkName: "users" */ '../views/Users.vue')
+    component: () => import('@/views/Users.vue')
   },
   {
     path: '/schedule',
     name: 'Schedule',
-    component: () => import(/* webpackChunkName: "schedule" */ '../views/Schedule.vue')
+    component: () => import('@/views/Schedule.vue')
   },
   {
     path: '/about',
     name: 'About',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
+    component: () => import('@/views/About.vue')
   }
 ]
 
 const router = createRouter({
-  history: createWebHistory("/#/"),
+  history: createWebHistory(),
   routes
 })
 

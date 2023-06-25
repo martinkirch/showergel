@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import http from '@/http'
+import http from '@/http.js'
 import Sidebar from '@/components/Sidebar.vue'
 import { reactive } from 'vue'
 

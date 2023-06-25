@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import http from '@/http';
+import http from '@/http.js';
 import _ from 'lodash';
 import axios from 'axios';
 
