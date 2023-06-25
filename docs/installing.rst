@@ -118,7 +118,7 @@ you can call the demo app by creating a ``front/.env`` file that contains:
 
 .. code-block::
 
-    VUE_APP_BACKEND_URL=https://showergel.fly.dev/
+    VITE_BACKEND_URL=https://showergel.fly.dev/
 
 Similarly, a fully-working HTML/JS/CSS build is included in this repository,
 so one doesn't have to install ``yarn`` and Vue while working on the back-end.
