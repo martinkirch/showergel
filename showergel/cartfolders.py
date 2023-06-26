@@ -129,12 +129,12 @@ class CartFolders:
         """
         This should be called once, when starting the program.
         """
-        cls.__instance = cls(dbsession, config)
         try:
             cls.liquidsoap_queue = config['liquidsoap']['cartfolders_queue']
         except KeyError:
             _log.warning("Missing 'cartfolders_queue' in the [liquidsoap] section of the configuration.")
             cls.liquidsoap_queue = None
+        cls.__instance = cls(dbsession, config)
         return cls.__instance
 
     @classmethod
