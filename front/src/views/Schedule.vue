@@ -1,17 +1,17 @@
 <template>
   <div id="schedule" class="content my-4">
     <h2>Add an event</h2>
-    <ScheduleCommand :parameters="parameters"/>
+    <ScheduleCommand :commands="parameters.commands"/>
+    <ScheduleCartfolder :cartfolders="parameters.cartfolders"/>
     <h2>Upcoming events</h2>
     <Schedule />
   </div>
 </template>
 
 <script>
+import ScheduleCartfolder from "../components/ScheduleCartfolder.vue";
 import ScheduleCommand from "../components/ScheduleCommand.vue";
 import Schedule from "../components/Schedule.vue";
-
-// TODO: when adding cartfolders, pick the timezone from Intl.DateTimeFormat().resolvedOptions().timeZone
 
 export default {
   props: ['parameters'],

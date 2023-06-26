@@ -1,11 +1,12 @@
 <template>
   <form @submit.prevent="addEvent()" class="box">
+    <h3>Schedule a custom command</h3><!-- TODO this should be collapsible -->
     <div class="field">
       <label class="label" for="template">Command template</label>
       <div class="select">
         <select v-model="template" id="template">
           <option selected disabled value="">Pick a command... </option>
-          <option v-for="command in parameters.commands" :key="command" :value="command">
+          <option v-for="command in commands" :key="command" :value="command">
             {{ command }}
           </option>
         </select>
@@ -53,10 +54,8 @@ import notifications from '@/notifications';
 import { format } from "date-fns";
 import Datepicker from "vue3-datepicker";
 
-// TODO: when adding cartfolders, pick the timezone from Intl.DateTimeFormat().resolvedOptions().timeZone
-
 export default {
-  props: ['parameters'],
+  props: ['commands'],
   components: { Datepicker },
   data() {
     return {
