@@ -6,6 +6,7 @@ Showergel's APScheduler wrapper
 All accesses to APScheduler are wrapped here: scheduler creation, but also
 job storage and definition.
 """
+from __future__ import annotations
 from typing import List, Dict
 import logging
 
@@ -14,6 +15,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.jobstores.base import ConflictingIdError, JobLookupError
 from apscheduler.events import EVENT_JOB_ERROR
+from apscheduler.job import Job
 import arrow
 
 from showergel.liquidsoap_connector import Connection
@@ -62,6 +64,21 @@ def _do_enqueue_cart(cartname):
     _log.debug("Liquidsoap replied: %s", result)
 
 
+def serialize(job:Job) -> Dict:
+    """
+    Return:
+        (dict): a dict describing an event and its next occurrence
+    """
+    if job.name == 'cartfolder':
+        when = arrow.get(job.trigger.get_next_fire_time(None, arrow.utcnow().datetime)).isoformat()
+    else: # job.name == 'command' or legacy jobs
+        when = arrow.get(job.trigger.run_date).isoformat()
+    return {
+        'event_id': job.id,
+        'type': job.name,
+        'what': job.args[0],
+        'when': when
+    }
 
 class Scheduler:
     """
@@ -115,7 +132,7 @@ class Scheduler:
         if event.exception:
             _log.exception(event.exception)
 
-    def command(self, command:str, when:str) -> str:
+    def command(self, command:str, when:str) -> dict:
         """
         Squedule a Liquidsoap command. It will raise ``KeyError`` if a command
         was already scheduled at given date, or ``ValueError`` if given unusable
@@ -124,7 +141,7 @@ class Scheduler:
             command (str): a complete Liquidsoap telnet command
             when (str): **UTC** time
         Return:
-            (str): job identifier
+            (dict): serialized event info (see ``serialize``)
         """
         run_date = arrow.get(when).to('utc')
         if run_date < arrow.utcnow():
@@ -141,9 +158,9 @@ class Scheduler:
             )
         except ConflictingIdError:
             raise KeyError("A job is already scheduled at that time. Remove the existing one first")
-        return job.id
+        return serialize(job)
 
-    def cartfolder(self, name:str, day_of_week:str, hour:int, minute:int, timezone:str) -> str:
+    def cartfolder(self, name:str, day_of_week:str, hour:int, minute:int, timezone:str) -> dict:
         """
         Schedule a cartfolder to play weekly at a given time.
 
@@ -155,13 +172,15 @@ class Scheduler:
             hour (int):
             minute (int):
             timezone (str): for example "Europe/Paris"
+        Return:
+            (dict): serialized event info (see ``serialize``)
         """
         _ = CartFolders.get()[name] # checks it exists
         try:
             h = str(hour).zfill(2)
             m = str(minute).zfill(2)
             job = self.scheduler.add_job(_do_enqueue_cart,
-                id=f"{day_of_week}{h}{m}{timezone}".replace('/', '_'),
+                id=f"{day_of_week}{h}{m}00{timezone}".replace('/', '_'), # thanks to the 00 we're ready for second precison
                 name='cartfolder',
                 args=[name],
                 trigger='cron',
@@ -171,7 +190,7 @@ class Scheduler:
             )
         except ConflictingIdError:
             raise IndexError("A cartfolder already has the same schedule. Remove the existing one first")
-        return job.id
+        return serialize(job)
 
 
     def upcoming(self) -> List[Dict]:
@@ -179,18 +198,10 @@ class Scheduler:
         Return:
             (list): upcoming events descriptions
         """
-        events = []
+        events = {}
         for job in self.scheduler.get_jobs():
-            event = {
-                'event_id': job.id,
-                'type': job.name,
-                'what': job.args[0],
-            }
-            if job.name == 'cartfolder':
-                event['when'] = arrow.get(job.trigger.get_next_fire_time(None, arrow.utcnow().datetime)).isoformat()
-            else: # job.name == 'command' or legacy jobs
-                event['when'] = arrow.get(job.trigger.run_date).isoformat()
-            events.append(event)
+            as_dict = serialize(job)
+            events[as_dict['when']] = as_dict
         return events
 
     def delete(self, event_id):

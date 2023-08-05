@@ -1,10 +1,10 @@
 <template>
   <div id="schedule" class="content my-4">
-    <h2>Add an event</h2>
-    <ScheduleCommand :commands="parameters.commands"/>
-    <ScheduleCartfolder :cartfolders="parameters.cartfolders"/>
-    <h2>Upcoming events</h2>
+    <h2>Upcoming programs</h2>
     <Schedule />
+    TODO: those forms as modals
+    <ScheduleCartfolder :cartfolders="parameters.cartfolders"/>
+    <ScheduleCommand :commands="parameters.commands"/>
   </div>
 </template>
 

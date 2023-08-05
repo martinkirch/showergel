@@ -1,12 +1,29 @@
+<script setup>
+import { ref } from 'vue';
+import { useScheduleStore } from "@/stores/ScheduleStore.js";
+
+const props = defineProps({
+  cartfolders: Array
+})
+
+const store = useScheduleStore();
+const day = ref(0);
+const hour = ref(0);
+const minute = ref(0);
+const cartfolder = ref('');
+
+const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+</script>
+
 <template>
-  <form @submit.prevent="addEvent()" class="box">
-    <h3>Schedule a cartfolder</h3><!-- TODO this should be collapsible -->
+  <form @submit.prevent="store.addCartfolder(cartfolder, day, hour, minute)" class="box">
+    <h3>Schedule a cartfolder</h3>
     <div class="field">
       <label class="label" for="cartfolder">Cartfolder</label>
       <div class="select">
         <select v-model="cartfolder" id="cartfolder">
-          <option v-for="cartfolder in cartfolders" :key="cartfolder" :value="cartfolder">
-            {{ cartfolder }}
+          <option v-for="cartname in cartfolders" :value="cartname">
+            {{ cartname }}
           </option>
         </select>
       </div>
@@ -17,65 +34,32 @@
         Every
         <div class="select">
           <select v-model="day" id="day">
-            <option value="0">Monday</option>
-            <option value="1">Tueday</option>
-            <option value="2">Wednesday</option>
-            <option value="3">Thursday</option>
-            <option value="4">Friday</option>
-            <option value="5">Saturday</option>
-            <option value="6">Sunday</option>
+            <option v-for="(dayName, dayNumber) in weekdays" :value="dayNumber" :key="dayNumber">
+              {{ dayName }}
+            </option>
           </select>
         </div>
         at
         <div class="select">
           <select v-model="hour" id="hour">
-            <option v-for="n in 24" :value="n">{{ n.toString().padStart(2, "0") }}</option>
+            <option v-for="n in 24" :value="n-1" :key="n-1">{{ (n-1).toString().padStart(2, "0") }}</option>
           </select>
         </div>
         :
         <div class="select">
           <select v-model="minute" id="minute">
-            <option v-for="n in 60" :value="n">{{ n.toString().padStart(2, "0") }}</option>
+            <option v-for="n in 60" :value="n-1" :key="n-1">{{ (n-1).toString().padStart(2, "0") }}</option>
           </select>
         </div>
       </div>
     </div>
     <div class="field">
       <button class="button is-link" type="submit">
-        Add event
+        Add program
       </button>
     </div>
   </form>
 </template>
-
-<script>
-import http from "@/http";
-import notifications from '@/notifications';
-
-export default {
-  props: ['cartfolders'],
-  data() {
-    return {
-      day: "",
-      hour: "",
-      minute: "",
-      cartfolder: "",
-    };
-  },
-  methods: {
-    addEvent() {
-      http.put('/schedule/cartfolder', {
-          name: this.cartfolder,
-          day_of_week: this.day,
-          hour: this.hour,
-          minute: this.minute,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        })
-          .catch(notifications.error_handler(error)); // TODO trigger model update here
-    }
-  },
-};
-</script>
 
 <style>
 .choosewhen .select {

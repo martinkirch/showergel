@@ -13,24 +13,25 @@ _log = logging.getLogger(__name__)
 
 schedule_app = ShowergelBottle()
 
-@schedule_app.put("/schedule")
+@schedule_app.put("/schedule/command")
 def put_schedule(db):
     """
-    Schedule event creation. Note that at most one event can be registered at a
-    given date.
+    Schedule a one-time Liquidsoap command.
+    Note that at most one event can be registered at a given date.
 
     :<json command: Liquidsoap command
     :<json when: Event time (ISO 8601 with time zone info)
     :>json event_id: created event's ID
+    :>json type: will always be "command" in that case
+    :>json what: given command
+    :>json when: given command execution time
     """
     scheduler = Scheduler.get()
     try:
-        return {
-            'event_id': scheduler.command(
-                request.json.get('command'),
-                request.json.get('when'),
-            )
-        }
+        return scheduler.command(
+            request.json.get('command'),
+            request.json.get('when'),
+        )
     except (ValueError, TypeError, AttributeError) as error:
         _log.exception(error)
         raise HTTPError(status=400, body=str(error))
@@ -51,19 +52,20 @@ def put_schedule_cartfolder(db):
     :<json minute:
     :<json timezone: for example "Europe/Paris"
     :>json event_id: created event's ID
+    :>json type: will always be "cartfolder" in that case
+    :>json what: given name
+    :>json when: given next playout time
     """
     scheduler = Scheduler.get()
     try:
         p = request.json
-        return {
-            'event_id': scheduler.cartfolder(
-                p['name'],
-                p['day_of_week'],
-                int(p['hour']),
-                int(p['minute']),
-                p['timezone']
-            )
-        }
+        return scheduler.cartfolder(
+            p['name'],
+            p['day_of_week'],
+            int(p['hour']),
+            int(p['minute']),
+            p['timezone']
+        )
     except (ValueError, TypeError, KeyError) as error:
         _log.exception(error)
         raise HTTPError(status=400, body=str(error))
@@ -75,17 +77,13 @@ def put_schedule_cartfolder(db):
 @schedule_app.get("/schedule")
 def get_schedule(db):
     """
-    List upcoming events. For each event, expect:
-     * ``event_id``
-     * ``when`` (ISO 8601)
-     * ``command``
-
-    :>json schedule: list of scheduled events
+    Upcoming events as an object, each item's key is equal to its ``when`` member.
+     * ``event_id`` (may appear multiple times, because of repeated events)
+     * ``when`` event's next occurence (ISO time)
+     * ``type`` event type: cartfolder or command
+     * ``what`` event parameter: cartfolder name, complete command.
     """
-    scheduler = Scheduler.get()
-    return {
-        'schedule': scheduler.upcoming(),
-    }
+    return Scheduler.get().upcoming()
 
 @schedule_app.delete("/schedule/<event_id>")
 def delete_schedule(db, event_id):

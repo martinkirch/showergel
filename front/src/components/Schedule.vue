@@ -1,14 +1,33 @@
+
+<script setup>
+import { onMounted } from 'vue'
+import { useScheduleStore } from "@/stores/ScheduleStore.js";
+
+const store = useScheduleStore();
+
+function deleteEvent(what, when) {
+  const when_hint = new Date(when).toLocaleString();
+  if(confirm(`Really remove "${what}" at ${when_hint}?`)) {
+    store.deleteByOccurrence(when);
+  }
+}
+
+onMounted(() => {
+  store.getSchedule();
+})
+</script>
+
 <template>
   <div>
-    <div v-for="event in events" :key="event.id" :class="`${isLoading ? 'is-loading' : ''}`">
+    <div v-for="event in store.events" :key="event.event_id" :class="`${store.loading ? 'is-loading' : ''}`">
       <p>
         <span class="when">
           {{ new Date(event.when).toLocaleString() }}
         </span>
-        {{ event.what }}
+        {{ event.type }} - {{ event.what }}
         <button
           class="button is-danger icon"
-          @click="deleteEvent(event.event_id, event.when)"
+          @click="deleteEvent(event.what, event.when)"
           title="Remove event"
           >
             <i class="mdi mdi-calendar-remove"></i>
@@ -17,52 +36,6 @@
     </div>
   </div>
 </template>
-
-<script>
-import http from "@/http";
-import notifications from '@/notifications';
-
-// TODO: when adding cartfolders, pick the timezone from Intl.DateTimeFormat().resolvedOptions().timeZone
-
-export default {
-  data() {
-    return {
-      events: null,
-      isLoading: true,
-      isError: false,
-    };
-  },
-  methods: {
-    onError(error) {
-      this.isError = true;
-      notifications.error_handler(error);
-    },
-    getSchedule() {
-      this.isLoading = true;
-      this.isError = false;
-      http
-        .get("/schedule")
-        .then(this.onResults)
-        .catch(this.onError);
-    },
-    onResults(response) {
-      this.events = response.data.schedule;
-      this.isLoading = false;
-    },
-    deleteEvent(evendId, when) {
-      const when_hint = new Date(when).toLocaleString();
-      if(confirm(`Really remove event of ${when_hint}?`)) {
-        http.delete('/schedule/'+evendId)
-          .then(this.getSchedule)
-          .catch(this.onError);
-      }
-    }
-  },
-  mounted() {
-    this.getSchedule();
-  },
-};
-</script>
 
 <style>
 .when {

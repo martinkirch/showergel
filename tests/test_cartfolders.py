@@ -12,6 +12,9 @@ from . import ShowergelTestCase, APP_CONFIG
 
 
 class CartFoldersTestCase(ShowergelTestCase):
+    """
+    Unit test ``Cart`` and ``CartFolders``.
+    """
 
     @classmethod
     def setUpClass(cls):
@@ -42,9 +45,6 @@ class CartFoldersTestCase(ShowergelTestCase):
 
 
     def test_cart(self):
-        """
-        Unit test ``Cart`` and ``CartFolders``.
-        """
         cart_folders = CartFolders.setup(self.session, APP_CONFIG)
         try:
             self.assertTrue(isdir(APP_CONFIG['cartfolders']['testcart']))
