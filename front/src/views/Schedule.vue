@@ -15,7 +15,7 @@ import Schedule from "../components/Schedule.vue";
 
 export default {
   props: ['parameters'],
-  components: { ScheduleCommand, Schedule },
+  components: { ScheduleCommand, Schedule, ScheduleCartfolder },
 };
 </script>
 

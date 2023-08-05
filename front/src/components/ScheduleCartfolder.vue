@@ -13,7 +13,8 @@
     </div>
     <div class="field">
       <label class="label" for="day">When</label>
-      <div class="field has-addons">
+      <div class="field has-addons choosewhen">
+        Every
         <div class="select">
           <select v-model="day" id="day">
             <option value="0">Monday</option>
@@ -25,16 +26,16 @@
             <option value="6">Sunday</option>
           </select>
         </div>
-        -
+        at
         <div class="select">
           <select v-model="hour" id="hour">
-            <option value="0">0</option>
+            <option v-for="n in 24" :value="n">{{ n.toString().padStart(2, "0") }}</option>
           </select>
         </div>
         :
         <div class="select">
           <select v-model="minute" id="minute">
-            <option value="0">00</option>
+            <option v-for="n in 60" :value="n">{{ n.toString().padStart(2, "0") }}</option>
           </select>
         </div>
       </div>
@@ -77,5 +78,8 @@ export default {
 </script>
 
 <style>
-
+.choosewhen .select {
+  margin-right: 0.3em;
+  margin-left: 0.3em;
+}
 </style>
