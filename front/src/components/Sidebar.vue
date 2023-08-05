@@ -1,3 +1,9 @@
+<script setup>
+const props = defineProps({
+  title: String,
+});
+</script>
+
 <template>
   <div id="sidebar" class="column is-narrow">
     <div class="header">
@@ -50,12 +56,6 @@
     </aside>
   </div>
 </template>
-
-<script>
-export default {
-  props: ['title']
-}
-</script>
 
 
 <style scoped>

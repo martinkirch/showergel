@@ -1,3 +1,38 @@
+<script setup>
+import { ref, computed } from 'vue';
+import { format } from "date-fns";
+
+const filter = ref('');
+
+const props = defineProps({
+  results: Object,
+  loading: { type: Boolean, default: true },
+  error: {
+    type: Boolean,
+    default: false,
+  },
+});
+
+const filteredResults = computed(() => {
+  const filteredResults = {};
+  if (props.results && typeof props.results === "object") {
+    Object.keys(props.results).forEach((day) => {
+      const filteredDay = props.results[day].filter((result) => {
+        if (filter.value) {
+          return (
+            String(result.artist).includes(filter.value) ||
+            String(result.title).includes(filter.value)
+          );
+        }
+        return true;
+      });
+      filteredResults[day] = filteredDay;
+    });
+  }
+  return filteredResults;
+});
+</script>
+
 <template>
   <div class="card-list">
     <div
@@ -38,7 +73,7 @@
           >
             <div class="media-left">
               <div class="block pt-1">
-                {{ formatDate(new Date(title.on_air), "HH:mm:ss") }}
+                {{ format(new Date(title.on_air), "HH:mm:ss") }}
               </div>
             </div>
             <div class="media-content columns">
@@ -73,49 +108,6 @@
     </div>
   </div>
 </template>
-
-<script>
-import { format } from "date-fns";
-
-export default {
-  data() {
-    return {
-      filter: "",
-    };
-  },
-  props: {
-    results: Object,
-    loading: { type: Boolean, default: true },
-    error: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  computed: {
-    filteredResults() {
-      const filteredResults = {};
-      if (this.results && typeof this.results === "object") {
-        Object.keys(this.results).forEach((day) => {
-          const filteredDay = this.results[day].filter((result) => {
-            if (this.filter) {
-              return (
-                result.artist.includes(this.filter) ||
-                result.title.includes(this.filter)
-              );
-            }
-            return true;
-          });
-          filteredResults[day] = filteredDay;
-        });
-      }
-      return filteredResults;
-    },
-  },
-  methods: {
-    formatDate: format,
-  },
-};
-</script>
 
 <style>
 .small-caps {

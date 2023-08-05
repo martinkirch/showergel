@@ -1,3 +1,9 @@
+<script setup>
+const props = defineProps({
+  parameters: Object
+})
+</script>
+
 <template>
   <div class="content">
     <h1>This is Showergel</h1>
@@ -23,10 +29,3 @@
     </ul>
   </div>
 </template>
-
-
-<script>
-export default {
-  props: ['parameters']
-}
-</script>

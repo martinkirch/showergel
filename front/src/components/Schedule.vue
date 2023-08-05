@@ -1,6 +1,6 @@
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted } from 'vue';
 import { useScheduleStore } from "@/stores/ScheduleStore.js";
 
 const store = useScheduleStore();
