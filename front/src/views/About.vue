@@ -1,7 +1,6 @@
 <script setup>
-const props = defineProps({
-  parameters: Object
-})
+import { useParametersStore } from "@/stores/ParametersStore.js";
+const parameters = useParametersStore();
 </script>
 
 <template>

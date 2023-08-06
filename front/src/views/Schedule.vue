@@ -2,10 +2,8 @@
 import ScheduleCartfolder from "@/components/ScheduleCartfolder.vue";
 import ScheduleCommand from "@/components/ScheduleCommand.vue";
 import Schedule from "@/components/Schedule.vue";
-
-const props = defineProps({
-  parameters: Object
-})
+import { useParametersStore } from "@/stores/ParametersStore.js";
+const parameters = useParametersStore();
 </script>
 
 <template>

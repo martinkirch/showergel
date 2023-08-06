@@ -1,3 +1,69 @@
+<script setup>
+import { onMounted, ref, computed } from 'vue';
+import http from '@/http';
+import notifications from '@/notifications';
+
+const addUsername = ref('');
+const addPassword = ref('');
+const addPasswordConfirmation = ref('');
+const showUserAdd = ref(false);
+const users = ref([]);
+
+const addPasswordsMatch = computed(() => addPassword.value == addPasswordConfirmation.value);
+
+function getUsers(){
+  http.get('/users')
+    .then((response) => users.value = response.data.users)
+    .catch(notifications.error_handler);
+}
+onMounted(() => getUsers());
+
+function resetAdd(){
+  showUserAdd.value = false;
+  addUsername.value = '';
+  addPassword.value = '';
+  addPasswordConfirmation.value = '';
+}
+
+function addUser(){
+  if (addPasswordsMatch.value) {
+    http.put('/users', {
+      username: addUsername.value,
+      password: addPassword.value,
+    })
+      .then(resetAdd)
+      .then(getUsers)
+      .catch(notifications.error_handler);
+  }
+}
+
+function changePassword(username){
+  let pass = prompt(`Please enter a new pass phrase for ${username}`);
+  if (pass) {
+    let confirm = prompt(`Please confirm ${username}'s new pass phrase`);
+    if (confirm) {
+      if (confirm == pass) {
+        http.post(`/users/${username}`, {
+          password: pass,
+        })
+        .then(notifications.success_handler("Pass phrase updated"))
+        .catch(notifications.error_handler);
+      } else {
+        notifications.error("Pass phrases don't match !");
+      }
+    }
+  }
+}
+
+function deleteUser(username){
+  if(confirm(`Really remove ${username}'s account ? All related data will be removed too.`)) {
+    http.delete('/users/'+username)
+      .then(getUsers)
+      .catch(notifications.error_handler);
+  }
+}
+</script>
+
 <template>
   <div id="playout_history" class="content">
     <h1>Users</h1>
@@ -38,7 +104,7 @@
               <div class="control">
                 <input class="input" type="password" id="password_confirmation" v-model="addPasswordConfirmation" />
               </div>
-              <p class="help is-danger" v-show="addPasswordsMismatch">
+              <p class="help is-danger" v-show="!addPasswordsMatch">
                 Pass phrases don't match
               </p>
           </div>
@@ -88,84 +154,6 @@
     </div>
   </div>
 </template>
-
-<script>
-import http from '@/http';
-import notifications from '@/notifications';
-
-export default {
-  data () {
-    return {
-      addUsername: '',
-      addPassword: '',
-      addPasswordConfirmation: '',
-      showUserAdd: false,
-      users: []
-    }
-  },
-
-  computed: {
-    addPasswordsMismatch() {
-      return this.addPassword != this.addPasswordConfirmation;
-    }
-  },
-
-  methods: {
-    getUsers () {
-      http.get('/users')
-        .then(this.onResults)
-        .catch(notifications.error_handler);
-    },
-    onResults (response) {
-      this.users = response.data.users;
-    },
-    resetAdd () {
-      this.showUserAdd = false;
-      this.addUsername = '';
-      this.addPassword = '';
-      this.addPasswordConfirmation = '';
-    },
-    addUser () {
-      if (! this.addPasswordsMismatch) {
-        http.put('/users', {
-          username: this.addUsername,
-          password: this.addPassword,
-        })
-          .then(this.resetAdd)
-          .then(this.getUsers)
-          .catch(notifications.error_handler);
-      }
-    },
-    changePassword(username) {
-      let pass = prompt(`Please enter a new pass phrase for ${username}`);
-      if (pass) {
-        let confirm = prompt(`Please confirm ${username}'s new pass phrase`);
-        if (confirm) {
-          if (confirm == pass) {
-            http.post(`/users/${username}`, {
-              password: pass,
-            })
-            .then(notifications.success_handler("Pass phrase updated"))
-            .catch(notifications.error_handler);
-          } else {
-            notifications.error("Pass phrases don't match !");
-          }
-        }
-      }
-    },
-    deleteUser(username) {
-      if(confirm(`Really remove ${username}'s account ? All related data will be removed too.`)) {
-        http.delete('/users/'+username)
-          .then(this.getUsers)
-          .catch(notifications.error_handler);
-      }
-    }
-  },
-  mounted () {
-    this.getUsers();
-  }
-}
-</script>
 
 <style scoped>
 #showUserAdd {
