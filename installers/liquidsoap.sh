@@ -62,9 +62,14 @@ install_liquidsoap() {
     # workaround GitHub's redirection and javascripts
     local LATEST=$(curl -w '%{redirect_url}' https://github.com/savonet/liquidsoap/releases/latest)
     local ASSETS_URL=${LATEST/tag/expanded_assets}
-    wget -nd -r -l 1 -R '*dbgsym*' -A "liquidsoap*$ID*$VERSION_CODENAME*$ARCH.deb" "$ASSETS_URL"
+    wget -nd -r -l 1 -R '*dbgsym*' -A "liquidsoap_*$ID*$VERSION_CODENAME*$ARCH.deb" "$ASSETS_URL"
 
     local PACKAGE=$(ls -tr liquidsoap*.deb |tail)
+    if [ "$PACKAGE" = "" ];
+    then
+	    printf "\n\n⚠️  could not find a package for your arch/OS version.\n\n"
+	    exit 1
+    fi
     printf "\n\n************ downloaded $PACKAGE **************\n"
 
     sudo apt-get install -y --install-recommends ./$PACKAGE
