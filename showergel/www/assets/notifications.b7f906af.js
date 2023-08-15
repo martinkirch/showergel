@@ -1,0 +1,1 @@
+var s={error_handler:function(e){e.response&&e.response.data.message?this.error(e.response.data.message):console.log(e)},error:function(e){alert(e)},success_handler:function(e){return function(){alert(e)}},success:function(e){alert(e)}};export{s as n};

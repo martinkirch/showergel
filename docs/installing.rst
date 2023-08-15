@@ -105,19 +105,20 @@ Test with ``pytest``. See also :ref:`releasing`.
 Install for front-end development
 ---------------------------------
 
-The front-end is written in JavaScript packed with Yarn_,
-with VueJS_'s `single-file components <https://v3.vuejs.org/guide/single-file-component.html>`_.
+The front-end is written in JavaScript,
+with VueJS_'s `single-file components <https://v3.vuejs.org/guide/single-file-component.html>`_
+compiled by Vite_. Dependencies are managed by Yarn_.
 We use the Bulma_ CSS Framework.
 
-To modify the front-end, you must beforehand install Yarn and Vue_CLI_,
-then run ``yarn install`` from the repository root.
+To modify the front-end, you must beforehand install Yarn.
+Then run ``yarn install`` from the repository root.
 Start the live-building server with ``yarn serve``.
 If you don't have time to install the whole back-end,
 you can call the demo app by creating a ``front/.env`` file that contains:
 
 .. code-block::
 
-    VUE_APP_BACKEND_URL=https://showergel.fly.dev/
+    VITE_BACKEND_URL=https://showergel.fly.dev/
 
 Similarly, a fully-working HTML/JS/CSS build is included in this repository,
 so one doesn't have to install ``yarn`` and Vue while working on the back-end.
@@ -155,6 +156,6 @@ to compile the present documentation, which requires a Sphinx extension.
 .. _Yarn: https://yarnpkg.com/
 .. _VueJS: https://vuejs.org/
 .. _Bulma: https://bulma.io/
-.. _Vue_CLI: https://cli.vuejs.org/
+.. _Vite: https://vitejs.dev/
 .. _pip: https://pip.pypa.io/en/stable/installing/
 .. _Fly: https://fly.io/

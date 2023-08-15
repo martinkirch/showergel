@@ -1,9 +1,7 @@
 import logging
-import sys
 from unittest import TestCase
 
 from webtest import TestApp
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import bottle
 from bottle.ext import sqlalchemy
@@ -11,7 +9,6 @@ from bottle.ext import sqlalchemy
 from showergel import app
 from showergel.db import Base
 from showergel.metadata import Log, LogExtra
-from showergel.liquidsoap_connector import Connection
 
 APP_CONFIG = {
     'db.sqlalchemy': {
@@ -23,10 +20,16 @@ APP_CONFIG = {
     },
     'metadata_log': {
         'extra_fields': ["track*"],
-    }
+    },
+    'cartfolders': {
+        'testcart': '/tmp/TBA',
+    },
+    'liquidsoap': {
+        'cartfolders_queue': 'stubbedqueue',
+    },
 }
 app.config.load_dict(APP_CONFIG)
-app.init()
+app.init(conf=APP_CONFIG)
 
 __engine = app.get_engine()
 Base.metadata.create_all(__engine)
@@ -44,11 +47,11 @@ class ShowergelTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.app = TestApp(app)
+        cls.session = DBSession()
 
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
-        session = DBSession()
-        session.query(LogExtra).delete(synchronize_session=False)
-        session.query(Log).delete(synchronize_session=False)
-        session.commit()
+        cls.session.query(LogExtra).delete(synchronize_session=False)
+        cls.session.query(Log).delete(synchronize_session=False)
+        cls.session.commit()

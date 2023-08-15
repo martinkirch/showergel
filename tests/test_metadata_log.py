@@ -3,7 +3,7 @@ import arrow
 from showergel.metadata import LogExtra, FieldFilter
 from showergel.demo import artistic_generator
 from showergel.liquidsoap_connector import Connection
-from . import ShowergelTestCase, DBSession, app
+from . import ShowergelTestCase, app
 
 FIELD_FILTER_CONFIG = {
     'metadata_log.extra_fields': ["lyrics", "mb*"],
@@ -70,8 +70,7 @@ class TestMetadataLog(ShowergelTestCase):
         # ensure there's nothing in log_extra at this point - our generated
         # artist/title don't match the ones from LiquidsoapConnector.current(),
         # it should have inserted ``tracknumber`` otherwise
-        session = DBSession()
-        found = session.query(LogExtra).all()
+        found = self.session.query(LogExtra).all()
         self.assertEqual(0, len(found))
 
         current = connection.current()

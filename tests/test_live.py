@@ -1,5 +1,5 @@
 import arrow
-from . import ShowergelTestCase
+from . import ShowergelTestCase, APP_CONFIG
 
 
 class TestLive(ShowergelTestCase):
@@ -21,6 +21,7 @@ class TestLive(ShowergelTestCase):
         self.assertIn('version', resp)
         self.assertIsInstance(resp['commands'], list)
         self.assertEqual(resp['liquidsoap_version'], "Stub")
+        self.assertListEqual(resp['cartfolders'], list(APP_CONFIG['cartfolders'].keys()))
 
     def test_skip(self):
         resp = self.app.get('/live').json

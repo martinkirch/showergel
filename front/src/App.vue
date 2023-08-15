@@ -1,45 +1,20 @@
+<script setup>
+import { onMounted } from 'vue';
+import { useParametersStore } from "@/stores/ParametersStore.js";
+import Sidebar from '@/components/Sidebar.vue';
+
+const parameters = useParametersStore();
+onMounted(parameters.getParameters);
+</script>
+
 <template>
   <div id="app" class="columns">
     <Sidebar :title="parameters.name"></Sidebar>
     <div class="column container is-fluid">
-      <router-view :parameters="parameters"/>
+      <router-view />
     </div>
   </div>
 </template>
-
-<script>
-import http from '@/http'
-import Sidebar from '@/components/Sidebar.vue'
-import { reactive } from 'vue'
-
-const parameters_wrapper = reactive({
-  parameters: {
-    name: 'Showergel',
-    version: '',
-    commands: Array(),
-  }
-})
-
-export default {
-  name: 'Showergel',
-  components: {
-    Sidebar
-  },
-  data() {
-    return parameters_wrapper;
-  },
-  methods: {
-    onParametersResponse (response) {
-      this.parameters = response.data;
-    }
-  },
-  mounted () {
-    http.get('/parameters')
-      .then(this.onParametersResponse)
-      .catch(error => { console.log(error) })
-  }
-}
-</script>
 
 <style>
 body {

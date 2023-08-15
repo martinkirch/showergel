@@ -7,6 +7,7 @@ import arrow
 from showergel.showergel_bottle import ShowergelBottle
 from showergel.liquidsoap_connector import Connection
 from showergel.version import get_version
+from showergel.cartfolders import CartFolders
 
 live_app = ShowergelBottle()
 
@@ -45,6 +46,7 @@ def get_parameters():
         "version": get_version(),
         "commands": connection.commands,
         "liquidsoap_version": connection.connected_liquidsoap_version,
+        "cartfolders": CartFolders.get().names(),
     }
 
 @live_app.delete("/live")

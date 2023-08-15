@@ -1,3 +1,8 @@
+<script setup>
+import { useParametersStore } from "@/stores/ParametersStore.js";
+const parameters = useParametersStore();
+</script>
+
 <template>
   <div class="content">
     <h1>This is Showergel</h1>
@@ -23,10 +28,3 @@
     </ul>
   </div>
 </template>
-
-
-<script>
-export default {
-  props: ['parameters']
-}
-</script>

@@ -1,3 +1,59 @@
+<script setup>
+import { onMounted, ref } from 'vue';
+import http from "@/http";
+import { format } from "date-fns";
+import CardList from "../components/CardList.vue";
+import Datepicker from "vue3-datepicker";
+
+const start = ref("");
+const end = ref("");
+const limit = ref("10");
+const chronological = ref("");
+const results = ref({});
+const isLoading = ref(true);
+const isError = ref(false);
+
+function getHistory() {
+  isLoading.value = true;
+  isError.value = false;
+  let params = new URLSearchParams();
+  if (limit.value) {
+    params.append("limit", limit.value);
+  }
+  if (start.value) {
+    params.append("start", format(new Date(start.value), "yyyy-MM-dd"));
+  }
+  if (end.value) {
+    params.append("end", format(new Date(end.value), "yyyy-MM-dd"));
+  }
+  if (chronological.value) {
+    params.append("chronological", chronological.value);
+  }
+
+  http
+    .get("/metadata_log", { params })
+    .then((response) => {
+      const rawResults = response.data.metadata_log;
+      const resultsByDay = rawResults.reduce((acc, curr) => {
+        const currDay = format(new Date(curr.on_air), "dd/MM/yyyy");
+        if (!acc[currDay]) {
+          acc[currDay] = [curr];
+        } else {
+          acc[currDay].push(curr);
+        }
+        return acc;
+      }, {});
+      results.value = resultsByDay;
+      isLoading.value = false;
+    })
+    .catch((error) => {
+      isError.value = true;
+      console.log(error);
+    });
+}
+onMounted(getHistory);
+</script>
+
 <template>
   <div id="playout_history" class="content my-4">
     <h1>Playout History</h1>
@@ -56,72 +112,6 @@
     <CardList :results="results" :loading="isLoading" :error="isError" />
   </div>
 </template>
-
-<script>
-import http from "@/http";
-import { format } from "date-fns";
-import CardList from "../components/CardList.vue";
-import Datepicker from "vue3-datepicker";
-
-export default {
-  components: { CardList, Datepicker },
-  data() {
-    return {
-      start: "",
-      end: "",
-      limit: "10",
-      chronological: "",
-      results: null,
-      isLoading: true,
-      isError: false,
-    };
-  },
-  methods: {
-    getHistory() {
-      this.isLoading = true;
-      this.isError = false;
-      let params = new URLSearchParams();
-      if (this.limit) {
-        params.append("limit", this.limit);
-      }
-      if (this.start) {
-        params.append("start", format(new Date(this.start), "yyyy-MM-dd"));
-      }
-      if (this.end) {
-        params.append("end", format(new Date(this.end), "yyyy-MM-dd"));
-      }
-      if (this.chronological) {
-        params.append("chronological", this.chronological);
-      }
-
-      http
-        .get("/metadata_log", { params })
-        .then(this.onResults)
-        .catch((error) => {
-          this.isError = true;
-          console.log(error);
-        });
-    },
-    onResults(response) {
-      const rawResults = response.data.metadata_log;
-      const resultsByDay = rawResults.reduce((acc, curr) => {
-        const currDay = format(new Date(curr.on_air), "dd/MM/yyyy");
-        if (!acc[currDay]) {
-          acc[currDay] = [curr];
-        } else {
-          acc[currDay].push(curr);
-        }
-        return acc;
-      }, {});
-      this.results = resultsByDay;
-      this.isLoading = false;
-    },
-  },
-  mounted() {
-    this.getHistory();
-  },
-};
-</script>
 
 <style>
 #playout_history {
