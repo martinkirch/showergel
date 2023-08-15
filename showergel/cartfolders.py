@@ -35,7 +35,6 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 import arrow
 
-from showergel.liquidsoap_connector import Connection
 from showergel.metadata import Log
 
 _log = logging.getLogger(__name__)
