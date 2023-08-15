@@ -3,6 +3,9 @@ Changes and release history
 
 0.4.x
 =====
+
+Breaking changes: Showergel now requires Python 3.8 or more.
+
  - New feature [to be documented] : cartfolders
  - [internal] updates many Python and Javascript dependencies
 
