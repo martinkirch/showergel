@@ -17,7 +17,6 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.schema import ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.sqlite import DATETIME
-from sqlalchemy.exc import IntegrityError
 
 from showergel.db import Base
 from showergel.liquidsoap_connector import Connection

@@ -1,5 +1,5 @@
 from sqlalchemy.engine import Engine
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base
 from sqlalchemy import event
 
 @event.listens_for(Engine, "connect")
