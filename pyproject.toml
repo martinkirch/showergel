@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "showergel"
-version = "0.3.0"
+version = "0.4.0a0"
 description = "Companion application for a Liquidsoap radio"
 authors = ["Martin Kirchgessner <martin.kirch@gmail.com>"]
 license = "GPL-3.0-only"

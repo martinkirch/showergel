@@ -1,6 +1,11 @@
 Changes and release history
 ===========================
 
+0.4.x
+=====
+ - New feature [to be documented] : cartfolders
+ - [internal] updates many Python and Javascript dependencies
+
 0.3.x
 =====
 
