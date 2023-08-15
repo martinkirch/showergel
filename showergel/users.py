@@ -7,15 +7,15 @@ This module contains functions that process and store user list for Liquidsoap's
 """
 
 import logging
-import crypt
 from datetime import datetime
-from hmac import compare_digest
 from typing import Type, List, Dict
 
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm.session import Session
 from sqlalchemy.dialects.sqlite import JSON, DATETIME
 import arrow
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 
 from showergel.db import Base
 
@@ -46,7 +46,8 @@ class User(Base):
 
     @classmethod
     def create(cls, db:Type[Session], username:String, password:String):
-        user = cls(username=username, password=crypt.crypt(password))
+        ph = PasswordHasher()
+        user = cls(username=username, password=ph.hash(password))
         db.add(user)
         db.flush()
         return user
@@ -59,8 +60,17 @@ class User(Base):
     def check(cls, db:Type[Session], username:String, password:String):
         user = cls.from_username(db, username)
         if user:
-            if compare_digest(crypt.crypt(password, user.password), user.password):
-                return user
+            ph = PasswordHasher()
+            try:
+                if ph.verify(user.password, password):
+                    if ph.check_needs_rehash(user.password):
+                        user.password = ph.hash(password)
+                        db.flush()
+                    return user
+            except VerifyMismatchError:
+                return None
+            except Exception as e:
+                _log.exception(e)
         return None
 
     @classmethod
@@ -69,4 +79,5 @@ class User(Base):
             db.query(cls).filter(cls.username == username).delete()
 
     def update_password(self, new_password):
-        self.password = crypt.crypt(new_password)
+        ph = PasswordHasher()
+        self.password = ph.hash(new_password)
