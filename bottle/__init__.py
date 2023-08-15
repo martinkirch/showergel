@@ -3,6 +3,8 @@
 """
 
 Copied to showergel from https://github.com/bottlepy/bottle/raw/master/bottle.py
+until it's a stable release of 0.13, at least
+see https://github.com/martinkirch/showergel/issues/12
 
 Bottle is a fast and simple micro-framework for small web applications. It
 offers request dispatching (Routes) with URL parameter support, templates,
@@ -72,12 +74,12 @@ if __name__ == '__main__':
 # Imports and Python 2/3 unification ##########################################
 ###############################################################################
 
-import base64, calendar, cgi, email.utils, functools, hmac, imp, itertools,\
+import base64, calendar, cgi, email.utils, functools, hmac, itertools,\
        mimetypes, os, re, tempfile, threading, time, warnings, weakref, hashlib
 
 from types import FunctionType
 from datetime import date as datedate, datetime, timedelta
-from tempfile import TemporaryFile
+from tempfile import NamedTemporaryFile
 from traceback import format_exc, print_exc
 from unicodedata import normalize
 
@@ -85,34 +87,6 @@ try:
     from ujson import dumps as json_dumps, loads as json_lds
 except ImportError:
     from json import dumps as json_dumps, loads as json_lds
-
-# inspect.getargspec was removed in Python 3.6, use
-# Signature-based version where we can (Python 3.3+)
-try:
-    from inspect import signature
-    def getargspec(func):
-        params = signature(func).parameters
-        args, varargs, keywords, defaults = [], None, None, []
-        for name, param in params.items():
-            if param.kind == param.VAR_POSITIONAL:
-                varargs = name
-            elif param.kind == param.VAR_KEYWORD:
-                keywords = name
-            else:
-                args.append(name)
-                if param.default is not param.empty:
-                    defaults.append(param.default)
-        return (args, varargs, keywords, tuple(defaults) or None)
-except ImportError:
-    try:
-        from inspect import getfullargspec
-        def getargspec(func):
-            spec = getfullargspec(func)
-            kwargs = makelist(spec[0]) + makelist(spec.kwonlyargs)
-            return kwargs, spec[1], spec[2], spec[3]
-    except ImportError:
-        from inspect import getargspec
-
 
 py = sys.version_info
 py3k = py.major > 2
@@ -126,9 +100,17 @@ if py3k:
     urlunquote = functools.partial(urlunquote, encoding='latin1')
     from http.cookies import SimpleCookie, Morsel, CookieError
     from collections.abc import MutableMapping as DictMixin
+    from types import ModuleType as new_module
     import pickle
     from io import BytesIO
     import configparser
+    # getfullargspec was deprecated in 3.5 and un-deprecated in 3.6
+    # getargspec was deprecated in 3.0 and removed in 3.11
+    from inspect import getfullargspec
+    def getargspec(func):
+        spec = getfullargspec(func)
+        kwargs = makelist(spec[0]) + makelist(spec.kwonlyargs)
+        return kwargs, spec[1], spec[2], spec[3]
 
     basestring = str
     unicode = str
@@ -146,9 +128,12 @@ else:  # 2.x
     from Cookie import SimpleCookie, Morsel, CookieError
     from itertools import imap
     import cPickle as pickle
+    from imp import new_module
     from StringIO import StringIO as BytesIO
     import ConfigParser as configparser
     from collections import MutableMapping as DictMixin
+    from inspect import getargspec
+
     unicode = unicode
     json_loads = json_lds
     exec(compile('def _raise(*a): raise a[0], a[1], a[2]', '<py3fix>', 'exec'))
@@ -258,6 +243,7 @@ class lazy_attribute(object):
         value = self.getter(cls)
         setattr(cls, self.__name__, value)
         return value
+
 
 ###############################################################################
 # Exceptions and Events #######################################################
@@ -1169,7 +1155,7 @@ class BaseRequest(object):
     __slots__ = ('environ', )
 
     #: Maximum size of memory buffer for :attr:`body` in bytes.
-    MEMFILE_MAX = 10240000
+    MEMFILE_MAX = 102400
 
     def __init__(self, environ=None):
         """ Wrap a WSGI environ dictionary. """
@@ -1356,7 +1342,7 @@ class BaseRequest(object):
             body.write(part)
             body_size += len(part)
             if not is_temp_file and body_size > self.MEMFILE_MAX:
-                body, tmp = TemporaryFile(mode='w+b'), body
+                body, tmp = NamedTemporaryFile(mode='w+b'), body
                 body.write(tmp.getvalue())
                 del tmp
                 is_temp_file = True
@@ -1366,7 +1352,7 @@ class BaseRequest(object):
 
     def _get_body_string(self, maxread):
         """ Read body into a string. Raise HTTPError(413) on requests that are
-            to large. """
+            too large. """
         if self.content_length > maxread:
             raise HTTPError(413, 'Request entity too large')
         data = self.body.read(maxread + 1)
@@ -1420,11 +1406,11 @@ class BaseRequest(object):
         self['_cgi.FieldStorage'] = data  #http://bugs.python.org/issue18394
         data = data.list or []
         for item in data:
-            if item.filename:
+            if item.filename is None:
+                post[item.name] = item.value
+            else:
                 post[item.name] = FileUpload(item.file, item.name,
                                              item.filename, item.headers)
-            else:
-                post[item.name] = item.value
         return post
 
     @property
@@ -1597,7 +1583,7 @@ class BaseRequest(object):
     def __setattr__(self, name, value):
         if name == 'environ': return object.__setattr__(self, name, value)
         key = 'bottle.request.ext.%s' % name
-        if key in self.environ:
+        if hasattr(self, name):
             raise AttributeError("Attribute already defined: %s" % name)
         self.environ[key] = value
 
@@ -1658,7 +1644,7 @@ class BaseResponse(object):
     default_status = 200
     default_content_type = 'text/html; charset=UTF-8'
 
-    # Header blacklist for specific response codes
+    # Header denylist for specific response codes
     # (rfc2616 section 10.2.3 and 10.3.5)
     bad_headers = {
         204: frozenset(('Content-Type', 'Content-Length')),
@@ -2013,6 +1999,7 @@ class JSONPlugin(object):
         dumps = self.json_dumps
         if not self.json_dumps: return callback
 
+        @functools.wraps(callback)
         def wrapper(*a, **ka):
             try:
                 rv = callback(*a, **ka)
@@ -2060,7 +2047,7 @@ class _ImportRedirect(object):
         """ Create a virtual package that redirects imports (see PEP 302). """
         self.name = name
         self.impmask = impmask
-        self.module = sys.modules.setdefault(name, imp.new_module(name))
+        self.module = sys.modules.setdefault(name, new_module(name))
         self.module.__dict__.update({
             '__file__': __file__,
             '__path__': [],
@@ -2069,10 +2056,15 @@ class _ImportRedirect(object):
         })
         sys.meta_path.append(self)
 
+    def find_spec(self, fullname, path, target=None):
+        if '.' not in fullname: return
+        if fullname.rsplit('.', 1)[0] != self.name: return
+        from importlib.util import spec_from_loader
+        return spec_from_loader(fullname, self)
+
     def find_module(self, fullname, path=None):
         if '.' not in fullname: return
-        packname = fullname.rsplit('.', 1)[0]
-        if packname != self.name: return
+        if fullname.rsplit('.', 1)[0] != self.name: return
         return self
 
     def load_module(self, fullname):
@@ -2828,18 +2820,15 @@ def redirect(url, code=None):
     raise res
 
 
-def _file_iter_range(fp, offset, bytes, maxread=1024 * 1024, close=False):
-    """ Yield chunks from a range in a file, optionally closing it at the end.
-        No chunk is bigger than maxread. """
+def _rangeiter(fp, offset, limit, bufsize=1024 * 1024):
+    """ Yield chunks from a range in a file. """
     fp.seek(offset)
-    while bytes > 0:
-        part = fp.read(min(bytes, maxread))
+    while limit > 0:
+        part = fp.read(min(limit, bufsize))
         if not part:
             break
-        bytes -= len(part)
+        limit -= len(part)
         yield part
-    if close:
-        fp.close()
 
 
 def static_file(filename, root,
@@ -2931,8 +2920,8 @@ def static_file(filename, root,
     ims = getenv('HTTP_IF_MODIFIED_SINCE')
     if ims:
         ims = parse_date(ims.split(";")[0].strip())
-    if ims is not None and ims >= int(stats.st_mtime):
-        return HTTPResponse(status=304, **headers)
+        if ims is not None and ims >= int(stats.st_mtime):
+            return HTTPResponse(status=304, **headers)
 
     body = '' if request.method == 'HEAD' else open(filename, 'rb')
 
@@ -2943,9 +2932,10 @@ def static_file(filename, root,
         if not ranges:
             return HTTPError(416, "Requested Range Not Satisfiable")
         offset, end = ranges[0]
+        rlen = end - offset
         headers["Content-Range"] = "bytes %d-%d/%d" % (offset, end - 1, clen)
-        headers["Content-Length"] = str(end - offset)
-        if body: body = _file_iter_range(body, offset, end - offset, close=True)
+        headers["Content-Length"] = str(rlen)
+        if body: body = _closeiter(_rangeiter(body, offset, rlen), body.close)
         return HTTPResponse(body, status=206, **headers)
     return HTTPResponse(body, **headers)
 
@@ -3362,7 +3352,7 @@ class MeinheldServer(ServerAdapter):
 
 
 class FapwsServer(ServerAdapter):
-    """ Extremely fast webserver using libev. See http://www.fapws.org/ """
+    """ Extremely fast webserver using libev. See https://github.com/william-os4y/fapws3 """
 
     def run(self, handler):  # pragma: no cover
         depr(0, 13, "fapws3 is not maintained and support will be dropped.")
@@ -3666,22 +3656,26 @@ def run(app=None,
     if NORUN: return
     if reloader and not os.environ.get('BOTTLE_CHILD'):
         import subprocess
-        lockfile = None
+        fd, lockfile = tempfile.mkstemp(prefix='bottle.', suffix='.lock')
+        environ = os.environ.copy()
+        environ['BOTTLE_CHILD'] = 'true'
+        environ['BOTTLE_LOCKFILE'] = lockfile
+        args = [sys.executable] + sys.argv
+        # If a package was loaded with `python -m`, then `sys.argv` needs to be
+        # restored to the original value, or imports might break. See #1336
+        if getattr(sys.modules.get('__main__'), '__package__', None):
+            args[1:1] = ["-m", sys.modules['__main__'].__package__]
+
         try:
-            fd, lockfile = tempfile.mkstemp(prefix='bottle.', suffix='.lock')
-            os.close(fd)  # We only need this file to exist. We never write to it
+            os.close(fd)  # We never write to this file
             while os.path.exists(lockfile):
-                args = [sys.executable] + sys.argv
-                environ = os.environ.copy()
-                environ['BOTTLE_CHILD'] = 'true'
-                environ['BOTTLE_LOCKFILE'] = lockfile
                 p = subprocess.Popen(args, env=environ)
-                while p.poll() is None:  # Busy wait...
-                    os.utime(lockfile, None)  # I am alive!
+                while p.poll() is None:
+                    os.utime(lockfile, None)  # Tell child we are still alive
                     time.sleep(interval)
-                if p.poll() != 3:
-                    if os.path.exists(lockfile): os.unlink(lockfile)
-                    sys.exit(p.poll())
+                if p.returncode == 3:  # Child wants to be restarted
+                    continue
+                sys.exit(p.returncode)
         except KeyboardInterrupt:
             pass
         finally:
@@ -4275,7 +4269,7 @@ def view(tpl_name, **defaults):
                 tplvars.update(result)
                 return template(tpl_name, **tplvars)
             elif result is None:
-                return template(tpl_name, defaults)
+                return template(tpl_name, **defaults)
             return result
 
         return wrapper
