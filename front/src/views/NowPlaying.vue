@@ -46,7 +46,7 @@ function _getLive() { // always use the throttled getLive()
     .catch(error => {
       console.log(error);
     })
-};
+}
 getLive = _.throttle(_getLive, 1000, { leading:false, trailing:true });
 onMounted(() => getLive());
 onUnmounted(() => {

@@ -16,7 +16,7 @@ export const useParametersStore = defineStore('parameters', {
                 this.$patch(response.data);
 
             } catch(err) {
-                console.log(error);
+                console.log(err);
             }
         }
     }

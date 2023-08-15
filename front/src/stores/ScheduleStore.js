@@ -49,7 +49,7 @@ export const useScheduleStore = defineStore('schedule', {
             }
         },
         async addCommand(command, when) {
-            if (cartfolder) {
+            if (command) {
                 try {
                     const response = await http.put('/schedule/command', {
                         command: command,

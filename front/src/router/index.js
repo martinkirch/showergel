@@ -15,18 +15,18 @@ const routes = [
   },
   {
     path: '/users',
-    name: 'Users',
-    component: () => import('@/views/Users.vue')
+    name: 'UsersPanel',
+    component: () => import('@/views/UsersPanel.vue')
   },
   {
     path: '/schedule',
-    name: 'Schedule',
-    component: () => import('@/views/Schedule.vue')
+    name: 'SchedulePanel',
+    component: () => import('@/views/SchedulePanel.vue')
   },
   {
     path: '/about',
-    name: 'About',
-    component: () => import('@/views/About.vue')
+    name: 'AboutPanel',
+    component: () => import('@/views/AboutPanel.vue')
   }
 ]
 

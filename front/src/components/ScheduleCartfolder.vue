@@ -2,9 +2,9 @@
 import { ref } from 'vue';
 import { useScheduleStore } from "@/stores/ScheduleStore.js";
 
-const props = defineProps({
+defineProps({
   cartfolders: Array
-})
+});
 
 const store = useScheduleStore();
 const day = ref(0);
@@ -22,7 +22,7 @@ const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Satur
       <label class="label" for="cartfolder">Cartfolder</label>
       <div class="select">
         <select v-model="cartfolder" id="cartfolder">
-          <option v-for="cartname in cartfolders" :value="cartname">
+          <option v-for="cartname in cartfolders" :value="cartname" :key="cartname">
             {{ cartname }}
           </option>
         </select>

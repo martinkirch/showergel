@@ -4,9 +4,9 @@ import { format } from "date-fns";
 import Datepicker from "vue3-datepicker";
 import { useScheduleStore } from "@/stores/ScheduleStore.js";
 
-const props = defineProps({
+defineProps({
   commands: Array
-})
+});
 
 const store = useScheduleStore();
 const day = ref(new Date());

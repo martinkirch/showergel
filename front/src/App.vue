@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted } from 'vue';
 import { useParametersStore } from "@/stores/ParametersStore.js";
-import Sidebar from '@/components/Sidebar.vue';
+import SideBar from '@/components/SideBar.vue';
 
 const parameters = useParametersStore();
 onMounted(parameters.getParameters);
@@ -9,7 +9,7 @@ onMounted(parameters.getParameters);
 
 <template>
   <div id="app" class="columns">
-    <Sidebar :title="parameters.name"></Sidebar>
+    <SideBar :title="parameters.name"></SideBar>
     <div class="column container is-fluid">
       <router-view />
     </div>
