@@ -46,8 +46,7 @@ cd
 
 install_liquidsoap() {
     # just to be sure
-    sudo apt-get update
-    sudo apt install -y curl wget ffmpeg
+    sudo apt-get install -q -y curl wget ffmpeg
 
     local ARCH="$(dpkg --print-architecture)" # amd64, etc.
     source /etc/os-release # comes with a few variables : we'll use ID and VERSION_CODENAME
@@ -55,33 +54,32 @@ install_liquidsoap() {
     if [[ "$ID" == "debian" ]]
     then
         # the package depends on `libfdk-aac2`, which is in Debian's non-free repo
-        sudo apt install -y software-properties-common
-        sudo apt-add-repository non-free
-        sudo apt-get update
+        sudo apt-get install -q -y software-properties-common
+        sudo apt-add-repository -y non-free
     fi
 
     # workaround GitHub's redirection and javascripts
     local LATEST=$(curl -w '%{redirect_url}' https://github.com/savonet/liquidsoap/releases/latest)
     local ASSETS_URL=${LATEST/tag/expanded_assets}
-    wget -nd -r -l 1 -R '*dbgsym*' -A "liquidsoap*$ID*$VERSION_CODENAME*$ARCH.deb" "$ASSETS_URL"
+    wget -nd -r -l 1 -R '*dbgsym*' -A "liquidsoap_*$ID*$VERSION_CODENAME*$ARCH.deb" "$ASSETS_URL"
 
     local PACKAGE=$(ls -tr liquidsoap*.deb |tail)
     printf "\n\n************ downloaded $PACKAGE **************\n"
 
-    sudo apt-get install -y --install-recommends ./$PACKAGE
+    sudo apt-get install -q -y --install-recommends ./$PACKAGE
 
     printf "Installed "
     liquidsoap --version
 }
 
 install_showergel() {
-    sudo apt -y install python3 python3-pip python-is-python3
+    sudo apt-get -q -y install python3 python3-pip python-is-python3 pipx
 
     mkdir -p $HOME/.local/bin
     echo "export PATH=\"$HOME/.local/bin:\$PATH\"" >> .bashrc
     export PATH="$HOME/.local/bin:$PATH"
 
-    pip install showergel
+    pipx install showergel
 }
 
 setup_instance() {
