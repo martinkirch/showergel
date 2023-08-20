@@ -55,7 +55,7 @@ install_liquidsoap() {
     then
         # the package depends on `libfdk-aac2`, which is in Debian's non-free repo
         sudo apt-get install -q -y software-properties-common
-        sudo apt-add-repository non-free
+        sudo apt-add-repository -y non-free
     fi
 
     # workaround GitHub's redirection and javascripts
