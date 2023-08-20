@@ -66,14 +66,14 @@ install_liquidsoap() {
     local PACKAGE=$(ls -tr liquidsoap*.deb |tail)
     printf "\n\n************ downloaded $PACKAGE **************\n"
 
-    sudo apt-get install -y --install-recommends ./$PACKAGE
+    sudo apt-get install -q -y --install-recommends ./$PACKAGE
 
     printf "Installed "
     liquidsoap --version
 }
 
 install_showergel() {
-    sudo apt -y install python3 python3-pip python-is-python3 pipx
+    sudo apt-get -q -y install python3 python3-pip python-is-python3 pipx
 
     mkdir -p $HOME/.local/bin
     echo "export PATH=\"$HOME/.local/bin:\$PATH\"" >> .bashrc
