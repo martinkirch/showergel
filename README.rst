@@ -1,6 +1,6 @@
 .. csv-table::
 
-    "⚠️ **Development is on hold**, and currently rebooted on a new stack, `new repository <https://sr.ht/~martink/radioz>`_ and new name. See `this blog post <https://mkir.ch/2023-10-22/radio-automation-showergel-becomes-radioz.html>`_. ⚠️"
+    "⚠️ **This project has been rebooted with new goals, a new new stack, and renamed Radiotomate. Follow its news on** `radiotomate.org <https://radiotomate.org/>`_. ⚠️"
 
 =========
 Showergel
